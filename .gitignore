@@ -1,0 +1,62 @@
+# Flutter
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/pubspec.lock
+mobile/.metadata
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/local.properties
+mobile/*.iml
+mobile/.idea/
+mobile/.vscode/
+
+# Laravel
+web/vendor/
+web/node_modules/
+web/.env
+web/.env.backup
+web/.phpunit.result.cache
+web/storage/logs/*.log
+web/storage/framework/cache/
+web/storage/framework/sessions/
+web/storage/framework/views/
+web/bootstrap/cache/
+web/public/build/
+web/public/hot
+web/public/storage
+web/.php-cs-fixer.cache
+
+# Python
+ai-service/__pycache__/
+ai-service/*.pyc
+ai-service/.venv/
+ai-service/venv/
+ai-service/models/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build artifacts
+*.apk
+*.aab
+*.ipa
+
+# Database
+*.sqlite
+
+# Logs
+*.log
+
+# Kilo
+.kilo/

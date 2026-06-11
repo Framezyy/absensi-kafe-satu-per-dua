@@ -1,0 +1,787 @@
+PROPOSAL TUGAS AKHIR
+
+RANCANG BANGUN APLIKASI ABSENSI DAN PENGGAJIAN KARYAWAN BERBASIS MOBILE MENGGUNAKAN GEOLOCATION DAN FACE RECOGNITION PADA KAFE SATU PER DUA KOPITIAM
+
+
+
+
+
+
+OLEH:
+MUHAMMAD ICHSAN FIRDAUS
+3202316004
+
+
+
+
+PROGRAM STUDI D-3 TEKNIK INFORMATIKA
+JURUSAN TEKNIK ELEKTRO
+POLITEKNIK NEGERI PONTIANAK
+2026
+   HALAMAN PENGESAHAN
+
+RANCANG BANGUN APLIKASI ABSENSI DAN PENGGAJIAN KARYAWAN BERBASIS MOBILE MENGGUNAKAN GEOLOCATION DAN FACE RECOGNITION PADA KAFE SATU PER DUA KOPITIAM
+
+Proposal Tugas Akhir
+Program Studi D-3 Teknik Informatika
+Jurusan Teknik Elektro
+Oleh:
+Muhammad Ichsan Firdaus
+3202316004
+Dosen Pembimbing:
+
+
+Yusril Eka Mahendra, M.TI
+NIP 198904052024061001 
+Telah dipertahankan di depan penguji pada tanggal 8 April 2026 dan dinyatakan memenuhi syarat sebagai Proposal Tugas Akhir.
+Penguji I
+
+
+
+Muhammad Hasbi, S.T., M.T.
+NIP 197601112014041001Penguji II
+
+
+
+Suheri, S.T., M.Cs.
+NIP 198307172008121005 Dosen Penguji:
+
+Mengetahui:
+Koordinator Program Studi 
+D-3 Teknik Informatika
+
+
+
+Mariana Syamsudin, S.T., M.T., Ph.D.
+NIP 197503142006042001 Koordinator Tugas Akhir
+
+
+
+
+Novi Aryani Fitri, S.T., M.Tr.Kom.
+NIP 199111132022032016HALAMAN PERNYATAAN ORISINALITAS
+
+Saya yang bertanda tangan dibawah ini : 
+Nama                   		: MUHAMMAD ICHSAN FIRDAUS
+NIM                    		: 3202316004
+Jurusan / Program Studi	: Teknik Elektro / D-3 Teknik Informatika 
+Judul Proposal        		: Rancang Bangun Aplikasi Absensi Dan Penggajian Karyawan Berbasis Mobile Menggunakan Geolocation dan Face Recognition Pada Kafe Satu Per Dua Kopitiam.
+Menyatakan dengan sebenar-benarnya bahwa penulisan proposal Tugas Akhir ini berdasarkan hasil penelitian, pemikiran dan pemaparan asli dari saya sendiri, baik untuk naskah proposal maupun kegiatan yang tercantum sebagai bagian dari proposal Tugas Akhir ini. Jika terdapat karya orang lain, saya akan mencantumkan sumber yang jelas.
+Demikian pernyataan ini saya buat dengan sesungguhnya dan apabila dikemudian hari terdapat penyimpangan dan ketidakbenaran dalam pernyataan ini, maka saya bersedia menerima sanksi akademik berupa pencabutan gelar yang telah diperoleh karena karya tulis ini dan sanksi lain sesuai dengan peraturan yang berlaku di Politeknik Negeri Pontianak. 
+Demikian pernyataan ini saya buat dalam  keadaan sadar tanpa paksaan dari pihak manapun.   
+
+      Pontianak, 8 April 2026
+Yang membuat pernyataan, 
+
+
+
+
+Muhammad Ichsan Firdaus
+3202316004. 
+
+   DAFTAR ISI
+HALAMAN PENGESAHAN	ii
+HALAMAN PERNYATAAN ORISINALITAS	iii
+DAFTAR ISI	iv
+DAFTAR TABEL	vi
+DAFTAR GAMBAR	vii
+DAFTAR LAMPIRAN	viii
+BAB I PENDAHULUAN	9
+1.1	Latar Belakang	9
+1.2	Rumusan Masalah	11
+1.3	Batasan Masalah	11
+1.4	Tujuan Tugas Akhir	12
+1.5	Manfaat Tugas Akhir	13
+1.6	Metodologi Pelaksanaan Tugas Akhir	13
+1.6.1 	Identifikasi Masalah	14
+1.6.2	Pengambilan Data	15
+1.6.3	Metode  Perancangan Aplikasi	16
+BAB II DASAR TEORI	19
+2.1     Tinjauan Pustaka	19
+2.1.1	Implementasi Aplikasi Absensi Karyawan Menggunakan Geolocation	19
+2.2.1	Aplikasi Presensi Karyawan M-Presence Menggunakan Metode Lock GPS Berbasis Android	19
+2.3.1	Sistem Absensi Karyawan Berbasis Geolokasi dan Pengenalan Wajah Menggunakan Flutter dan Laravel Filament (Studi Kasus: PT XYZ)	20
+2.4.1	Rancang Bangun Aplikasi Monitoring Absensi dan Kegiatan Karyawan Berbasis Android Pada PT. Premier Equity Futures Menggunakan Metode Prototype	20
+2.5.1	Perancangan Sistem Presensi Online dan Penggajian Karyawan Berbasis Mobile	21
+2.2     Dasar Teori	25
+2.2.1	Konsep Dasar	25
+2.2.2	Teori Pendukung	26
+2.2.3	Teknologi yang Digunakan	30
+2.2.4	Hubungan dengan Tugas Akhir	34
+BAB III RANCANGAN AWAL	36
+3.1     Analisis Kebutuhan Sistem	36
+3.2     Use Case Diagram	40
+3.3     Arsitektur Diagram	43
+3.4     Perancangan Basis Data	46
+3.5     Perancangan Antarmuka (UI/UX)	57
+3.6     Spesifikasi Teknologi	67
+3.7     Rencana Pengujian	69
+3.8     Jadwal Penyelesaian Tugas Akhir	72
+DAFTAR PUSTAKA	74
+LAMPIRAN	75
+
+
+
+
+   DAFTAR TABEL
+
+Tabel 2.1 Tabel Perbandingan	22
+Tabel 3.1 Kebutuhan Fungsional Karyawan (Aplikasi Mobile)	38
+Tabel 3.2 Kebutuhan Fungsional Administrator (Dashboard Web)	39
+Tabel 3.3 Kebutuhan Non-Fungsional Sistem	40
+Tabel 3.4 Struktur Tabel users	49
+Tabel 3 5 Struktur Tabel karyawan	50
+Tabel 3.6 Struktur Tabel lokasi_kerja	51
+Tabel 3.7 Struktur Tabel absensi	51
+Tabel 3.8 Struktur Tabel penggajian	53
+Tabel 3.9 Struktur Tabel bonus	54
+Tabel 3.10 Struktur Tabel izin	54
+Tabel 3.11 Struktur Tabel notifikasi_config	55
+Tabel 3.12 Struktur Tabel face_embeddings	56
+Tabel 3.13 Spesifikasi Teknologi yang Digunakan	67
+Tabel 3.14 Skenario Pengujian Fitur Autentikasi dan Absensi Mobile	70
+Tabel 3.15 Skenario Pengujian Fitur Dashboard Web Administrator	71
+
+
+   
+DAFTAR GAMBAR
+Gambar 1.1 Metode Waterfall	15
+Gambar 3.1 Use Case Diagram	40
+Gambar 3.2 Diagram Arsitektur Sistem	42
+Gambar 3.3 Entity Relationship Diagram (ERD)	45
+Gambar 3.4 Wireframe Halaman Login Karyawan	57
+Gambar 3.5 Wireframe Halaman Beranda Karyawan	58
+Gambar 3.6 Wireframe Halaman Absensi Karyawan	59
+Gambar 3.7 Wireframe Halaman Riwayat Kehadiran Karyawan	60
+Gambar 3.8 Wireframe Halaman Pengajuan Izin Karyawan	62
+Gambar 3 9 Wireframe Halaman Profil Karyawan	63
+Gambar 3.10 Wireframe Halaman Login Admin	64
+Gambar 3 11 Wireframe Halaman Dashboard Admin	65
+
+
+
+
+   DAFTAR LAMPIRAN
+
+Lampiran 1 Jadwal Penyelesaian Tugas Akhir	72
+Lampiran 2 Bukti Plagiasi	74
+Lampiran 3 Lembar Kuisoner	75
+Lampiran 4 Lembar Hasil Wawancara	76
+Lampiran 5 Dokumentasi Hasil Kuisoner	77
+Lampiran 6 Dokumentasi Hasil Wawancara	78
+Lampiran 7 Dokumentasi Kafe Satu Per Dua	78
+Lampiran 8 Data Daftar Anggota Satu Per Dua Kopi Tiam	79
+Lampiran 9 Data Daftar Absensi Per Bulan Satu Per Dua Kopi Tiam	79
+Lampiran 10 Data Daftar Gaji Per Bulan Satu Per Dua Kopi Tiam	80
+Lampiran 11 Rekapan Per Bulan Satu Per Dua Kopi Tiam	80
+
+
+BAB I
+PENDAHULUAN
+1.1 Latar Belakang
+    Perkembangan teknologi informasi yang semakin pesat mendorong berbagai sektor usaha untuk beralih dari proses manual menuju proses digital yang lebih efisien, akurat, dan mudah dipantau. Salah satu aspek yang sangat penting dalam pengelolaan sumber daya manusia adalah absensi dan penggajian karyawan. Kedua aspek tersebut saling berkaitan karena data kehadiran menjadi dasar utama dalam proses perhitungan penggajian. Apabila pencatatan kehadiran masih dilakukan secara manual atau semi-manual, maka potensi keterlambatan rekapitulasi, kesalahan pencatatan, dan ketidaktepatan perhitungan gaji akan semakin besar [2][6].
+    Pada banyak usaha skala kecil dan menengah, penggunaan spreadsheet seperti Microsoft Excel sering dianggap sudah cukup untuk membantu pengelolaan absensi. Namun dalam praktiknya, penggunaan Excel masih sangat bergantung pada input manual dari admin, sehingga tetap rentan terhadap human error, keterlambatan pembaruan data, dan kesulitan dalam melakukan pemantauan secara real-time. Kondisi ini menyebabkan proses pengelolaan kehadiran dan penggajian menjadi kurang efisien, terutama ketika jumlah karyawan semakin banyak dan aktivitas operasional berlangsung setiap hari [2][6].
+    Kafe Satu Per Dua Kopitiam merupakan salah satu usaha yang mengalami kondisi tersebut. Berdasarkan hasil wawancara dengan pemilik kafe, pencatatan kehadiran karyawan masih dilakukan secara semi-manual dengan bantuan Microsoft Excel. Data kehadiran diinput satu per satu oleh admin, kemudian direkap untuk dijadikan dasar dalam proses penggajian. Proses ini membutuhkan waktu yang relatif lama, rentan menimbulkan kesalahan pencatatan, dan dapat memunculkan komplain apabila data kehadiran yang tercatat tidak sesuai dengan kondisi sebenarnya. Selain itu, proses yang belum terintegrasi juga menyulitkan pemilik dalam memantau status kehadiran karyawan secara cepat dan terpusat.
+    Dalam upaya meningkatkan ketepatan pencatatan absensi, teknologi geolocation dapat dimanfaatkan untuk memvalidasi bahwa proses absensi dilakukan pada lokasi kerja yang telah ditentukan. Melalui penerapan geofence, aplikasi dapat memeriksa apakah karyawan berada dalam radius area kerja saat melakukan absensi masuk maupun absensi pulang. Penggunaan geolocation pada aplikasi absensi menjadi langkah yang relevan untuk mengurangi absensi dari lokasi yang tidak semestinya dan meningkatkan validitas data kehadiran [2][3].
+    Meskipun demikian, validasi lokasi saja belum sepenuhnya cukup untuk mengatasi permasalahan kehadiran. Dalam praktiknya masih terdapat potensi titip presensi, yaitu kondisi ketika seorang karyawan meminta orang lain untuk melakukan absensi atas namanya. Risiko ini menunjukkan bahwa validasi lokasi perlu dilengkapi dengan validasi identitas pengguna. Oleh karena itu, face recognition dapat diterapkan sebagai mekanisme verifikasi tambahan agar proses absensi tidak hanya bergantung pada lokasi perangkat, tetapi juga pada kecocokan wajah pengguna yang melakukan presensi [4][9].
+    Pada penelitian ini, verifikasi wajah dirancang menggunakan MTCNN untuk mendeteksi wajah dan FaceNet untuk mengekstraksi embedding wajah. Proses verifikasi dilakukan dalam skema 1:1, yaitu membandingkan wajah pengguna saat absensi dengan data wajah karyawan yang telah diregistrasi sebelumnya. Untuk memperkuat proses verifikasi, aplikasi juga menerapkan liveness check dasar berupa deteksi kedipan mata agar sistem dapat meminimalkan penggunaan foto statis pada saat absensi. Seluruh proses face recognition dijalankan melalui microservice Python FastAPI yang terintegrasi dengan backend Laravel [4][7][9].
+    Selain absensi, aspek penggajian juga menjadi bagian penting dalam penelitian ini karena data kehadiran yang telah tervalidasi akan digunakan sebagai dasar rekapitulasi penggajian karyawan. Dengan adanya integrasi antara data absensi dan penggajian, administrator dapat mengelola data karyawan, memantau kehadiran, memproses pengajuan izin, serta melakukan rekapitulasi penggajian secara lebih terstruktur melalui dashboard web. Integrasi ini diharapkan dapat mengurangi kesalahan rekap, mempercepat proses administrasi, dan meningkatkan transparansi bagi pihak manajemen maupun karyawan [5][6].
+    Berdasarkan permasalahan tersebut, maka diperlukan suatu aplikasi absensi dan penggajian karyawan berbasis mobile yang mampu mendukung proses pencatatan kehadiran secara lebih akurat, memvalidasi lokasi absensi, meminimalkan praktik titip presensi melalui verifikasi wajah, serta membantu proses rekapitulasi penggajian secara terpusat. Oleh karena itu, penelitian ini mengangkat judul "Rancang Bangun Aplikasi Absensi dan Penggajian Karyawan Berbasis Mobile Menggunakan Geolocation dan Face Recognition pada Kafe Satu Per Dua Kopitiam".
+1.2 Rumusan Masalah
+  Berdasarkan latar belakang yang telah diuraikan, rumusan masalah dalam penelitian ini adalah sebagai berikut:
+1) Bagaimana merancang dan membangun aplikasi absensi dan penggajian karyawan berbasis mobile pada Kafe Satu Per Dua Kopitiam untuk menggantikan proses pencatatan dan rekapitulasi manual?
+2) Bagaimana menerapkan validasi lokasi berbasis geolocation pada proses absensi karyawan agar kehadiran tercatat sesuai dengan lokasi kerja yang telah ditentukan?
+3) Bagaimana aplikasi yang dibangun dapat meminimalkan praktik titip presensi melalui verifikasi wajah berbasis face recognition yang disertai liveness check dasar?
+4) Bagaimana membangun dashboard berbasis web yang memudahkan administrator dalam mengelola data karyawan, data absensi, pengajuan izin, dan rekapitulasi penggajian secara terpusat?
+1.3 Batasan Masalah
+  Agar penelitian ini lebih terarah dan tidak meluas dari ruang lingkup yang telah ditetapkan, maka diberikan batasan masalah sebagai berikut :
+1) Aplikasi yang dibangun hanya diterapkan pada Kafe Satu Per Dua Kopitiam yang berlokasi di Pontianak..
+2) Aplikasi difokuskan untuk mendukung pengelolaan absensi dan penggajian karyawan paruh waktu pada objek penelitian.
+3) Implementasi dan pengujian aplikasi mobile pada penelitian ini difokuskan pada platform Android. Pembatasan ini dilakukan untuk menjaga fokus penelitian, menyesuaikan ketersediaan perangkat uji, serta memastikan fitur utama seperti geolocation, pengambilan selfie, dan verifikasi kehadiran dapat diuji secara optimal dalam satu lingkungan platform. Dukungan terhadap iOS tidak menjadi fokus implementasi pada tugas akhir ini, namun secara konseptual tetap dapat dikembangkan pada tahap selanjutnya.
+4) Aplikasi mencakup fitur login, absensi masuk dan absensi pulang, validasi lokasi berbasis geolocation, registrasi wajah, verifikasi wajah, riwayat kehadiran, pengajuan izin, pengelolaan data karyawan, dan rekapitulasi penggajian.
+5) Dashboard berbasis web hanya dapat diakses oleh administrator dan dikembangkan menggunakan framework Laravel dengan basis data MySQL.
+6) Verifikasi wajah dilakukan dalam skema 1:1, yaitu membandingkan wajah pengguna saat absensi dengan data wajah karyawan yang telah diregistrasi sebelumnya.
+7) Proses verifikasi wajah menggunakan MTCNN untuk deteksi wajah dan FaceNet untuk ekstraksi embedding wajah, yang dijalankan melalui microservice Python FastAPI dan terintegrasi dengan backend Laravel.
+8) Pencocokan wajah dilakukan menggunakan perhitungan cosine similarity terhadap data embedding wajah yang tersimpan di basis data.
+9) Liveness check yang digunakan dibatasi pada deteksi kedipan mata sebagai bentuk validasi dasar pada sisi perangkat.
+10) Aplikasi belum membahas anti-spoof tingkat lanjut seperti depth analysis, infrared detection, atau mekanisme keamanan biometrik lanjutan lainnya.
+11) Aplikasi tidak membahas pengelolaan banyak instansi atau multi-tenant, melainkan hanya untuk satu tempat usaha.
+12) Fitur notifikasi pengingat, mode offline dan sinkronisasi otomatis, serta cetak slip gaji PDF ditempatkan sebagai pengembangan lanjutan apabila waktu implementasi memungkinkan.
+1.4 Tujuan Tugas Akhir
+  Berdasarkan rumusan masalah yang telah diuraikan, tujuan dari tugas akhir ini adalah sebagai berikut :
+1) Menghasilkan aplikasi absensi dan penggajian karyawan berbasis mobile yang mampu menggantikan proses pencatatan dan rekapitulasi manual pada Kafe Satu Per Dua Kopitiam secara lebih efisien, akurat, dan terstruktur.
+2) Menerapkan validasi lokasi berbasis geolocation agar proses absensi karyawan hanya dapat dilakukan pada area kerja yang telah ditentukan.
+3) Menerapkan verifikasi wajah berbasis face recognition yang disertai liveness check dasar untuk meminimalkan praktik titip presensi pada proses absensi karyawan.
+4) Membangun dashboard berbasis web yang memudahkan administrator dalam mengelola data karyawan, memantau absensi, memproses pengajuan izin, dan melakukan rekapitulasi penggajian secara terpusat.
+1.5  Manfaat Tugas Akhir
+  Tugas akhir ini diharapkan dapat memberikan manfaat bagi berbagai pihak yang terlibat, antara lain sebagai berikut :
+1) Bagi Kafe Satu Per Dua Kopitiam 
+Memberikan solusi digital yang mengintegrasikan absensi berbasis geolocation GPS, verifikasi wajah menggunakan face recognition, dan penggajian (termasuk komponen bonus fleksibel) dalam satu aplikasi untuk karyawan paruh waktu, sehingga proses administrasi kepegawaian lebih efisien dan dapat dipantau secara real-time.
+2) Bagi Karyawan Kafe Satu Per Dua Kopitiam    
+Mempermudah proses pencatatan kehadiran melalui aplikasi mobile dan memastikan honorarium dihitung secara otomatis serta transparan, sehingga meminimalkan potensi kesalahan yang dapat merugikan karyawan.
+3) Bagi Politeknik Negeri Pontianak  
+Memberikan kontribusi nyata berupa penerapan teknologi informasi pada unit usaha dan menjadi referensi pengembangan aplikasi berbasis mobile bagi penelitian selanjutnya di Program Studi D3 Teknik Informatika.
+4) Bagi Penulis 
+Menambah pengalaman dan kompetensi dalam pengembangan aplikasi berbasis mobile menggunakan Flutter dan Framework Laravel, serta mengimplementasikan teknologi geolocation dan face recognition berbasis MTCNN dan FaceNet secara nyata pada studi kasus di dunia industri.
+1.6 Metodologi Pelaksanaan Tugas Akhir
+  Proses penelitian dalam merancang dan membangun Aplikasi Absensi dan Penggajian Karyawan Berbasis Mobile Menggunakan Geolocation dan Face Recognition pada Kafe Satu Per Dua Kopitiam ini menggunakan metode pengembangan perangkat lunak Waterfall Model. Model Waterfall merupakan model SDLC yang sering disebut sebagai model sekuensial linier (sequential linear) atau alur hidup klasik (classic life cycle), di mana setiap tahap harus diselesaikan sebelum tahap berikutnya dimulai [1]. Metode ini dipilih karena kebutuhan sistem sudah terdefinisi dengan jelas sejak awal berdasarkan hasil wawancara dengan pemilik kafe, sehingga tahapan yang terstruktur dan berurutan lebih sesuai dengan kondisi penelitian ini.
+1.6.1 	Identifikasi Masalah
+      Pada tahap identifikasi masalah, penulis melakukan pemahaman secara menyeluruh terhadap permasalahan yang terjadi di Kafe Satu Per Dua Kopitiam, khususnya pada proses absensi dan penggajian karyawan paruh waktu yang saat ini masih dilakukan secara semi-manual menggunakan Microsoft Excel. Identifikasi ini bertujuan agar proses analisis dan perancangan aplikasi tetap fokus serta tidak menyimpang dari topik utama yang diteliti. Permasalahan utama yang teridentifikasi antara lain proses rekapitulasi absensi yang membutuhkan waktu lama dan rentan kesalahan, tidak adanya validasi lokasi absensi, potensi titip presensi, serta perhitungan honorarium yang belum terotomatisasi.
+1.6.2	Pengambilan Data
+	Dalam mendukung proses pengumpulan data dan informasi yang diperlukan untuk membangun aplikasi, penulis menggunakan beberapa cara sebagai berikut:
+1. Wawancara
+       Wawancara adalah metode pengumpulan data yang dilakukan secara langsung dengan narasumber terkait. Dalam penelitian ini, wawancara dilakukan dengan Pak Mustaat selaku pemilik Kafe Satu Per Dua Kopitiam untuk memperoleh informasi mengenai alur absensi karyawan yang berjalan saat ini, mekanisme perhitungan dan pembayaran honorarium, serta kendala-kendala yang dihadapi dalam proses pencatatan semi-manual. Dari hasil wawancara, diperoleh gambaran lengkap bahwa pencatatan kehadiran karyawan dilakukan oleh admin dengan menginput data langsung ke dalam Microsoft Excel, kemudian rekap Excel tersebut dijadikan dasar perhitungan honorarium yang masih dihitung secara manual oleh pemilik, dengan proses keseluruhan membutuhkan 5-7 hari kerja per bulan. Kondisi ini membuat Pak Mustaat secara langsung meminta dibuatkan aplikasi yang dapat menggantikan proses pencatatan semi-manual tersebut. Hasil wawancara ini menjadi landasan utama dalam merancang aplikasi yang sesuai dengan kebutuhan nyata di lapangan.
+2. Studi Pustaka
+       Studi pustaka dilakukan dengan mempelajari referensi dari jurnal ilmiah, buku, serta sumber informasi digital yang relevan guna memperoleh pemahaman mendalam terkait aplikasi absensi, keterbatasan pencatatan berbasis spreadsheet, teknologi geolocation berbasis GPS, algoritma MTCNN dan FaceNet untuk face recognition, pengembangan aplikasi mobile menggunakan Flutter, serta implementasi backend menggunakan Framework Laravel. Kajian pustaka ini memperkuat landasan teori dan mendukung perancangan aplikasi absensi dan penggajian karyawan berbasis mobile yang sesuai dengan kebutuhan Kafe Satu Per Dua Kopitiam.
+
+
+
+
+
+
+
+
+
+
+
+
+1.6.3	Metode  Perancangan Aplikasi
+      Sesuai dengan Metode Waterfall yang telah diuraikan di atas, berikut adalah penjelasan rinci dari setiap tahapan pengembangan yang diterapkan dalam penelitian ini:
+
+Gambar 1.1 Metode Waterfall
+
+
+      Tahapan dalam model Waterfall yang diterapkan dalam penelitian ini adalah sebagai berikut:
+1. Analisis
+      Pada tahap analisis dilakukan identifikasi dan pemahaman mendalam terhadap permasalahan serta kebutuhan sistem yang akan dikembangkan. Proses ini mencakup pengumpulan data melalui wawancara dengan Pak Mustaat selaku pemilik Kafe Satu Per Dua Kopitiam untuk memahami alur kerja absensi dan penggajian yang berjalan saat ini. Hasil analisis mencakup identifikasi permasalahan pada proses rekapitulasi semi-manual menggunakan Excel, kebutuhan fitur validasi geolocation disertai deteksi fake GPS, kebutuhan verifikasi identitas melalui face recognition berbasis MTCNN dan FaceNet, kebutuhan otomatisasi perhitungan honorarium, serta kebutuhan dashboard web bagi administrator. Kebutuhan fungsional dan non-fungsional yang terdefinisi pada tahap ini menjadi acuan utama dalam seluruh proses perancangan dan pengembangan sistem.
+2. Desain
+      Tahap perancangan bertujuan untuk merancang arsitektur sistem secara menyeluruh, mencakup hubungan antara aplikasi mobile Android (Flutter), backend API (Laravel), microservice Python FastAPI untuk pemrosesan face recognition, dan basis data (MySQL). Pemodelan sistem pada penelitian ini menggunakan pendekatan berorientasi objek yang digambarkan melalui Use Case Diagram sebagai bagian dari Unified Modeling Language (UML) untuk menggambarkan interaksi antara aktor (Karyawan dan Administrator) dengan seluruh fungsionalitas sistem. Selain itu, tahap ini juga mencakup pembuatan Entity Relationship Diagram (ERD) untuk merancang relasi antartabel di dalam basis data, perancangan antarmuka aplikasi mobile untuk karyawan, desain dashboard web untuk administrator, serta perancangan algoritma alur validasi geolocation, pipeline face recognition, dan mekanisme rekapitulasi penggajian otomatis.
+3. Implementasi
+      Tahap implementasi merupakan proses pengkodean sistem berdasarkan hasil perancangan yang telah ditetapkan. Aplikasi mobile dikembangkan menggunakan framework Flutter untuk platform Android dengan mengintegrasikan fitur GPS untuk validasi geolocation, sehingga proses absensi hanya dapat dilakukan pada lokasi Kafe Satu Per Dua Kopitiam dalam radius 50 meter yang telah dikonfirmasi sesuai kondisi fisik kafe. Backend dan dashboard web dikembangkan menggunakan framework Laravel dengan basis data MySQL, mencakup fitur pengelolaan data karyawan, rekapitulasi absensi secara real-time, serta perhitungan penggajian secara otomatis berdasarkan data absensi yang telah tervalidasi. Untuk fitur face recognition, digunakan microservice Python FastAPI yang menjalankan model MTCNN untuk deteksi wajah dan FaceNet untuk verifikasi identitas, yang berkomunikasi dengan backend Laravel melalui RESTful API.
+      
+      
+4. Pengujian 
+      Pengujian sistem dilakukan untuk memastikan seluruh fitur dan fungsi sistem berjalan sesuai dengan kebutuhan yang telah ditetapkan. Pengujian menggunakan pendekatan Black Box Testing yang difokuskan pada pengujian fungsionalitas fitur absensi berbasis geolocation, uji akurasi verifikasi face recognition menggunakan MTCNN dan FaceNet, uji akurasi perhitungan penggajian otomatis, serta uji kompatibilitas aplikasi mobile pada berbagai perangkat Android.
+5. Operasi dan Pemeliharaan
+      Pada tahap ini, sistem yang telah berhasil dibangun dan diuji akan diserahkan kepada Pak Mustaat selaku pemilik Kafe Satu Per Dua Kopitiam untuk dikonfirmasi kesiapan dan kelayakannya sebelum dioperasikan secara penuh. Apabila pemilik menyatakan sistem siap digunakan, operasi mencakup penggunaan sistem aplikasi mobile oleh karyawan untuk pencatatan absensi dan penggunaan dashboard web oleh administrator untuk pengelolaan data serta rekapitulasi penggajian. Pemeliharaan merupakan proses berkelanjutan yang meliputi perbaikan apabila ditemukan kendala atau bug pasca implementasi, pembaruan untuk meningkatkan performa sistem, serta penyesuaian fitur apabila terdapat perubahan kebutuhan dari pihak Kafe Satu Per Dua Kopitiam. Dengan adanya tahap pemeliharaan ini, sistem diharapkan dapat terus berjalan secara efisien, akurat, dan transparan apabila diimplementasikan secara penuh, serta dapat disesuaikan dengan kebutuhan operasional Kafe Satu Per Dua Kopitiam di masa mendatang.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+BAB II
+DASAR TEORI
+2.1 Tinjauan Pustaka
+   Setelah penulis melakukan penelusuran terhadap berbagai jurnal dan penelitian sebelumnya, penulis menemukan beberapa penelitian yang relevan dengan perancangan dan pengembangan aplikasi Absensi dan Penggajian Karyawan ini. Berikut adalah jurnal-jurnal yang dianggap berhubungan langsung dengan topik yang dipilih:
+2.1.1	Implementasi Aplikasi Absensi Karyawan Menggunakan Geolocation
+      Penelitian yang dilakukan oleh Miftahul Jannah, Ismasari Nawangsih, dan Edora pada tahun 2023. Penelitian ini bertujuan untuk mengimplementasikan aplikasi absensi karyawan berbasis geolocation dengan memanfaatkan teknologi GPS pada perangkat seluler di PT. Ace Mold Tech, sebuah perusahaan manufaktur yang sebelumnya masih menggunakan sistem absensi konvensional berbasis kertas. Permasalahan yang melatarbelakangi penelitian ini meliputi kesalahan dalam penginputan data absensi, kertas absensi yang mudah rusak, serta potensi kecurangan dalam proses absensi seperti diabsenkan oleh orang lain. Metode pengembangan yang digunakan adalah Waterfall dengan perancangan sistem menggunakan Unified Modeling Language (UML), bahasa pemrograman PHP, Framework Laravel, dan database MySQL. Hasil penelitian menunjukkan bahwa aplikasi absensi berbasis geolocation berhasil meningkatkan efisiensi dan akurasi pencatatan kehadiran, memungkinkan data absensi diakses secara real-time oleh manajemen, serta mengurangi tingkat kecurangan melalui verifikasi foto saat proses absensi[2].
+2.2.1	Aplikasi Presensi Karyawan M-Presence Menggunakan Metode Lock GPS Berbasis Android
+      Penelitian yang dilakukan oleh Rafli Khalis Nugraha dan Raissa Amanda Putri pada tahun 2024. Penelitian ini bertujuan untuk merancang dan membangun aplikasi presensi karyawan berbasis Android menggunakan metode lock GPS pada PT. Gunung Mas Jaya Nusantara yang sebelumnya masih mengandalkan mesin fingerprint tunggal di lobi perusahaan. Permasalahan utama yang diidentifikasi adalah penumpukan antrian karyawan saat melakukan presensi karena hanya tersedia satu alat fingerprint, serta kerusakan mesin akibat penggunaan yang berulang. Metode pengembangan yang digunakan adalah Waterfall dengan perancangan sistem menggunakan Unified Modeling Language (UML). Aplikasi dikembangkan menggunakan platform Kodular dengan Google Spreadsheet sebagai basis data penyimpanan. Keunggulan penelitian ini dibandingkan penelitian sejenis adalah penambahan fitur anti fake location, yang secara aktif mendeteksi dan menolak upaya manipulasi koordinat GPS menggunakan aplikasi fake GPS. Hasil pengujian menggunakan Black Box Testing menunjukkan seluruh fitur berjalan dengan sukses, termasuk pembatasan radius lokasi absensi dan deteksi kecurangan secara real-time[3].
+2.3.1	Sistem Absensi Karyawan Berbasis Geolokasi dan Pengenalan Wajah Menggunakan Flutter dan Laravel Filament (Studi Kasus: PT XYZ)
+      Penelitian yang dilakukan oleh Jarot Dian Susatyono, Setiyo Prihatmoko, Yuli Fitrianto, dan Ricky Alfina Ardananta pada tahun 2026. Penelitian ini bertujuan mengembangkan sistem presensi karyawan berbasis mobile dan web yang mengintegrasikan teknologi geolocation dan face recognition pada PT Linkfortune, yang sebelumnya masih menggunakan sistem presensi manual yang rentan terhadap manipulasi data kehadiran. Sistem dibangun menggunakan framework Flutter untuk aplikasi mobile dan Laravel Filament untuk sistem web admin, dengan komunikasi antara aplikasi dan server menggunakan RESTful API berformat JSON serta penyimpanan data di MySQL. Metode pengembangan yang digunakan adalah Waterfall dengan tahapan analisis, desain, implementasi, pengujian, dan pemeliharaan. Hasil pengujian black-box menunjukkan seluruh fungsi utama berjalan sesuai kebutuhan, sistem akurat dalam mendeteksi lokasi, dan mampu mengenali wajah dengan tingkat keberhasilan tinggi, sehingga meningkatkan kedisiplinan dan efisiensi administrasi kehadiran karyawan[4].
+2.4.1	Rancang Bangun Aplikasi Monitoring Absensi dan Kegiatan Karyawan Berbasis Android Pada PT. Premier Equity Futures Menggunakan Metode Prototype 
+      Penelitian yang dilakukan oleh Rachmad Tirta Saputra dan Riya Widayanti pada tahun 2025. Penelitian ini bertujuan mengembangkan aplikasi monitoring absensi dan kegiatan karyawan berbasis Android pada PT. Premier Equity Futures yang sebelumnya menggunakan sistem absensi sidik jari dengan satu perangkat untuk empat lantai dan sering mengalami error, sehingga berdampak pada ketidakakuratan data kehadiran dan perhitungan gaji. Aplikasi dikembangkan menggunakan framework Flutter untuk frontend Android dan Laravel (PHP) untuk backend, dengan database MySQL, serta dilengkapi fitur absensi berbasis foto dan geolocation (geofencing), pelaporan kegiatan mingguan yang terintegrasi dengan kalender, dan manajemen pengguna oleh admin. Metode pengembangan yang digunakan adalah Prototype, yang memungkinkan pengguna terlibat langsung dalam proses perancangan dan pengujian melalui evaluasi bertahap. Hasil pengujian menggunakan Black Box Testing menunjukkan seluruh modul utama termasuk login, absensi berbasis foto dan geolokasi, pengajuan izin, pelaporan kegiatan, serta manajemen pengguna berjalan sesuai spesifikasi, sehingga meningkatkan akurasi pencatatan kehadiran dan mendukung digitalisasi manajemen SDM[5].
+2.5.1	Perancangan Sistem Presensi Online dan Penggajian Karyawan Berbasis Mobile
+      Penelitian yang dilakukan oleh Valentino Lim pada tahun 2026. Penelitian ini bertujuan merancang sistem presensi dan penggajian karyawan berbasis mobile pada Toko Viva Shops yang sebelumnya masih menggunakan Google Spreadsheets secara manual, sehingga tidak efisien dan rentan kesalahan khususnya dalam memantau karyawan yang bekerja di luar area toko. Aplikasi dikembangkan menggunakan framework Flutter dengan Supabase Realtime Database, dan dilengkapi fitur presensi online berbasis geolocation, pengambilan foto secara real-time, pengajuan cuti dan izin kerja, serta perhitungan total jam kerja dan gaji karyawan secara otomatis. Metode pengembangan yang digunakan adalah Waterfall dengan tahapan requirement analysis, design, dan implementation, disertai pemodelan sistem menggunakan UML (use case, activity, sequence diagram) dan ERD. Hasil perancangan menunjukkan sistem mampu meningkatkan efisiensi dan akurasi proses presensi serta penggajian secara real-time, sehingga pemilik toko dapat lebih mudah memantau kehadiran dan mengelola data karyawan secara terpadu[6]
+A. Analisis Perbandingan
+    Berdasarkan hasil tinjauan pustaka terhadap penelitian terdahulu, dapat disusun tabel perbandingan dengan aspek-aspek kunci untuk melihat keunggulan, kelemahan, serta posisi dari sistem yang akan dikembangkan. Analisis perbandingan ini melibatkan penelitian terkait absensi berbasis geolocation, face recognition, dan sistem penggajian untuk memperjelas kebaruan dari sistem yang diusulkan.
+   
+ 
+
+
+
+Tabel 2.1 Tabel Perbandingan
+NoAspekPenelitian A 
+(Susatyono dkk., 2026)Penelitian B 
+(Lim, 2026)Sistem yang Diusulkan 1Fungsi / Fitur1. Presensi mobile
+2. verifikasi wajah (face recognition)
+3. validasi lokasi (geolocation)
+4. dashboard web admin
+5. laporan kehadiran1. Presensi online berbasis geolocation
+2. foto real-time
+3. pengajuan cuti & izin
+4. perhitungan jam kerja dan gaji otomatis1. Absensi mobile + geolocation + face recognition (MTCNN + FaceNet via Python FastAPI),
+2. dashboard admin web
+3. rekapitulasi penggajian otomatis terintegrasi
+4. kelola data karyawan2Teknologi yang Digunakan1. Flutter (Mobile)
+2. Laravel Filament (Web Admin)
+3. MySQL
+4. RESTful API1. Flutter (Mobile)
+2. Supabase Realtime Database1. Flutter (Mobile) 
+2. Framework Laravel (Web Admin) 
+3. MySQL 
+4. RESTful API
+5. Python FastAPI (Microservice AI)3Face RecognitionAda, tidak disebutkan algoritma spesifik         Tidak adaAda, menggunakan MTCNN (deteksi wajah) dan FaceNet (verifikasi identitas) dengan cosine similarity melalui microservice Python FastAPI4Integrasi PenggajianTidak ada. Rekapitulasi gaji masih berpotensi manualAda, perhitungan jam kerja dan gaji otomatis berbasis SupabaseAda, rekapitulasi penggajian otomatis langsung dari data absensi tervalidasi (honorarium + bonus fleksibel)5Metode PengembanganWaterfall.Waterfall.Waterfall.6KeterbatasanBelum terintegrasi dengan otomatisasi sistem penggajian, sehingga rekapitulasi gaji masih berpotensi manual.Menggunakan Database as a Service (Supabase) sehingga sangat bergantung pada pihak ketiga dan tidak memiliki backend web khusus untuk admin.Sistem difokuskan secara spesifik (single-tenant) untuk kebutuhan operasional Kafe Satu Per Dua Kopitiam dan platform mobile difokuskan untuk Android 7Hasil yang DicapaiDeteksi lokasi akurat dan pengenalan wajah berhasil meningkatkan kedisiplinan dan efisiensi kehadiran karyawan.Mampu meningkatkan efisiensi proses presensi dan perhitungan gaji karyawan secara real-time dan otomatis.Menghilangkan proses rekapitulasi manual dengan mengintegrasikan data absensi tervalidasi lokasi langsung ke perhitungan honorarium otomatis.
+      Berdasarkan perbandingan pada Tabel 2.1 di atas, dapat disimpulkan bahwa penerapan teknologi geolocation terbukti efektif dalam memvalidasi presensi karyawan. Namun, sistem-sistem terdahulu masih memiliki celah, baik dari tidak adanya integrasi langsung ke sistem penggajian (seperti pada Penelitian A) maupun ketiadaan dashboard kontrol administrator yang mandiri (seperti pada Penelitian B). Selain itu, tidak ada penelitian terdahulu yang menggunakan pipeline face recognition berbasis MTCNN dan FaceNet melalui microservice Python FastAPI yang terintegrasi langsung dengan backend Laravel.
+      Oleh karena itu, Sistem Informasi Absensi dan Penggajian Karyawan yang diusulkan ini dirancang untuk menutupi kelemahan tersebut. Kebaruan dari sistem ini terletak pada perpaduan infrastruktur aplikasi mobile terdedikasi (Flutter) untuk pencatatan geolocation secara akurat disertai verifikasi identitas melalui face recognition (MTCNN + FaceNet), yang datanya secara real-time ditarik oleh backend (Laravel) untuk langsung dikonversi menjadi perhitungan honorarium secara otomatis. Dengan penyesuaian ini, sistem yang diusulkan diharapkan dapat memberikan peningkatan dari sisi efisiensi waktu kerja admin, keakuratan data penggajian, serta kemudahan pemantauan secara terpusat bagi pemilik Kafe Satu Per Dua Kopitiam. 
+2.2 Dasar Teori
+      Dasar teori berisi konsep dasar, teori pendukung, atau prinsip-prinsip ilmiah yang mendukung tugas akhir. Bagian ini menjelaskan landasan teoritis yang digunakan untuk merancang sistem atau menjawab rumusan masalah. Struktur dasar teori sebagai berikut:
+2.2.1	Konsep Dasar
+      Pengelolaan absensi dan penggajian merupakan dua aspek administrasi kepegawaian yang saling berkaitan erat dalam operasional suatu organisasi atau unit usaha. Absensi berfungsi sebagai rekam jejak kehadiran karyawan yang menjadi dasar utama dalam perhitungan honorarium, sementara penggajian merupakan proses distribusi kompensasi kepada karyawan berdasarkan data kehadiran yang telah terverifikasi. Ketidakakuratan dalam pencatatan kehadiran secara langsung berdampak pada kekeliruan perhitungan gaji yang dapat merugikan karyawan maupun manajemen [2].
+      Kafe Satu Per Dua Kopitiam merupakan kafe di Pontianak yang memiliki karyawan paruh waktu dengan berbagai posisi seperti barista, waiter, kasir, dan kitchen staff. Saat ini, pencatatan kehadiran seluruh karyawan dilakukan oleh admin dengan menginput data secara langsung ke dalam Microsoft Excel. Meskipun lebih terstruktur dibandingkan buku catatan manual, proses ini tetap bersifat semi-manual karena data harus diinput satu per satu oleh admin. Rekap Excel tersebut kemudian dijadikan dasar perhitungan honorarium yang masih dihitung secara manual oleh pemilik, dengan total proses membutuhkan 5-7 hari kerja per bulan. Kondisi ini mengakibatkan proses rekapitulasi yang memakan waktu lama, rentan terhadap kesalahan hitung dan praktik titip absen, serta sulitnya pemantauan kehadiran secara real-time oleh pemilik [3].
+      Oleh karena itu, diperlukan sebuah sistem informasi absensi dan penggajian berbasis mobile yang mengintegrasikan validasi lokasi otomatis menggunakan teknologi geolocation GPS, verifikasi identitas melalui face recognition berbasis MTCNN dan FaceNet, dengan mekanisme perhitungan honorarium berbasis data kehadiran yang tervalidasi, termasuk komponen bonus fleksibel per karyawan. Dengan hadirnya sistem ini, proses administrasi kepegawaian Kafe Satu Per Dua Kopitiam diharapkan dapat berjalan lebih efisien, akurat, dan transparan, sekaligus mendukung peningkatan kinerja operasional kafe secara keseluruhan.
+2.2.2	Teori Pendukung
+      Adapun teori pendukung dalam penelitian ini adalah sebagai berikut:
+a. Sistem Informasi 
+      Sistem informasi adalah kombinasi dari manusia, perangkat keras, perangkat lunak, jaringan komunikasi, sumber data, serta kebijakan dan prosedur yang menyimpan, mengambil, mengubah, dan mendistribusikan informasi dalam suatu organisasi. Sistem informasi berperan penting dalam mendukung pengambilan keputusan, koordinasi, pengendalian, analisis, dan visualisasi proses bisnis dalam sebuah organisasi[6].
+b. Absensi
+      Absensi merupakan catatan resmi mengenai kehadiran atau ketidakhadiran seseorang dalam suatu kegiatan, pekerjaan, atau lingkungan tertentu pada waktu yang telah ditentukan. Dalam konteks kepegawaian, absensi berfungsi sebagai instrumen kontrol kehadiran karyawan yang menjadi dasar dalam proses penggajian, evaluasi kinerja, dan pengambilan keputusan manajerial terkait sumber daya manusia[2].
+c. Penggajian
+      Penggajian atau sistem penggajian adalah proses yang digunakan oleh suatu organisasi untuk menghitung dan mendistribusikan kompensasi kepada karyawan atas pekerjaan yang telah dilakukan sesuai dengan ketentuan yang berlaku. Sistem penggajian yang baik harus mampu menghitung honorarium secara akurat berdasarkan data kehadiran yang terverifikasi, mengelola komponen gaji, serta menghasilkan slip gaji dan laporan penggajian secara otomatis untuk mendukung transparansi dan akuntabilitas keuangan organisasi[3].
+d. Geolocation
+      Geolocation adalah teknologi yang memungkinkan identifikasi atau estimasi posisi geografis suatu perangkat secara real-time menggunakan sistem GPS (Global Positioning System), jaringan seluler, atau Wi-Fi. Dalam konteks sistem absensi, geolocation dimanfaatkan untuk memvalidasi bahwa karyawan benar-benar berada di lokasi yang telah ditentukan saat melakukan pencatatan kehadiran, sehingga mencegah praktik absensi fiktif yang kerap muncul pada sistem konvensional. Validasi dilakukan dengan membandingkan koordinat lokasi perangkat pengguna dengan koordinat area kerja yang telah dikonfigurasi oleh administrator dalam radius tertentu[4].
+e. Face Recognition
+      Face recognition atau pengenalan wajah adalah teknologi biometrik yang memungkinkan sistem untuk mengidentifikasi atau memverifikasi identitas seseorang berdasarkan karakteristik wajah yang ditangkap melalui kamera. Dalam konteks sistem absensi, face recognition digunakan dalam mode verifikasi (1:1), yaitu membandingkan wajah yang ditangkap saat absensi dengan data wajah yang sudah terdaftar sebelumnya milik karyawan yang bersangkutan, bukan mengidentifikasi dari sekumpulan banyak orang [7].
+Secara umum, proses face recognition terdiri dari tiga tahap utama:
+1. Face Detection (Deteksi Wajah) Tahap pertama adalah mendeteksi keberadaan dan lokasi wajah di dalam gambar atau frame kamera. Pada penelitian ini digunakan MTCNN (Multi-task Cascaded Convolutional Networks), yaitu algoritma deteksi wajah berbasis deep learning yang bekerja melalui tiga jaringan bertingkat (P-Net, R-Net, O-Net) untuk mendeteksi wajah, menentukan bounding box, serta mengekstrak landmark wajah seperti posisi mata, hidung, dan sudut mulut secara akurat meskipun dalam kondisi pencahayaan dan sudut pandang yang bervariasi [8].
+2. Feature Extraction (Ekstraksi Fitur) Setelah wajah terdeteksi, tahap berikutnya adalah mengekstrak fitur unik wajah tersebut ke dalam bentuk embedding vektor, yaitu representasi matematis wajah dalam ruang berdimensi tinggi. Pada penelitian ini digunakan FaceNet, sebuah model deep learning yang dikembangkan oleh Google yang mampu mengubah gambar wajah menjadi vektor embedding berdimensi 128 atau 512. FaceNet dilatih menggunakan teknik triplet loss sehingga wajah orang yang sama akan menghasilkan embedding yang berdekatan, sedangkan wajah orang berbeda akan menghasilkan embedding yang berjauhan dalam ruang vektor tersebut [8].
+3. Face Verification (Verifikasi Wajah) Tahap terakhir adalah membandingkan embedding vektor wajah yang baru ditangkap dengan embedding vektor wajah referensi yang sudah tersimpan di database menggunakan metode Cosine Similarity. Cosine similarity mengukur kemiripan dua vektor berdasarkan sudut di antara keduanya, bukan jarak absolutnya, sehingga lebih robust terhadap perbedaan skala pencahayaan. Rumus cosine similarity adalah sebagai berikut:
+
+Similarity(A, B) = (A · B) / (||A|| × ||B||)
+
+Nilai cosine similarity berkisar antara -1 hingga 1, di mana nilai 1 berarti kedua vektor identik, nilai 0 berarti tidak berkorelasi, dan nilai -1 berarti berlawanan arah. Dalam konteks verifikasi wajah, semakin tinggi nilai similarity maka semakin mirip kedua wajah tersebut [7].
+
+f. Threshold Cosine Similarity
+      Threshold adalah nilai batas minimum cosine similarity yang harus dicapai agar sistem menyatakan bahwa wajah yang diverifikasi cocok dengan data referensi. Penentuan nilai threshold sangat mempengaruhi keseimbangan antara False Positive (wajah orang lain diterima) dan False Negative (wajah pengguna sendiri ditolak). Berdasarkan penelitian Nusantoko dan Prapanca (2025) yang menguji sistem absensi wajah berbasis CNN dengan model VGGFace2 menggunakan cosine similarity terhadap 81 responden, diperoleh hasil bahwa threshold 70% menghasilkan akurasi tertinggi sebesar 0,77 dengan keseimbangan terbaik antara False Positive dan False Negative. Penggunaan threshold di atas 80% terbukti menurunkan akurasi secara drastis akibat meningkatnya jumlah False Negative, sementara threshold 70% dinilai paling optimal karena memberikan verifikasi yang lebih ketat dibanding 60% tanpa mengorbankan akurasi sistem [7].
+Berdasarkan temuan tersebut, penelitian ini menetapkan threshold cosine similarity sebesar 0,7 (70%) sebagai nilai acuan dalam proses verifikasi wajah pada sistem absensi yang dikembangkan.
+g. Liveness Check
+      Liveness check atau deteksi keaktifan adalah mekanisme keamanan tambahan yang bertujuan memastikan bahwa objek yang sedang diverifikasi adalah wajah manusia yang nyata dan hidup, bukan foto, video, atau media statis lainnya. Tanpa liveness check, sistem face recognition rentan terhadap serangan spoofing sederhana seperti menunjukkan foto karyawan di depan kamera untuk memanipulasi absensi [8]. Pada penelitian ini digunakan blink detection sebagai metode liveness check dasar di sisi perangkat (client-side). Blink detection bekerja dengan cara mendeteksi probabilitas keterbukaan mata kanan dan kiri menggunakan Google ML Kit Face Detection API. Karyawan diwajibkan untuk mengedipkan mata satu kali sebelum foto selfie diambil. Sistem akan mendeteksi perubahan probabilitas keterbukaan mata jika probabilitas mata kiri dan kanan turun di bawah 0,3 (mata tertutup) setelah sebelumnya terbuka, maka liveness check dinyatakan berhasil. Pendekatan ini juga digunakan oleh Nusantoko dan Prapanca (2025) dalam sistem absensi wajah berbasis Flutter dengan hasil pengujian yang baik [7].
+      Perlu dicatat bahwa blink detection termasuk dalam kategori liveness check dasar (passive liveness) yang efektif untuk mencegah spoofing menggunakan foto statis, namun belum mencakup anti-spoof tingkat lanjut seperti depth analysis atau infrared detection. Batasan ini telah ditetapkan secara eksplisit dalam ruang lingkup penelitian ini.
+h. Metode Waterfall
+      Model Waterfall merupakan sebuah siklus yang dimanfaatkan dalam proses pengembangan sistem informasi. Tujuan utamanya adalah untuk menetapkan alur kerja yang efisien dan terstruktur. Metode ini membantu dalam perencanaan pembangunan sistem agar dapat berjalan sesuai dengan rencana yang telah ditentukan. Model Waterfall diterapkan dalam penelitian ini sebagai pendekatan pengembangan perangkat lunak dengan tahapan sistematis mulai dari analisis, desain, implementasi, pengujian, hingga operasi dan pemeliharaan[8].
+      
+2.2.3	Teknologi yang Digunakan
+      Adapun teknologi yang digunakan dalam tugas akhir ini meliputi teori-teori tentang Flutter, Laravel, MySQL, Visual Studio Code, Android Studio, Figma, Black Box Testing, Laragon, MTCNN, FaceNet, dan Python FastAPI.
+a. Flutter
+      Flutter adalah framework open-source berbasis bahasa pemrograman Dart yang dikembangkan oleh Google untuk membangun aplikasi mobile, web, dan desktop dari satu basis kode (cross-platform). Flutter menggunakan widget sebagai elemen dasar antarmuka pengguna dan menyediakan performa yang mendekati aplikasi native. Dalam penelitian ini, Flutter digunakan untuk membangun aplikasi mobile Android yang digunakan karyawan paruh waktu Kafe Satu Per Dua Kopitiam dalam melakukan pencatatan kehadiran berbasis geolocation secara real-time[2].
+      
+      
+      
+      
+      
+b. Laravel
+      Laravel adalah framework web berbasis PHP yang bersifat open-source, dikembangkan oleh Taylor Otwell dengan menerapkan pola arsitektur Model-View-Controller (MVC). Framework ini mempermudah pengembangan aplikasi web dengan menyediakan fitur-fitur seperti routing, migrasi basis data, autentikasi pengguna, dan RESTful API. Dalam penelitian ini, Laravel digunakan sebagai backend yang mengelola data absensi, mengotomatisasi perhitungan penggajian (termasuk komponen bonus fleksibel), dan menyediakan dashboard web bagi administrator/pemilik Kafe Satu Per Dua Kopitiam[3].
+c. MySQL
+      MySQL adalah sistem manajemen basis data relasional yang bersifat open-source dan banyak digunakan dalam pengembangan aplikasi web. MySQL menyimpan data dalam bentuk tabel yang saling berelasi dan mendukung bahasa kueri SQL (Structured Query Language) untuk pengelolaan data. Dalam penelitian ini, MySQL digunakan sebagai sistem manajemen basis data untuk menyimpan seluruh data karyawan, data absensi, dan data penggajian yang dikelola melalui backend Laravel[5].
+d. Visual Studio Code
+      Visual Studio Code merupakan editor teks ringan yang dibuat oleh Microsoft dan mendukung berbagai sistem operasi, seperti Windows, macOS, dan Linux. Aplikasi ini mendukung penulisan kode dalam berbagai bahasa pemrograman melalui ekstensi yang tersedia di marketplace. Bersifat open-source, Visual Studio Code menjadi salah satu alat favorit di kalangan pengembang karena fitur IntelliSense, debugging, dan integrasi dengan sistem kontrol versi seperti Git yang memudahkan proses pengembangan backend Laravel[6].
+      
+      
+      
+      
+      
+      
+      
+e. Figma
+      Figma adalah platform desain berbasis cloud yang mendukung pembuatan antarmuka aplikasi mobile, desktop, situs web, dan produk digital lainnya. Aplikasi ini dapat diakses di berbagai sistem operasi selama terkoneksi dengan internet. Fitur kolaborasi real-time Figma memungkinkan banyak pengguna bekerja bersama dalam satu proyek, menjadikannya pilihan utama bagi desainer UI/UX. Dalam penelitian ini, Figma digunakan untuk merancang wireframe dan mockup antarmuka aplikasi mobile Flutter dan dashboard web Laravel sebelum tahap implementasi dimulai[2].
+f. Black Box Testing
+      Black Box Testing adalah metode pengujian perangkat lunak yang fokus pada antarmuka sistem untuk mengevaluasi apakah fungsi yang ada beroperasi dengan baik sesuai spesifikasi yang telah ditetapkan, tanpa memeriksa struktur logika internal kode. Metode ini bertujuan untuk memastikan bahwa input diterima secara akurat dan output yang dihasilkan sesuai dengan harapan. Dalam penelitian ini, Black Box Testing digunakan untuk menguji fungsionalitas fitur absensi geolocation, akurasi perhitungan penggajian otomatis, serta seluruh menu dan tombol yang ada pada aplikasi mobile maupun dashboard web[4].
+g. Laragon
+      Laragon adalah universal development environment yang sangat cepat, ringan, dan mudah dioperasikan untuk pengembangan aplikasi web modern. Dalam penelitian ini, Laragon digunakan sebagai web server lokal (menggantikan perangkat lunak seperti XAMPP) yang stabil untuk menjalankan framework Laravel sekaligus mengelola basis data MySQL. Penggunaan Laragon mempermudah dan mempercepat proses konfigurasi database serta pengujian sistem presensi karyawan secara lokal sebelum diimplementasikan secara penuh[8].
+h. MTCNN (Multi-task Cascaded Convolutional Networks)
+      MTCNN adalah algoritma deteksi wajah berbasis deep learning yang bekerja melalui tiga tahap jaringan konvolusional bertingkat secara berurutan, yaitu P-Net (Proposal Network), R-Net (Refine Network), dan O-Net (Output Network). Setiap tahap secara bertahap menyaring kandidat area wajah dan menentukan posisi lima landmark wajah mata kiri, mata kanan, hidung, sudut mulut kiri, dan sudut mulut kanan untuk menghasilkan deteksi yang presisi pada berbagai sudut dan kondisi pencahayaan[9]. Dalam penelitian ini, MTCNN digunakan sebagai tahap pertama pipeline face recognition untuk mendeteksi dan melakukan alignment wajah dari frame kamera. Gambar wajah yang berhasil terdeteksi kemudian diubah ukurannya menjadi 160×160 piksel sebelum diproses lebih lanjut oleh FaceNet. 
+i. FaceNet
+      FaceNet adalah model deep learning yang dikembangkan oleh Google untuk mengonversi gambar wajah menjadi vektor representasi numerik berdimensi tetap yang disebut face embedding. Model ini menggunakan pendekatan triplet loss function untuk memaksimalkan perbedaan antar wajah yang berbeda sekaligus meminimalkan jarak antar wajah dari individu yang sama, sehingga setiap orang memiliki representasi vektor yang unik dan dapat dibedakan secara konsisten [9]. Dalam penelitian ini, FaceNet digunakan untuk menghasilkan embedding wajah karyawan pada tahap registrasi sebanyak tiga kali pengambilan foto, kemudian rata-rata (mean embedding) dari ketiga vektor tersebut disimpan sebagai representasi akhir yang lebih stabil terhadap variasi pencahayaan, sudut, maupun ekspresi. Pada saat absensi, embedding wajah yang baru ditangkap dibandingkan dengan embedding yang tersimpan menggunakan perhitungan cosine similarity dengan nilai ambang batas tertentu untuk menentukan kecocokan identitas.
+j. Python FastAPI
+      Python FastAPI adalah framework web modern berbasis Python yang digunakan untuk membangun RESTful API berkinerja tinggi. FastAPI dipilih karena ekosistem library AI/ML Python yang matang, khususnya untuk menjalankan model MTCNN dan FaceNet yang tidak tersedia secara native di PHP [9]. Dalam penelitian ini, Python FastAPI berfungsi sebagai microservice AI yang menerima gambar wajah dari backend Laravel, memproses deteksi wajah menggunakan MTCNN, menghasilkan face embedding menggunakan FaceNet, melakukan perhitungan kecocokan identitas melalui cosine similarity, dan mengembalikan hasil verifikasi ke backend Laravel untuk dicatat ke dalam basis data MySQL.
+2.2.4	Hubungan dengan Tugas Akhir
+      Penelitian ini relevan dengan tugas akhir yang sedang penulis kerjakan, yaitu Rancang Bangun Sistem Informasi Absensi dan Penggajian Karyawan Berbasis Mobile Menggunakan Geolocation dan Face Recognition pada Kafe Satu Per Dua Kopitiam. Teori dan teknologi yang diuraikan dalam bab ini menjadi fondasi utama untuk memastikan bahwa sistem berfungsi dengan baik dan memenuhi kebutuhan pengguna. Penerapan konsep sistem informasi, absensi, penggajian, dan teknologi geolocation membantu dalam membangun sistem yang mampu mengelola kehadiran 32 karyawan paruh waktu secara akurat, otomatis, dan dapat dipantau secara real-time oleh pemilik Kafe Satu Per Dua Kopitiam.
+      Dari sisi teknologi, Flutter digunakan untuk membangun antarmuka aplikasi mobile Android yang responsif dan mendukung integrasi GPS, sementara Laravel berperan sebagai backend yang mengelola logika bisnis, RESTful API, dan dashboard web administrator. MySQL digunakan sebagai sistem manajemen basis data yang menyimpan seluruh data karyawan, kehadiran, dan penggajian. Figma dimanfaatkan dalam perancangan antarmuka yang user-friendly, sedangkan Visual Studio Code dan Android Studio digunakan sebagai tools pengembangan utama. Metode Waterfall diterapkan sebagai kerangka pengembangan yang sistematis dan terstruktur.
+      Untuk validasi identitas karyawan dan pencegahan titip presensi, pipeline face recognition diimplementasikan menggunakan MTCNN untuk deteksi dan alignment wajah, serta FaceNet untuk menghasilkan face embedding yang dibandingkan dengan cosine similarity. Seluruh proses ini dijalankan melalui microservice Python FastAPI yang terintegrasi dengan backend Laravel, disertai liveness check dasar pada sisi perangkat untuk mencegah penggunaan foto diam.
+      Untuk memastikan kualitas sistem, dilakukan pengujian dengan metode Black Box Testing guna mengevaluasi fungsionalitas fitur absensi geolocation, akurasi verifikasi face recognition, dan perhitungan penggajian otomatis. Dengan penerapan teori dan teknologi ini, sistem informasi absensi dan penggajian berbasis mobile yang dikembangkan diharapkan mampu meningkatkan efisiensi, akurasi, dan transparansi dalam pengelolaan kepegawaian Kafe Satu Per Dua Kopitiam secara menyeluruh, memangkas waktu rekap penggajian dari 5-7 hari kerja menjadi maksimal 2 jam per bulan.
+      Selain itu, sistem juga dilengkapi tabel izin untuk pengelolaan pengajuan izin karyawan, tabel bonus untuk komponen bonus fleksibel.
+      
+
+
+BAB III
+RANCANGAN AWAL
+
+Bab ini menjelaskan rancangan awal sistem informasi absensi dan penggajian karyawan berbasis mobile menggunakan geolocation dan Face Recognition pada Kafe Satu Per Dua Kopitiam. Rancangan ini disusun berdasarkan hasil wawancara dengan Pak Mustaat (owner) dan validasi kuesioner yang mencakup analisis kebutuhan sistem, arsitektur sistem, perancangan basis data, perancangan antarmuka, perancangan proses bisnis, spesifikasi teknologi, rencana pengujian, serta jadwal penyelesaian tugas akhir.
+
+3.1 Analisis Kebutuhan Sistem
+   Analisis kebutuhan sistem dilakukan untuk mengidentifikasi seluruh fungsi dan kemampuan yang harus dimiliki oleh Sistem Informasi Absensi dan Penggajian Karyawan Berbasis Mobile Menggunakan Geolocation dan Face Recognition pada Kafe Satu Per Dua Kopitiam. Analisis ini mencakup kebutuhan fungsional, kebutuhan non-fungsional, serta identifikasi aktor yang terlibat dalam sistem..
+A. Identifikasi Aktor 
+  Sistem ini melibatkan dua aktor utama yang berinteraksi langsung dengan sistem, yaitu:
+1. Karyawan: Pengguna aplikasi mobile Android yang melakukan absensi 
+masuk (clock-in) dan pulang (clock-out), mengajukan izin, serta melihat 
+riwayat kehadiran pribadi. Karyawan harus terlebih dahulu terdaftar oleh admin dan memiliki data wajah yang sudah diregistrasi ke dalam sistem.
+2. Administrator (Admin): Pengguna dashboard web yang memiliki kewenangan penuh dalam mengelola data karyawan, memantau absensi, menyetujui atau menolak izin, mengelola bonus, melakukan rekapitulasi penggajian, serta mengatur konfigurasi sistem termasuk geofence.
+
+
+
+
+B. Kebutuhan Fungsional:
+    Kebutuhan fungsional mendeskripsikan fitur-fitur yang wajib tersedia dalam sistem agar dapat memenuhi tujuan pengembangan. Kebutuhan fungsional dibagi berdasarkan aktor yang menggunakan fitur tersebut.
+a) Kebutuhan Fungsional Karyawan (Aplikasi Mobile)  
+NoKodeNama FiturDeskripsi1KF-01Login KaryawanKaryawan dapat masuk ke aplikasi menggunakan username dan password yang telah didaftarkan oleh admin. Token autentikasi disimpan secara lokal menggunakan Laravel Sanctum.2KF-02Absensi Masuk (Clock-In) dengan Geolocation dan Face RecognitionKaryawan dapat melakukan absen masuk yang divalidasi melalui dua tahap: (1) validasi lokasi GPS menggunakan geofence Haversine, dan (2) verifikasi wajah menggunakan MTCNN dan FaceNet melalui microservice Python FastAPI disertai liveness check dasar.3KF-03Absensi Pulang (Clock-Out)Karyawan dapat melakukan absen pulang yang divalidasi lokasi GPS. Jam pulang disimpan sebagai waktu server resmi ke tabel absensi.4KF-04Riwayat KehadiranKaryawan dapat melihat histori kehadiran bulanan termasuk jam masuk, jam pulang, dan status kehadiran (hadir, terlambat, izin).5KF-05Pengajuan IzinKaryawan dapat mengajukan permohonan izin tidak hadir disertai tanggal dan alasan. Status izin ditampilkan secara real-time (pending, approved, rejected).6KF-06Profil KaryawanKaryawan dapat melihat data profil pribadi termasuk nama, NIK, jabatan, tanggal bergabung, dan status aktif.7KF-07Registrasi Wajah (Face Enrollment)Karyawan baru wajib melakukan registrasi wajah saat pertama kali login agar dapat menggunakan fitur verifikasi wajah saat absensi.Tabel 3.1 Kebutuhan Fungsional Karyawan (Aplikasi Mobile) 
+
+
+b) Kebutuhan Fungsional Administrator (Dashboard Web)
+NoKodeNama FiturDeskripsi1AF-01Login AdminAdmin dapat mengakses dashboard web menggunakan username dan password dengan role admin.2AF-02Dashboard MonitoringAdmin dapat memantau ringkasan operasional harian: jumlah karyawan aktif, hadir hari ini, terlambat, belum absen, izin pending, dan ringkasan pengeluaran gaji.3AF-03Manajemen Karyawan (CRUD)Admin dapat menambah, mengubah, menonaktifkan, dan mengelola data karyawan termasuk tarif gaji harian, jabatan, dan penugasan lokasi kerja.4AF-04Registrasi & Kelola Wajah KaryawanAdmin dapat memfasilitasi atau me-reset data wajah karyawan melalui dashboard web, termasuk melihat status ketersediaan data wajah setiap karyawan.5AF-05Manajemen Lokasi & GeofenceAdmin dapat mengatur titik koordinat geofence, radius absensi (default 50 m), dan status aktif lokasi kerja.6AF-06Monitor Absensi Real-TimeAdmin dapat memantau data absensi harian seluruh karyawan secara langsung, termasuk status kehadiran, jam masuk/pulang, koordinat GPS, dan hasil verifikasi wajah.7AF-07Approval Pengajuan IzinAdmin dapat meninjau daftar pengajuan izin karyawan dan melakukan persetujuan (approved) atau penolakan (rejected).8AF-08Manajemen BonusAdmin dapat menambahkan bonus fleksibel per karyawan per periode (bonus kerajinan, lembur, dll.) yang terintegrasi otomatis dengan perhitungan payroll.9AF-09Rekapitulasi Penggajian (Payroll)Admin dapat menghitung total honorarium per karyawan per periode berdasarkan rumus: Total Gaji = (Total Hadir x Tarif Harian) + Total Bonus.10AF-1Audit Log Verifikasi WajahAdmin dapat melihat riwayat hasil verifikasi wajah setiap karyawan saat absensi, termasuk nilai similarity score dan timestamp verifikasi.Tabel 3.2 Kebutuhan Fungsional Administrator (Dashboard Web)
+C. Kebutuhan Non-Fungsional
+  Kebutuhan non-fungsional mendeskripsikan kualitas dan batasan sistem yang harus dipenuhi agar sistem dapat berfungsi secara optimal. Berikut adalah kebutuhan non-fungsional yang ditetapkan:
+NoKodeKategoriDeskripsi1NF-01KeamananSeluruh komunikasi antara client dan server menggunakan HTTPS. Autentikasi menggunakan 
+token Bearer (Laravel Sanctum). Password disimpan dengan enkripsi bcrypt. Validasi GPS dan face recognition dilakukan di sisi server untuk mencegah manipulasi.2NF-02PerformaProses verifikasi wajah melalui microservice FastAPI diselesaikan dalam waktu kurang dari 3 detik. Respons API untuk absensi normal kurang dari 2 detik.3NF-03KetersediaanSistem tersedia selama jam operasional kafe 
+(minimal 07.00-23.00 WIB). Mode offline pada 
+mobile memastikan absensi tetap dapat dilakukan meskipun koneksi terputus sementara.4NF-04SkalabilitasSistem dirancang untuk single-tenant (1 kafe, 32 karyawan) dengan arsitektur yang memungkinkan pengembangan multi-tenant pada iterasi berikutnya.5NF-05Kemudahan PenggunaanAntarmuka aplikasi mobile dirancang sederhana dan intuitif sehingga dapat dioperasikan oleh 
+karyawan paruh waktu tanpa pelatihan teknis khusus.6NF-06KompatibilitasAplikasi mobile dioptimalkan untuk Android 
+(minimum API level 21/Android 5.0). Dashboard web dapat diakses dari browser modern (Chrome, Firefox, Edge).Tabel 3.3 Kebutuhan Non-Fungsional Sistem
+
+
+
+
+
+
+3.2 Use Case Diagram
+   Perancangan diagram UML (Unified Modeling Language) digunakan untuk menggambarkan interaksi dan fungsionalitas sistem secara visual menggunakan notasi standar internasional. Pada sistem ini digunakan Use Case Diagram sebagai representasi UML untuk menggambarkan interaksi antara aktor (Karyawan dan Administrator) dengan seluruh use case yang tersedia dalam sistem. Penggunaan 
+   Use Case Diagram dipilih karena mampu memberikan gambaran tingkat tinggi yang mudah dipahami oleh seluruh pemangku kepentingan, sekaligus menjadi acuan utama dalam mendefinisikan ruang lingkup fungsionalitas sistem yang dikembangkan.
+
+
+      Use Case Diagram pada Gambar 3.1 menggambarkan interaksi antara dua aktor utama sistem, yaitu Karyawan dan Administrator, dengan seluruh fungsionalitas yang tersedia dalam Sistem Informasi Absensi dan Penggajian Karyawan Berbasis Mobile Menggunakan Geolocation dan Face Recognition pada Kafe Satu Per Dua Kopitiam. Aktor Karyawan mengakses sistem melalui aplikasi mobile Android dan dapat menggunakan fitur login, melakukan absen masuk, absen pulang, melihat riwayat kehadiran, mengajukan izin, melakukan registrasi wajah saat pertama kali terdaftar, serta menjalankan liveness check sebagai bagian dari proses verifikasi wajah. Aktor Administrator mengakses sistem melalui dashboard web dan memiliki kewenangan penuh terhadap seluruh fitur pengelolaan sistem, meliputi login, memantau absensi secara real-time, manajemen data karyawan, konfigurasi lokasi dan geofence, persetujuan pengajuan izin, manajemen bonus, rekapitulasi penggajian, serta melihat audit log hasil verifikasi wajah. Terdapat dua jenis relasi tambahan pada diagram ini. Pertama adalah relasi <<include>> yang menandakan bahwa sebuah use case selalu memanggil use case lain setiap kali dijalankan. Use case Absen Masuk selalu memanggil Validasi Lokasi GPS dan Verifikasi Wajah karena kedua validasi tersebut merupakan syarat wajib sebelum data absensi dapat disimpan ke dalam sistem. Use case Verifikasi Wajah selalu memanggil Liveness Check untuk memastikan bahwa wajah yang diverifikasi adalah wajah manusia nyata dan bukan foto statis. Use case Absen Pulang selalu memanggil Validasi Lokasi GPS karena validasi geofence tetap diperlukan saat karyawan melakukan clock-out. Kedua adalah relasi <<extend>> yang menandakan bahwa sebuah use case dapat memperluas use case lain secara opsional, yaitu hanya terjadi pada kondisi tertentu. 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3.3 Arsitektur Diagram
+    Arsitektur aplikasi absensi dan penggajian karyawan pada penelitian ini dirancang menggunakan pendekatan client-server yang terdiri atas tiga komponen utama, yaitu aplikasi mobile Android, backend web service, dan microservice face recognition. Aplikasi mobile Android dikembangkan menggunakan Flutter dan digunakan oleh karyawan untuk melakukan login, absensi masuk, absensi pulang, registrasi wajah, melihat riwayat kehadiran, serta mengajukan izin. Pada sisi administrator, sistem menyediakan dashboard berbasis web yang dikembangkan menggunakan Laravel untuk mengelola data karyawan, memantau absensi, memproses pengajuan izin, dan melakukan rekapitulasi penggajian.
+    Backend utama aplikasi dikembangkan menggunakan Laravel yang berperan sebagai pusat logika bisnis, pengelolaan data, autentikasi pengguna, pengelolaan absensi, serta perhitungan penggajian. Dalam proses absensi, backend Laravel menerima data lokasi dan foto selfie dari aplikasi mobile, kemudian meneruskan foto tersebut ke microservice face recognition berbasis Python FastAPI untuk dilakukan proses verifikasi identitas.
+    Microservice Python FastAPI digunakan secara khusus untuk menangani proses face recognition. Pada tahap ini, MTCNN digunakan untuk mendeteksi dan melakukan alignment wajah dari foto selfie yang diterima. Selanjutnya, FaceNet digunakan untuk mengekstraksi wajah menjadi embedding vector. Embedding hasil absensi kemudian dibandingkan dengan embedding wajah referensi karyawan yang telah tersimpan sebelumnya menggunakan cosine similarity. Hasil perbandingan tersebut dikembalikan ke backend Laravel dalam bentuk status verifikasi dan nilai similarity score untuk menjadi dasar validasi absensi.
+    Aplikasi juga menerapkan validasi lokasi berbasis geolocation pada proses absensi. Koordinat GPS yang dikirim dari aplikasi mobile diperiksa oleh backend Laravel terhadap titik lokasi kerja yang telah ditentukan menggunakan radius geofence tertentu. Dengan kombinasi validasi lokasi dan verifikasi wajah, aplikasi diharapkan dapat meminimalkan praktik titip presensi dan meningkatkan akurasi data kehadiran karyawan.
+    
+    Seluruh data aplikasi disimpan pada basis data MySQL yang mencakup data pengguna, data karyawan, data absensi, data izin, data penggajian, serta data embedding wajah. Dengan rancangan ini, aplikasi dapat mendukung proses absensi dan penggajian secara terintegrasi, terpusat, dan lebih efisien dibandingkan proses manual yang berjalan sebelumnya.
+    
+    
+	
+Gambar 3.2 menunjukkan arsitektur sistem yang dirancang menggunakan pendekatan tiga lapis (3 Layer Architecture) yang memisahkan tanggung jawab antara tampilan, logika bisnis, dan penyimpanan data. Setiap layer berkomunikasi dengan layer lainnya melalui protokol yang telah ditentukan sehingga sistem dapat berjalan secara terstruktur, terpisah, dan mudah dipelihara.
+a) Layer 1 Presentation Layer (Client Side) merupakan lapisan antarmuka yang berinteraksi langsung dengan pengguna sistem. Layer ini terdiri dari tiga komponen utama. Pertama, Aplikasi Mobile Android yang dibangun menggunakan Flutter (Dart) sebagai antarmuka utama karyawan untuk melakukan absensi, pengajuan izin, dan melihat riwayat kehadiran. Kedua, Dashboard Web Admin yang dibangun menggunakan Laravel Blade dan Tailwind CSS sebagai antarmuka administrator untuk memantau absensi, mengelola data karyawan, dan melakukan rekapitulasi penggajian. 
+b) Layer 2 Business Logic Layer (Back Server Laravel) merupakan lapisan inti sistem yang mengelola seluruh logika bisnis. Layer ini terdiri dari tiga komponen. Pertama, Backend & API Gateway yang dibangun menggunakan Laravel (PHP) bertugas mengelola seluruh permintaan dari Layer 1, memproses logika bisnis seperti penggajian otomatis dan manajemen izin, serta menjadi penghubung antara semua komponen sistem. Kedua, Microservice Face Recognition yang dibangun menggunakan Python FastAPI bertugas menerima foto selfie dari backend Laravel, menjalankan proses deteksi wajah menggunakan MTCNN, mengekstrak embedding wajah menggunakan FaceNet, menghitung cosine similarity, dan mengembalikan hasil verifikasi ke backend Laravel. Ketiga, Modul Geolocation yang diimplementasikan di dalam Laravel menggunakan Haversine Formula bertugas memvalidasi koordinat GPS karyawan terhadap radius geofence yang telah dikonfigurasi administrator. Seluruh komponen pada Layer 2 berkomunikasi dengan Layer 3 melalui protokol SQL Query / ORM menggunakan Eloquent ORM bawaan Laravel.
+
+
+   c) Layer 3 Data Layer (Database & Storage MySQL) merupakan lapisan penyimpanan data permanen sistem. Layer ini terdiri dari tiga komponen. Pertama, Basis Data Utama menggunakan MySQL yang menyimpan seluruh data sistem mencakup tabel users, karyawan, lokasi_kerja, absensi, penggajian, bonus, izin dan face_embeddings. Kedua, Penyimpanan Embedding Wajah menggunakan MySQL atau File System Server yang menyimpan vektor embedding wajah hasil ekstraksi FaceNet dalam format JSON serta file foto referensi karyawan. 
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+3.4 Perancangan Basis Data 
+    Perancangan basis data menjelaskan struktur penyimpanan data yang digunakan sistem, meliputi Entity Relationship Diagram (ERD) serta struktur tabel database. Dengan penambahan fitur face recognition, terdapat penambahan satu entitas baru yaitu face_embeddings yang menyimpan data vektor wajah karyawan, serta penambahan beberapa atribut baru pada tabel absensi untuk menyimpan hasil verifikasi wajah.
+A. Entity Relationship Diagram (ERD)
+
+Gambar 3.3 Entity Relationship Diagram (ERD)
+
+      ERD pada Gambar 3.3 menggambarkan hubungan antar entitas yang membentuk struktur basis data Sistem Informasi Absensi dan Penggajian Karyawan Berbasis Mobile pada Kafe Satu Per Dua Kopitiam. Sistem ini terdiri dari sembilan entitas utama, yaitu users, karyawan, lokasi_kerja, absensi, penggajian, bonus, izin dan face_embeddings. 
+a) Entitas users merupakan entitas inti untuk autentikasi yang menyimpan data akun seluruh pengguna sistem, baik karyawan maupun administrator. Atribut role dengan nilai admin atau karyawan membedakan hak akses antara dua jenis pengguna tersebut. Entitas users berelasi satu ke satu (1:1) dengan entitas karyawan melalui atribut user_id, yang berarti setiap akun karyawan memiliki tepat satu data karyawan yang berkaitan. Selain itu, entitas users juga berelasi satu ke banyak (1:N) dengan entitas izin melalui atribut diproses_oleh, yang mencatat administrator mana yang memproses setiap pengajuan izin, serta berelasi 1:N dengan entitas notifikasi_config melalui atribut updated_by untuk mencatat administrator yang mengatur konfigurasi reminder.
+b) Entitas karyawan merupakan entitas sentral dalam sistem karena hampir seluruh proses bisnis utama berpusat padanya. Entitas ini menyimpan data profil karyawan seperti NIK, jabatan, tarif gaji harian, dan status keaktifan. Entitas karyawan berelasi banyak ke satu (N:1) dengan entitas lokasi_kerja melalui atribut lokasi_kerja_id, yang menandakan bahwa setiap karyawan ditugaskan pada satu lokasi kerja tertentu. Sementara itu, entitas lokasi_kerja menyimpan koordinat geografis geofence beserta radius absensi yang dikonfigurasi oleh administrator.
+c) Entitas absensi menyimpan seluruh data kehadiran karyawan, termasuk jam masuk, jam pulang, koordinat GPS saat absensi, dan hasil verifikasi wajah. Tiga atribut baru ditambahkan untuk mendukung fitur face recognition, yaitu face_verified yang menyimpan status keberhasilan verifikasi, face_similarity_score yang menyimpan nilai cosine similarity hasil FaceNet, dan face_image_path yang menyimpan path foto selfie untuk keperluan audit. Entitas ini berelasi N:1 dengan entitas karyawan melalui atribut karyawan_id.
+d) Entitas face_embeddings merupakan entitas baru yang ditambahkan untuk mendukung fitur face recognition. Entitas ini menyimpan vektor embedding wajah karyawan hasil ekstraksi model FaceNet dalam format JSON berdimensi 128 atau 512. Relasi antara face_embeddings dan karyawan bersifat satu ke satu (1:1) karena setiap karyawan hanya memiliki satu data embedding wajah yang aktif pada satu waktu. Atribut is_aktif memungkinkan administrator untuk menonaktifkan embedding lama dan meminta karyawan melakukan registrasi ulang jika diperlukan.
+e) Entitas penggajian menyimpan hasil rekapitulasi honorarium per karyawan per periode, termasuk total hari hadir, tarif harian yang berlaku, total honorarium, akumulasi bonus, dan total gaji akhir. Rumus perhitungan yang tercermin pada struktur tabel ini adalah Total Gaji = (Total Hadir × Tarif Harian) + Total Bonus. Entitas bonus menyimpan data bonus fleksibel yang ditambahkan administrator per karyawan per periode, dan nilainya akan secara otomatis diakumulasi ke dalam perhitungan penggajian. Kedua entitas ini berelasi N:1 dengan entitas karyawan.
+f) Entitas izin menyimpan data pengajuan izin tidak hadir dari karyawan, termasuk tanggal izin, alasan, dan status persetujuan. Atribut status menggunakan nilai pending, approved, atau rejected untuk merepresentasikan alur persetujuan izin. Entitas ini memiliki dua relasi foreign key, yaitu ke entitas karyawan sebagai pengaju izin dan ke entitas users sebagai administrator yang memprosesnya.
+
+
+
+
+
+
+
+
+
+
+B. Struktur Tabel
+      Berikut adalah rancangan struktur tabel database yang akan digunakan dalam sistem:
+
+Tabel 3.4 Struktur Tabel users
+NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2nameVARCHAR100Nama lengkap pengguna3usernameVARCHAR50Username unik untuk login (UNIQUE)4emailVARCHAR100Email pengguna (UNIQUE)5passwordVARCHAR255Kata sandi terenkripsi (bcrypt)6roleENUM-Peran: 'admin' atau 'karyawan'7statusENUM-Status akun: 'aktif' atau 'nonaktif'8created_atTIMESTAMP-Waktu pembuatan akun9updated_atTIMESTAMP-Waktu pembaruan akun
+
+
+
+
+
+
+
+Tabel 3 5 Struktur Tabel karyawan
+NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2user_idBIGINT UNSIGNED11Foreign Key ? users.id3nikVARCHAR20Nomor Induk Karyawan (UNIQUE)4nama_lengkapVARCHAR100Nama lengkap karyawan5jabatanVARCHAR100Jabatan atau posisi kerja6lokasi_kerja_idBIGINT UNSIGNED11Foreign Key ? lokasi_kerja.id7tarif_gaji_harianDECIMAL10,2Tarif gaji per hari (Rupiah)8tgl_bergabungDATE-Tanggal mulai bergabung sebagai karyawan9statusENUM-Status: 'aktif' atau 'nonaktif'10created_atTIMESTAMP-Waktu data dibuat11updated_atTIMESTAMP-Waktu data diperbarui
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Tabel 3.6 Struktur Tabel lokasi_kerja
+NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2nama_lokasiVARCHAR100Nama lokasi kerja3latitudeDECIMAL10,8Koordinat garis lintang titik geofence4longitudeDECIMAL11,8Koordinat garis bujur titik geofence5radius_meterINT11Radius geofence dalam meter (default: 50)6is_aktifBOOLEAN-Status aktif lokasi kerja7created_atTIMESTAMP-Waktu data dibuat8updated_atTIMESTAMP-Waktu data diperbarui
+
+
+Tabel 3.7 Struktur Tabel absensi
+NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED11Foreign Key ? karyawan.id3tanggalDATE-Tanggal kehadiran4jam_masukTIME-Jam clock-in karyawan (waktu server)5jam_pulangTIME-Jam clock-out karyawan (waktu server)6lat_masukDECIMAL10,8Koordinat latitude saat masuk7lng_masukDECIMAL11,8Koordinat longitude saat masuk8lat_pulangDECIMAL10,8Koordinat latitude saat pulang9lng_pulangDECIMAL11,8Koordinat longitude saat pulang10status_kehadiranENUM-Status: 'hadir', 'terlambat', 'izin'11face_verifiedBOOLEAN-[BARU] Status verifikasi wajah: TRUE jika wajah terverifikasi, FALSE jika gagal atau tidak digunakan12face_similarity_scoreDECIMAL5,4[BARU] Nilai cosine similarity hasil FaceNet (0.0000-1.0000). Disimpan untuk keperluan audit oleh admin13face_image_pathVARCHAR255[BARU] Path file foto selfie yang diambil saat absensi, disimpan di storage server untuk keperluan audit14keteranganTEXT-Catatan tambahan (opsional)15is_syncedBOOLEAN-Menandakan data sudah tersinkron dari mode offline ke server16created_atTIMESTAMP-Waktu data dibuat (waktu server)17updated_atTIMESTAMP-Waktu data diperbarui
+
+
+
+
+
+
+
+
+
+Tabel 3.8 Struktur Tabel penggajian
+NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED11Foreign Key ? karyawan.id3periode_bulanTINYINT2Bulan periode penggajian (1-12)4periode_tahunSMALLINT4Tahun periode penggajian5total_hadirINT11Total hari kehadiran tervalidasi pada periode6tarif_harianDECIMAL10,2Tarif harian yang berlaku saat rekapitulasi7total_honorariumDECIMAL12,2Total honorarium = total_hadir × tarif_harian8total_bonusDECIMAL12,2Akumulasi bonus dari tabel bonus pada periode yang sama9total_gajiDECIMAL12,2Total gaji akhir = total_honorarium + total_bonus10status_bayarENUM-Status pembayaran: 'belum_dibayar' atau 'sudah_dibayar'11tanggal_bayarDATE-Tanggal pembayaran honorarium (diisi setelah pembayaran)12created_atTIMESTAMP-Waktu data dibuat13updated_atTIMESTAMP-Waktu data diperbarui
+
+
+
+
+
+
+Tabel 3.9 Struktur Tabel bonus
+NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED-Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED-Foreign Key ? karyawan.id3periode_bulanTINYINT2Bulan periode bonus (nilai 1-12)4periode_tahunSMALLINT4Tahun periode bonus5nominalDECIMAL12,2Jumlah nominal bonus dalam Rupiah6keteranganTEXT-Keterangan jenis bonus (contoh: bonus kerajinan, lembur)7created_atTIMESTAMP-Waktu data dibuat8updated_atTIMESTAMP-Waktu data diperbarui
+Tabel 3.10 Struktur Tabel izin
+NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED-Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED-Foreign Key ? karyawan.id3tanggalDATE-Tanggal izin yang diajukan4alasanTEXT-Alasan pengajuan izin dari karyawan5statusENUM-Status izin: 'pending', 'approved', 'rejected'6diproses_olehBIGINT UNSIGNED-Foreign Key ? users.id (admin yang memproses)7created_atTIMESTAMP-Waktu data dibuat8updated_atTIMESTAMP-Waktu data diperbarui
+
+Tabel 3.11 Struktur Tabel face_embeddings
+NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED11Foreign Key ? karyawan.id (UNIQUE, satu karyawan satu embedding)3embedding_vectorJSON-Array vektor 128-dimensi atau 512-dimensi hasil ekstraksi FaceNet. Disimpan dalam format JSON (contoh: [0.234, -0.112, ...])4foto_referensi_pathVARCHAR255Path file foto referensi yang digunakan saat proses face enrollment untuk keperluan verifikasi ulang jika diperlukan5tgl_registrasiDATE-Tanggal wajah karyawan pertama kali diregistrasi ke dalam sistem6is_aktifBOOLEAN-Status aktif embedding. Dapat dinonaktifkan oleh admin untuk me-reset data wajah karyawan7created_atTIMESTAMP-Waktu data dibuat8updated_atTIMESTAMP-Waktu data diperbarui (saat enrollment ulang)
+
+
+
+
+
+
+3.5 Perancangan Antarmuka (UI/UX) 
+   Perancangan antarmuka (UI/UX) dilakukan untuk memastikan aplikasi mobile yang digunakan oleh karyawan Kafe Satu Per Dua Kopitiam memiliki tampilan yang sederhana, mudah dipahami, dan sesuai dengan kebutuhan operasional absensi berbasis geolocation. Pada tahap ini, perancangan dilakukan dalam bentuk wireframe low-fidelity menggunakan Figma sebagai acuan awal sebelum masuk ke tahap implementasi menggunakan Flutter. Wireframe disusun berdasarkan kebutuhan fungsional yang telah dianalisis pada subbab sebelumnya serta disesuaikan dengan struktur data pada ERD, khususnya entitas `users`, `karyawan`, `lokasi_kerja`, `absensi`, dan `izin`.
+   Perancangan antarmuka aplikasi mobile difokuskan pada alur utama karyawan, yaitu login ke sistem, melihat status absensi hari ini, melakukan absensi masuk dan pulang berdasarkan validasi lokasi, melihat riwayat kehadiran, mengajukan izin, serta melihat profil pribadi. Pada rancangan mobile ini, informasi penggajian tidak ditampilkan karena sesuai kebutuhan sistem dan ERD, data penggajian dikelola pada sisi administrator melalui dashboard web.
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+a. Wireframe Halaman Login Karyawan 
+
+Gambar 3.4 Wireframe Halaman Login Karyawan
+
+      Halaman login karyawan dirancang sebagai pintu masuk utama ke dalam aplikasi mobile. Pada halaman ini, karyawan melakukan autentikasi menggunakan `ID Karyawan / Username` dan `Password` yang telah didaftarkan oleh admin. Rancangan ini telah sesuai dengan entitas `users`, khususnya atribut `username`, `password`, `role`, dan `status`. Struktur tampilan dibuat sederhana agar memudahkan karyawan dalam mengakses aplikasi tanpa langkah yang berlebihan. Keberadaan logo dan nama sistem juga berfungsi sebagai identitas aplikasi agar pengguna memahami bahwa halaman tersebut merupakan bagian dari sistem absensi Kafe Satu Per Dua Kopitiam.
+      
+      
+      
+
+b. Wireframe Halaman Beranda Karyawan
+
+Gambar 3.5 Wireframe Halaman Beranda Karyawan
+
+      Halaman beranda karyawan berfungsi sebagai pusat informasi utama setelah proses login berhasil dilakukan. Pada halaman ini ditampilkan beberapa komponen penting, yaitu `Status Absensi Hari Ini`, `Lokasi Tervalidasi`, `Status Sinkronisasi`, `Pengajuan Izin`, dan `Aktivitas Terbaru`. Komponen `Status Absensi Hari Ini` dirancang untuk menampilkan ringkasan kondisi absensi karyawan pada hari berjalan berdasarkan data dari entitas `absensi`. Komponen `Lokasi Tervalidasi` merepresentasikan hasil validasi terhadap entitas `lokasi_kerja`, khususnya data `nama_lokasi` dan `radius_meter`. Sementara itu, `Status Sinkronisasi` berkaitan dengan atribut `is_synced` pada data absensi untuk menunjukkan apakah data sudah berhasil tersimpan ke server atau masih menunggu sinkronisasi. Tombol `Pengajuan Izin` juga disediakan sebagai jalur cepat menuju fitur pengajuan izin kerja.
+c. Wireframe Halaman Absensi Karyawan
+
+Gambar 3.6 Wireframe Halaman Absensi Karyawan
+      Halaman absensi karyawan dirancang untuk mendukung proses absensi masuk dan absensi pulang berbasis geolocation. Pada bagian atas halaman ditampilkan `Peta Lokasi Kerja` yang merepresentasikan area geofence dari lokasi kerja aktif. Bagian `Informasi Lokasi` digunakan untuk menampilkan detail lokasi kerja yang diambil dari entitas `lokasi_kerja`, seperti `nama_lokasi`, `latitude`, `longitude`, dan `radius_meter`. Selanjutnya, bagian `Status Absensi Hari Ini` digunakan untuk menampilkan ringkasan absensi yang telah dilakukan pada hari tersebut, misalnya apakah karyawan sudah melakukan absen masuk atau belum melakukan absen pulang. Tombol `Absen Masuk` dan `Absen Pulang` menjadi aksi utama yang akan mengirimkan data ke entitas `absensi`, termasuk `tanggal`, `jam_masuk`, `jam_pulang`, koordinat lokasi, serta `status_kehadiran`. Selain itu, bagian `Status Sinkronisasi` dan `Peringatan` disediakan untuk memberi informasi apabila data absensi tersimpan secara offline atau apabila lokasi karyawan berada di luar radius geofence yang telah ditentukan.
+d. Wireframe Halaman Riwayat Kehadiran Karyawan
+
+Gambar 3.7 Wireframe Halaman Riwayat Kehadiran Karyawan
+
+
+      Halaman riwayat kehadiran dirancang untuk memberikan transparansi data kehadiran kepada karyawan. Pada halaman ini, karyawan dapat memilih bulan tertentu melalui komponen `Pilih Bulan`, kemudian menampilkan data yang relevan melalui tombol `Tampilkan`. Bagian `Ringkasan Bulan Ini` digunakan untuk memberikan gambaran umum jumlah kehadiran, keterlambatan, maupun izin pada periode yang dipilih. Selanjutnya, bagian `Histori Kehadiran` menampilkan data absensi secara lebih rinci berdasarkan entitas `absensi`, seperti `tanggal`, `jam_masuk`, `jam_pulang`, dan `status_kehadiran`. Fitur ini penting karena salah satu permasalahan yang ditemukan pada kondisi berjalan adalah karyawan tidak dapat memverifikasi riwayat kehadirannya sendiri, sehingga halaman ini dirancang untuk meningkatkan transparansi dan mengurangi potensi komplain terkait data hadir.
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+e. Wireframe Halaman Pengajuan Izin
+
+Gambar 3.8 Wireframe Halaman Pengajuan Izin Karyawan
+      Halaman pengajuan izin dirancang untuk memfasilitasi karyawan dalam menyampaikan izin tidak masuk kerja secara langsung melalui aplikasi mobile. Formulir pada halaman ini terdiri dari `Tanggal Izin` dan `Alasan Izin`, yang disesuaikan dengan atribut pada entitas `izin`, yaitu `tanggal` dan `alasan`. Tombol `Kirim` digunakan untuk menyimpan data pengajuan izin ke dalam sistem dengan status awal `pending`. Bagian `Riwayat Izin` di bagian bawah halaman berfungsi untuk menampilkan daftar pengajuan izin yang pernah dibuat oleh karyawan beserta statusnya, seperti `pending`, `approved`, atau `rejected`. Dengan adanya halaman ini, proses penyampaian izin menjadi lebih terstruktur, terdokumentasi, dan dapat ditinjau kembali oleh admin melalui dashboard web.
+f. Wireframe Halaman Profil Karyawan
+
+Gambar 3.9 Wireframe Halaman Profil Karyawan
+      Halaman profil karyawan digunakan untuk menampilkan identitas dasar pengguna yang sedang login. Informasi yang ditampilkan meliputi `Nama Karyawan`, `ID Karyawan`, `Jabatan`, `Tanggal Bergabung`, dan `Status Aktif`. Data tersebut sesuai dengan entitas `karyawan`, khususnya atribut `nama_lengkap`, `nik` atau identitas karyawan, `jabatan`, `tgl_bergabung`, dan `status`. Selain itu, halaman ini juga menyediakan tombol `Logout` yang berfungsi untuk mengakhiri sesi pengguna dan mengembalikan aplikasi ke halaman login. Pada rancangan ini tidak ditampilkan informasi nominal gaji atau tarif harian karena data tersebut berada pada entitas `penggajian` dan dikelola pada sisi administrator.
+g. Wireframe Halaman Login Admin
+
+Gambar 3.10 Wireframe Halaman Login Admin
+      Halaman login admin dirancang sebagai gerbang utama untuk mengakses dash-board web administrator. Pada halaman ini, admin melakukan autentikasi menggunakan username dan password sesuai data pada entitas users dengan role admin. Struktur halaman dibuat sederhana dengan komponen logo, identitas sis-tem, field username, field password, dan tombol login. Rancangan ini bertujuan untuk memastikan bahwa hanya pengguna yang berwenang yang dapat mengakses fitur monitoring absensi, pengelolaan data karyawan, penggajian, laporan, dan konfigurasi sistem.
+      
+      
+      
+      
+      
+      
+h. Wireframe Halaman Dashboard Admin
+
+Gambar 3.11 Wireframe Halaman Dashboard Admin
+      Halaman dashboard admin dirancang sebagai pusat kendali utama bagi adminis-trator dalam memantau aktivitas sistem secara ringkas. Komponen utama pada halaman ini meliputi ringkasan jumlah karyawan aktif, hadir hari ini, terlambat, belum absen, pending izin, serta ringkasan pengeluaran. Struktur ini telah sesuai dengan kebutuhan fungsional sistem pada sisi admin karena dashboard harus mampu menampilkan informasi operasional secara cepat dan terpusat. Selain itu, sidebar navigasi pada halaman dashboard juga merepresentasikan keterhubungan antar modul utama seperti monitoring absensi, manajemen karyawan, lokasi kerja, approval izin, bonus.
+      Pada perancangan dashboard web administrator, tidak seluruh halaman navigasi ditampilkan dalam bentuk wireframe terpisah di dalam proposal ini, karena struktur navigasinya telah diwakili oleh sidebar pada halaman dashboard admin. Meskipun demikian, setiap menu pada navigasi tetap dirancang sesuai dengan kebutuhan sistem yang telah dianalisis sebelumnya.
+      
+      Menu Monitor Absensi digunakan untuk menampilkan data absensi harian seluruh karyawan secara real-time, termasuk status kehadiran, waktu masuk, waktu pulang, dan status sinkronisasi data. Menu Manajemen Karyawan digunakan un-tuk mengelola data karyawan berdasarkan entitas karyawan, seperti nama lengkap, jabatan, lokasi kerja, tarif gaji harian, tanggal bergabung, dan status aktif. Menu Lokasi Kerja digunakan untuk mengatur titik geofence, radius absensi, dan status lokasi aktif sesuai entitas lokasi_kerja.
+      Menu Approval Izin digunakan untuk meninjau pengajuan izin karyawan ber-dasarkan entitas izin, termasuk tanggal izin, alasan, status, dan admin yang memproses. Menu Manajemen Bonus digunakan untuk mengelola bonus fleksibel per karyawan per periode berdasarkan entitas bonus. Menu Rekap Payroll digunakan untuk menghitung hasil penggajian berdasarkan entitas penggajian, yang mencakup total hadir, tarif harian, total honorarium, total bonus, total gaji, status bayar, dan tanggal bayar. 
+3.6 Spesifikasi Teknologi
+   Spesifikasi teknologi menjelaskan seluruh teknologi, framework, bahasa pemrograman, dan alat bantu yang digunakan dalam pengembangan Sistem Informasi Absensi dan Penggajian Karyawan Berbasis Mobile Menggunakan Geolocation pada Kafe Satu Per Dua Kopitiam Pontianak.
+   
+Tabel 3.13 Spesifikasi Teknologi yang Digunakan
+NoKategoriTeknologi / ToolsFungsi dalam Sistem1Bahasa PemrogramanDartPengembangan aplikasi mobile Flutter untuk Android.2Bahasa PemrogramanPHP 8.xPengembangan backend dan dashboard web menggunakan Laravel.3Bahasa PemrogramanPython 3.10+[BARU] Pengembangan microservice face recognition menggunakan FastAPI.4Bahasa PemrogramanSQLManajemen dan manipulasi data pada basis data MySQL.5Framework MobileFlutter 3.xFramework pengembangan aplikasi mobile Android dengan satu codebase.6Framework BackendLaravel 11.xFramework PHP MVC untuk backend API dan dashboard web admin.7Framework APIFastAPI[BARU] Framework Python ringan dan performa tinggi untuk microservice face recognition.8Library Face DetectionMTCNN[BARU] Library Python untuk mendeteksi dan mengekstrak area wajah dari foto selfie.9Library Face RecognitionFaceNet (Keras)[BARU] Library Python untuk mengekstrak embedding vektor wajah dan menghitung cosine similarity.10Autentikasi APILaravel SanctumToken-based authentication untuk mobile dan web client.11Basis DataMySQL 8.xPenyimpanan data permanen seluruh entitas sistem.12Dev EnvironmentLaragonDevelopment environment lokal (Apache, PHP, MySQL).13Code EditorVisual Studio CodeEditor utama pengembangan backend Laravel, Dart Flutter, dan Python FastAPI.14Desain UIFigmaPerancangan wireframe dan mockup antarmuka mobile dan web.15Version ControlGit & GitHubManajemen kode sumber dan kolaborasi pengembangan.16UML Diagramdraw.io / StarUMLPembuatan diagram UML (Use Case, Activity, Sequence, Class Diagram) dan ERD.
+3.7 Rencana Pengujian
+   Rencana pengujian menjelaskan metode dan skenario pengujian yang akan diterapkan untuk memastikan seluruh fungsionalitas dan kualitas sistem berjalan sesuai dengan kebutuhan yang telah ditetapkan.
+
+A. Jenis Pengujian:
+1. Black Box Testing: Pengujian fungsional yang dilakukan dengan cara menguji setiap fitur sistem dari perspektif pengguna, tanpa memeriksa logika internal kode. Metode ini digunakan untuk memverifikasi bahwa input yang diberikan menghasilkan output yang sesuai dengan spesifikasi.
+2. Pengujian Integrasi API: Pengujian yang dilakukan untuk memverifikasi bahwa komunikasi antara aplikasi mobile Flutter dan backend Laravel melalui RESTful API berjalan dengan benar, termasuk pengiriman dan penerimaan data absensi.
+3. Pengujian Akurasi Face Recognition: Pengujian tingkat keberhasilan verifikasi wajah menggunakan sampel foto karyawan yang terdaftar dan foto yang tidak terdaftar untuk memastikan threshold cosine similarity yang digunakan memberikan hasil yang akurat.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+B. Skenario Pengujian:
+   Berikut adalah skenario pengujian Black Box Testing untuk fitur-fitur utama sistem:
+Tabel 3.14 Skenario Pengujian Fitur Autentikasi dan Absensi Mobile
+NoSkenario PengujianInputHasil yang DiharapkanStatus1Login dengan kredensial validID & password benarKaryawan berhasil masuk ke halaman utamaBelum diuji2Login dengan kredensial tidak validID atau password salahSistem menampilkan pesan kesalahanBelum diuji3Absen masuk dalam radius geofence + wajah terverifikasiGPS dalam radius 50m; foto wajah terdaftar; liveness check lolosData absen tersimpan; face_verified = TRUE; similarity score tercatatBelum diuji4Absen masuk di luar radius geofenceGPS di luar radius 50mProses absensi dihentikan; pesan Lokasi tidak valid ditampilkanBelum diuji5Absen masuk dalam radius namun wajah tidak dikenaliGPS valid; foto wajah berbeda/tidak terdaftarProses absensi ditolak; pesan Wajah tidak dikenali ditampilkan; face_verified = FALSEBelum diuji6Liveness check gagalFoto statis / foto dari layarProses verifikasi dihentikan sebelum mencapai FastAPI; pesan Verifikasi hidup gagalBelum diuji7Absen pulang setelah absen masukKaryawan sudah absen masuk; GPS validData jam pulang tersimpan; status kehadiran diperbaruiBelum diuji8Melihat riwayat kehadiranKaryawan membuka halaman riwayatDaftar riwayat absensi dengan data lengkap termasuk status face_verified ditampilkanBelum diuji9Karyawan mengajukan izinInput tanggal dan alasan izinData izin tersimpan dengan status pending; notifikasi dikirim ke adminBelum diuji
+Tabel 3.15 Skenario Pengujian Fitur Dashboard Web Administrator
+NoSkenario PengujianInputHasil yang DiharapkanStatus1Tambah data karyawan baruData lengkap termasuk tarif harianData karyawan tersimpan di tabel karyawanBelum diuji2Registrasi wajah karyawan (face enrollment)Admin memfasilitasi pengambilan foto karyawan baruEmbedding wajah tersimpan di tabel face_embeddings; status wajah karyawan aktifBelum diuji3Reset data wajah karyawanAdmin menonaktifkan embedding karyawan tertentuis_aktif pada face_embeddings berubah menjadi FALSE; karyawan perlu enrollment ulangBelum diuji4Monitor absensi real-timeAdmin membuka halaman monitoring pada hari aktifData absensi ditampilkan termasuk kolom status verifikasi wajah (face_verified) dan similarity scoreBelum diuji5Audit log verifikasi wajahAdmin membuka menu audit logRiwayat verifikasi wajah setiap karyawan beserta foto selfie dan similarity score ditampilkanBelum diuji6Approve/reject izin karyawanAdmin klik tombol approve/rejectStatus izin berubah; notifikasi dikirim ke karyawan melalui FCMBelum diuji7Rekapitulasi penggajianAdmin memilih periode bulan/tahun dan klik hitungTotal honorarium per karyawan dihitung dan ditampilkan dengan benarBelum diuji
+3.8 Jadwal Penyelesaian Tugas Akhir 
+   Jadwal penyelesaian Tugas Akhir merupakan rencana waktu yang disusun untuk memastikan bahwa setiap tahapan dan pengembangan sistem dapat diselesaikan secara terstruktur dan tepat waktu. Jadwal ini mencakup seluruh aktivitas yang akan dilakukan, mulai dari persiapan hingga penyelesaian laporan akhir. Jadwal penyelesaian Tugas akhir dapat disajikan sesuai Lampiran  1
+
+Lampiran 1 Jadwal Penyelesaian Tugas Akhir
+NOKEGIATANTAHUN 2026DESEMBERJANUARIFEBRUARIMARETAPRILMEIJUNIJULIAGUSTUS1Studi Pustaka dan Penulisan Proposal TA2Revisi dan Seminar Judul3Observasi4Wawancara dan Pengumpulan Data5Analisis dan Desain Sistem6Pembuatan Sistem Program7Pengujian Sistem8Seminar Progress9Penulisan Tugas Akhir10Sidang Tugas Akhir   
+   DAFTAR PUSTAKA
+[1]	D. S. Purnia, A. Rifai, and S. Rahmatullah, "Penerapan Metode Waterfall dalam Perancangan Sistem Informasi Aplikasi Bantuan Sosial Berbasis Android".
+[2]	M. Jannah and I. Nawangsih, "IMPLEMENTASI APLIKASI ABSENSI KARYAWAN MENGGUNAKAN GEOLOCATION," vol. 7, 2023.
+[3]	Rafli Khalis Nugraha and Raissa Amanda Putri, "Aplikasi Presensi Karyawan M-Presence Menggunakan Metode Lock Gps Berbasis Android," Decode J. Pendidik. Teknol. Inf., vol. 4, no. 2, pp. 675-687, Jul. 2024, doi: 10.51454/decode.v4i2.600.
+[4]	J. D. Susatyono, S. Prihatmoko, Y. Fitrianto, and R. A. Ardananta, "Sistem Presensi Karyawan Berbasis Geolocation dan Face Recognition Menggunakan Flutter dan Laravel Filament Pada PT XYZ," J. Ilm. Sist. Inf., vol. 5, no. 1, pp. 242-256, Jan. 2026, doi: 10.51903/twb76574.
+[5]	R. T. Saputra and R. Widayanti, "RANCANG BANGUN APLIKASI MONITORING ABSENSI DAN KEGIATAN KARYAWAN BERBASIS ANDROID PADA PT. PREMIER EQUITY FUTURES MENGGUNAKAN METODE PROTOTYPE," vol. 9, no. 6, 2025.
+[6]	Valentino Lim, "Perancangan Sistem Presensi Online dan Penggajian Karyawan Berbasis Mobile," J. Komput. Teknol. Inf. Sist. Inf. JUKTISI, vol. 4, no. 3, pp. 1669-1679, Dec. 2025, doi: 10.62712/juktisi.v4i3.732.
+[7]	Y. R. Nusantoko and A. Prapanca, "Pengembangan Aplikasi Human Resource Information System Berbasis Mobile Dengan Absensi Wajah Menggunakan Metode CNN Pada BMT Bahtera Pekalongan," vol. 06, 2025.
+[8]	S. Rizkyansah, "ANALISIS DAN PERANCANGAN SISTEM PRESENSI KARYAWAN PT BERKAH UNTUK SEMESTA," vol. 1, no. 1, 2025.
+[9]	J. P. Sitanggang, J. S. Asri, and I. Sutanto, "Rancang Bangun Sistem Absensi Berbasis Mobile Dengan Memanfaatkan Pengenalan Wajah (Studi Kasus : PT. Ginsa Inti Pratama)," J. Sist. Inf., vol. 5, 2025.
+
+
+
+
+   LAMPIRAN
+
+Lampiran 2 Bukti Plagiasi
+
+Lampiran 3 Lembar Kuisoner
+
+
+
+
+
+
+
+Lampiran 4 Lembar Hasil Wawancara
+
+
+
+
+Lampiran 5 Dokumentasi Hasil Kuisoner
+
+
+
+Lampiran 6 Dokumentasi Hasil Wawancara
+
+
+
+
+Lampiran 7 Dokumentasi Kafe Satu Per Dua
+
+
+
+
+
+Lampiran 8 Data Daftar Anggota Satu Per Dua Kopi Tiam
+
+
+Lampiran 9 Data Daftar Absensi Per Bulan Satu Per Dua Kopi Tiam
+
+
+Lampiran 10 Data Daftar Gaji Per Bulan Satu Per Dua Kopi Tiam
+
+Lampiran 11 Rekapan Per Bulan Satu Per Dua Kopi Tiam
+
+
+
+
+
+
+2
+
+
+2
+
+
+
+
+
