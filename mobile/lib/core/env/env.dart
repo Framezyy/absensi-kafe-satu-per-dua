@@ -15,6 +15,6 @@ class Env {
   /// `http://192.168.1.100:8000/api`.
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://172.16.15.106:8000/api',
+    defaultValue: 'http://localhost:8000/api',
   );
 }

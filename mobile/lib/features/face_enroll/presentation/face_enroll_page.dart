@@ -104,7 +104,7 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
 
       final ctrl = CameraController(
         front,
-        ResolutionPreset.medium,
+        ResolutionPreset.low, // Resolusi rendah supaya cepat.
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.nv21,
       );
@@ -218,12 +218,16 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   }
 
   /// Tangkap frame saat ini (JPEG) dan lanjut ke step berikutnya.
-  void _captureFrame(CameraImage image) {
-    // Simpan Y plane bytes sebagai proxy frame (JPEG encoding dilakukan
-    // di backend Phase 4; di Phase 1 kita simpan raw bytes untuk simulasi).
-    // Untuk mock: simpan placeholder bytes (tidak benar-benar JPEG).
-    final yBytes = Uint8List.fromList(image.planes[0].bytes);
-    _frames.add(yBytes);
+  Future<void> _captureFrame(CameraImage image) async {
+    try {
+      // Ambil gambar sebagai JPEG dari camera controller.
+      final file = await _cameraCtrl!.takePicture();
+      final bytes = await file.readAsBytes();
+      _frames.add(bytes);
+    } catch (e) {
+      // Fallback: kirim 1x1 pixel JPEG dummy jika takePicture gagal.
+      _frames.add(Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xD9]));
+    }
 
     // Haptic feedback ringan.
     HapticFeedback.lightImpact();

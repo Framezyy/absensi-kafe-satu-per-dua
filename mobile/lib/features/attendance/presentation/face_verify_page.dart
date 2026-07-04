@@ -99,7 +99,7 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
 
       final ctrl = CameraController(
         front,
-        ResolutionPreset.medium,
+        ResolutionPreset.low,
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.nv21,
       );

@@ -34,7 +34,7 @@ class ApiFaceRepository {
   }) async {
     try {
       final formData = FormData.fromMap({
-        'frames': frames.asMap().entries.map((entry) {
+        'frames[]': frames.asMap().entries.map((entry) {
           return MultipartFile.fromBytes(
             entry.value,
             filename: 'frame_${entry.key}.jpg',

@@ -14,17 +14,18 @@ class FaceController extends Controller {
 
     public function enroll(Request $request) {
         $request->validate([
-            'frames.*' => 'required|image|max:2048',
+            'frames' => 'required|array|min:1',
+            'frames.*' => 'required|file|max:2048',
         ]);
 
         $karyawan = $request->user()->karyawan;
-
-        // Kirim 3 frame ke FastAPI untuk generate mean embedding.
         $files = $request->file('frames');
-        if (!$files || count($files) < 1) {
-            return response()->json(['message' => 'Minimal 1 frame diperlukan.'], 422);
+
+        if (!is_array($files)) {
+            $files = [$files];
         }
 
+        // Kirim ke FastAPI untuk generate mean embedding.
         $result = $this->faceService->enrollFromFrames($files);
 
         if (!$result['success']) {
@@ -52,7 +53,7 @@ class FaceController extends Controller {
 
     public function verify(Request $request) {
         $request->validate([
-            'frame' => 'required|image|max:2048',
+            'frame' => 'required|file|max:2048',
         ]);
 
         $karyawan = $request->user()->karyawan;

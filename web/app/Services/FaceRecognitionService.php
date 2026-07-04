@@ -14,7 +14,7 @@ class FaceRecognitionService {
      * Deteksi wajah dalam gambar.
      */
     public function detect(UploadedFile $file): array {
-        $response = Http::timeout(30)
+        $response = Http::timeout(60)
             ->attach('file', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
             ->post("{$this->baseUrl}/detect");
 
@@ -25,7 +25,7 @@ class FaceRecognitionService {
      * Generate face embedding dari gambar wajah.
      */
     public function embed(UploadedFile $file): array {
-        $response = Http::timeout(30)
+        $response = Http::timeout(60)
             ->attach('file', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
             ->post("{$this->baseUrl}/embed");
 
@@ -36,7 +36,7 @@ class FaceRecognitionService {
      * Verifikasi wajah: bandingkan gambar baru dengan embedding tersimpan.
      */
     public function verify(UploadedFile $file, array $storedEmbedding): array {
-        $response = Http::timeout(30)
+        $response = Http::timeout(60)
             ->attach('file', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
             ->post("{$this->baseUrl}/verify", [
                 'stored_embedding' => json_encode($storedEmbedding),
@@ -53,7 +53,7 @@ class FaceRecognitionService {
 
         foreach ($files as $file) {
             $result = $this->embed($file);
-            if ($result['success'] && isset($result['embedding'])) {
+            if (isset($result['success']) && $result['success'] && isset($result['embedding'])) {
                 $embeddings[] = $result['embedding'];
             }
         }
