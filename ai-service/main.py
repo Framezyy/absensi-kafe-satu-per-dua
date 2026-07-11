@@ -24,7 +24,7 @@ from typing import Optional
 import numpy as np
 import torch
 from facenet_pytorch import MTCNN as FNMTCNN, InceptionResnetV1
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from PIL import Image
 from pydantic import BaseModel
 from scipy.spatial.distance import cosine
@@ -106,10 +106,17 @@ class HealthResponse(BaseModel):
 # ─── Helper Functions ───
 
 def load_image(file_bytes: bytes) -> Image.Image:
-    """Load image dari bytes dan konversi ke RGB."""
+    """Load image dari bytes, konversi ke RGB, resize ke maks 320px."""
     img = Image.open(io.BytesIO(file_bytes))
     if img.mode != "RGB":
         img = img.convert("RGB")
+    # Resize ke maks 320px supaya MTCNN + FaceNet lebih cepat.
+    # FaceNet hanya butuh 160x160 → input 320px sudah lebih dari cukup.
+    max_size = 320
+    if max(img.size) > max_size:
+        ratio = max_size / max(img.size)
+        new_size = (int(img.size[0] * ratio), int(img.size[1] * ratio))
+        img = img.resize(new_size, Image.LANCZOS)
     return img
 
 
@@ -209,7 +216,7 @@ async def embed(file: UploadFile = File(...)):
 @app.post("/verify", response_model=VerifyResponse)
 async def verify(
     file: UploadFile = File(...),
-    stored_embedding: str = "",
+    stored_embedding: str = Form(...),
 ):
     """
     Verifikasi wajah: bandingkan gambar baru dengan embedding tersimpan.

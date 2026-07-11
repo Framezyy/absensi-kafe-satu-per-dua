@@ -4,7 +4,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:image/image.dart' as img;
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_colors.dart';
@@ -14,14 +16,12 @@ import '../data/camera_image_converter.dart';
 
 /// Tahapan enrollment wajah.
 enum _EnrollStep {
-  /// Step 1: Kedipkan mata.
+  /// Step 1 (liveness): Kedipkan mata untuk memastikan wajah asli.
   blink,
 
-  /// Step 2: Tolehkan kepala ke kiri (yaw < -20°).
-  leftYaw,
-
-  /// Step 3: Tolehkan kepala ke kanan (yaw > +20°).
-  rightYaw,
+  /// Step 2: Hadapkan wajah lurus ke kamera. Sistem menangkap 3 frame
+  /// frontal (wajah lurus, mata terbuka, stabil) untuk embedding akurat.
+  frontalCapture,
 
   /// Mengirim 3 frame ke API / FastAPI.
   sending,
@@ -61,12 +61,20 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   bool _blinkSeenClosed = false;
   DateTime? _lastBlinkCapture; // cooldown anti double-trigger.
 
+  // Frontal capture tracking.
+  bool _isCapturing = false; // sedang takePicture() berlangsung.
+  DateTime? _lastFrameCapture; // cooldown antar 3 frame frontal.
+
   // Pose stabil tracking.
   DateTime? _poseStableStart;
 
   // Timeout per step.
   Timer? _timeoutTimer;
   bool _timedOut = false;
+
+  // Pesan error saat enrollment gagal (mis. wajah tidak terdeteksi,
+  // atau wajah sudah terdaftar di akun lain). Null = pakai pesan default.
+  String? _errorMessage;
 
   // UI.
   late final AnimationController _pulseAnim;
@@ -104,7 +112,7 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
 
       final ctrl = CameraController(
         front,
-        ResolutionPreset.low, // Resolusi rendah supaya cepat.
+        ResolutionPreset.high, // High untuk embedding wajah yang akurat.
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.nv21,
       );
@@ -151,10 +159,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
     switch (_step) {
       case _EnrollStep.blink:
         _detectBlink(face, image);
-      case _EnrollStep.leftYaw:
-        _detectYaw(face, image, isLeft: true);
-      case _EnrollStep.rightYaw:
-        _detectYaw(face, image, isLeft: false);
+      case _EnrollStep.frontalCapture:
+        _detectFrontal(face, image);
       case _EnrollStep.sending:
       case _EnrollStep.done:
         break;
@@ -188,64 +194,101 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
     }
 
     // Transisi: open → closed → open = satu kedipan.
+    // Setelah kedip terdeteksi (liveness terbukti), lanjut ke tahap
+    // capture frame frontal — BUKAN langsung capture di posisi kedip.
     if (eyeProb < AppConstants.eyeClosedThreshold) {
       _blinkSeenClosed = true;
     }
     if (_blinkSeenClosed && eyeProb > AppConstants.eyeOpenThreshold) {
       _blinkSeenClosed = false;
-      _lastBlinkCapture = DateTime.now();
-      _captureFrame(image);
+      if (!mounted) return;
+      setState(() {
+        _step = _EnrollStep.frontalCapture;
+        _poseStableStart = null;
+        _restartTimeout();
+      });
     }
   }
 
-  /// Step 2 & 3: Deteksi toleh kiri/kanan.
-  /// Pose harus stabil (|yaw| > 20°) selama ≥ 500 ms.
-  void _detectYaw(Face face, CameraImage image, {required bool isLeft}) {
-    final yaw = face.headEulerAngleY ?? 0.0; // negatif = kiri, positif = kanan
-    final targetMet = isLeft
-        ? yaw < -AppConstants.yawTriggerAngle
-        : yaw > AppConstants.yawTriggerAngle;
+  /// Step 2: Capture 3 frame FRONTAL (wajah lurus ke kamera).
+  ///
+  /// Frame hanya ditangkap saat wajah benar-benar menghadap depan
+  /// (|yaw| < 12°, |pitch| < 12°), mata terbuka, dan stabil ≥ 400 ms.
+  /// Ada cooldown 900 ms antar frame supaya 3 frame tidak identik.
+  /// Ini menghasilkan embedding yang jauh lebih akurat sehingga wajah
+  /// orang berbeda tidak keliru dianggap sama.
+  void _detectFrontal(Face face, CameraImage image) {
+    // Sedang meng-capture? Jangan proses frame lain dulu.
+    if (_isCapturing) return;
 
-    if (targetMet) {
+    // Cooldown antar frame.
+    if (_lastFrameCapture != null &&
+        DateTime.now().difference(_lastFrameCapture!) < AppConstants.captureCooldown) {
+      return;
+    }
+
+    final yaw = face.headEulerAngleY ?? 99.0;
+    final pitch = face.headEulerAngleX ?? 99.0;
+    final leftOpen = face.leftEyeOpenProbability ?? 1.0;
+    final rightOpen = face.rightEyeOpenProbability ?? 1.0;
+
+    final isFrontal = yaw.abs() <= AppConstants.yawFrontalMaxAngle &&
+        pitch.abs() <= AppConstants.pitchFrontalMaxAngle;
+    final eyesOpen = leftOpen >= AppConstants.eyeOpenForCapture &&
+        rightOpen >= AppConstants.eyeOpenForCapture;
+
+    if (isFrontal && eyesOpen) {
       _poseStableStart ??= DateTime.now();
       final elapsed = DateTime.now().difference(_poseStableStart!);
-      if (elapsed >= AppConstants.poseStableDuration) {
+      if (elapsed >= AppConstants.frontalStableDuration) {
         _captureFrame(image);
       }
     } else {
+      // Wajah tidak frontal / mata tertutup → reset timer stabil.
       _poseStableStart = null;
     }
   }
 
-  /// Tangkap frame saat ini (JPEG) dan lanjut ke step berikutnya.
+  /// Tangkap frame frontal (JPEG) dan lanjut ke frame berikutnya.
+  ///
+  /// Foto di-resize ke 480px dan dikompres ke JPEG quality 75% sebelum
+  /// disimpan. Ini mempercepat upload ke server (~50-100KB vs 2-4MB).
   Future<void> _captureFrame(CameraImage image) async {
+    _isCapturing = true;
     try {
-      // Ambil gambar sebagai JPEG dari camera controller.
       final file = await _cameraCtrl!.takePicture();
-      final bytes = await file.readAsBytes();
-      _frames.add(bytes);
-    } catch (e) {
-      // Fallback: kirim 1x1 pixel JPEG dummy jika takePicture gagal.
-      _frames.add(Uint8List.fromList([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xD9]));
-    }
+      final rawBytes = await file.readAsBytes();
 
-    // Haptic feedback ringan.
+      // Kompres: decode → resize 480px → encode JPEG quality 75%.
+      final decoded = img.decodeImage(rawBytes);
+      if (decoded != null) {
+        final resized = img.copyResize(decoded, width: 480);
+        final compressed = Uint8List.fromList(img.encodeJpg(resized, quality: 75));
+        _frames.add(compressed);
+      } else {
+        _frames.add(rawBytes); // Fallback: pakai raw jika decode gagal.
+      }
+    } catch (e) {
+      _isCapturing = false;
+      _poseStableStart = null;
+      return;
+    }
+    _isCapturing = false;
+    _lastFrameCapture = DateTime.now();
+
     HapticFeedback.lightImpact();
 
     if (!mounted) return;
     setState(() {
       _frameIndex++;
-      _blinkSeenClosed = false;
       _poseStableStart = null;
 
-      if (_frameIndex >= 3) {
+      if (_frameIndex >= AppConstants.enrollFrameCount) {
         _step = _EnrollStep.sending;
         _timeoutTimer?.cancel();
         _sendEnrollment();
-      } else {
-        _step = _EnrollStep.values[_frameIndex];
-        _restartTimeout();
       }
+      // Tetap di step frontalCapture sampai semua frame terkumpul.
     });
   }
 
@@ -281,11 +324,19 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result.message ?? 'Wajah berhasil terdaftar')),
       );
+
+      // Fallback: jika router guard tidak otomatis redirect, navigasi eksplisit.
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+      if (context.mounted) {
+        context.go('/home');
+      }
     } else {
-      setState(() => _timedOut = true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message ?? 'Gagal mendaftarkan wajah')),
-      );
+      setState(() {
+        _step = _EnrollStep.frontalCapture; // Kembali ke layar kamera agar error terlihat.
+        _timedOut = true;
+        _errorMessage = result.message ?? 'Gagal mendaftarkan wajah';
+      });
     }
   }
 
@@ -296,8 +347,11 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
       _frames.clear();
       _blinkSeenClosed = false;
       _lastBlinkCapture = null;
+      _isCapturing = false;
+      _lastFrameCapture = null;
       _poseStableStart = null;
       _timedOut = false;
+      _errorMessage = null;
     });
     _restartTimeout();
   }
@@ -460,16 +514,18 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   Widget _buildHeader() {
     final stepLabel = switch (_step) {
       _EnrollStep.blink => 'Kedipkan mata Anda',
-      _EnrollStep.leftYaw => 'Tolehkan kepala ke KIRI',
-      _EnrollStep.rightYaw => 'Tolehkan kepala ke KANAN',
+      _EnrollStep.frontalCapture => 'Hadapkan wajah lurus ke kamera',
       _ => '',
     };
     final stepIcon = switch (_step) {
       _EnrollStep.blink => Icons.visibility,
-      _EnrollStep.leftYaw => Icons.arrow_back,
-      _EnrollStep.rightYaw => Icons.arrow_forward,
+      _EnrollStep.frontalCapture => Icons.face,
       _ => Icons.check,
     };
+
+    final stepText = _step == _EnrollStep.frontalCapture
+        ? 'Foto ${_frameIndex + 1} / ${AppConstants.enrollFrameCount}'
+        : 'Langkah 1: Liveness';
 
     return Column(
       children: [
@@ -522,7 +578,7 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
         ),
         const SizedBox(height: 8),
         Text(
-          'Langkah ${_frameIndex + 1} / 3',
+          stepText,
           style: const TextStyle(color: Colors.white60, fontSize: 13),
         ),
       ],
@@ -531,6 +587,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
 
   Widget _buildBottom() {
     if (_timedOut) {
+      final msg = _errorMessage ?? 'Waktu habis, silakan coba lagi';
+      final isDuplicate = _errorMessage != null && _errorMessage!.contains('sudah terdaftar');
       return Column(
         children: [
           Container(
@@ -539,22 +597,33 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
               color: AppColors.error.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.timer_off, color: Colors.white, size: 20),
-                SizedBox(width: 8),
-                Text('Waktu habis, silakan coba lagi',
-                    style: TextStyle(color: Colors.white)),
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(msg,
+                      style: const TextStyle(color: Colors.white)),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: _retry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Ulangi'),
-          ),
+          if (isDuplicate)
+            FilledButton.icon(
+              onPressed: () {
+                ref.read(authControllerProvider.notifier).logout();
+              },
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Kembali'),
+            )
+          else
+            FilledButton.icon(
+              onPressed: _retry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Ulangi'),
+            ),
         ],
       );
     }

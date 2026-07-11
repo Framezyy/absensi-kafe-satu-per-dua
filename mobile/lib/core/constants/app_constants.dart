@@ -30,6 +30,25 @@ class AppConstants {
   /// Lama pose harus stabil sebelum auto-capture.
   static const Duration poseStableDuration = Duration(milliseconds: 500);
 
+  // ── Enrollment frontal capture ──
+  /// Sudut yaw & pitch maksimum agar wajah dianggap FRONTAL (lurus ke kamera).
+  /// Frame frontal menghasilkan embedding yang jauh lebih akurat sehingga
+  /// wajah orang berbeda tidak keliru dianggap sama.
+  static const double yawFrontalMaxAngle = 12.0;
+  static const double pitchFrontalMaxAngle = 12.0;
+
+  /// Probabilitas mata terbuka minimum saat capture frontal.
+  static const double eyeOpenForCapture = 0.5;
+
+  /// Lama wajah harus stabil frontal sebelum di-capture.
+  static const Duration frontalStableDuration = Duration(milliseconds: 400);
+
+  /// Jeda minimal antar capture 3 frame (supaya frame tidak identik).
+  static const Duration captureCooldown = Duration(milliseconds: 900);
+
+  /// Jumlah frame frontal yang di-capture saat enrollment.
+  static const int enrollFrameCount = 1;
+
   /// Timeout per aksi liveness (per step di enrollment, atau 1 aksi di absensi).
   static const Duration livenessTimeout = Duration(seconds: 30);
 

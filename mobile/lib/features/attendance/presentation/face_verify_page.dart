@@ -12,6 +12,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/utils/location_helper.dart';
+import '../../face_enroll/data/api_face_repository.dart';
 import '../../face_enroll/data/camera_image_converter.dart';
 import '../data/api_attendance_repository.dart';
 
@@ -99,7 +100,7 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
 
       final ctrl = CameraController(
         front,
-        ResolutionPreset.low,
+        ResolutionPreset.medium,
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.nv21,
       );
@@ -202,19 +203,38 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
 
     setState(() => _phase = _VerifyPhase.sending);
 
-    // Kirim verifikasi wajah ke API.
-    final attRepo = ApiAttendanceRepository();
-
-    // Untuk sekarang, verifikasi wajah selalu sukses (Phase 6: FastAPI).
-    // Langsung lanjut clock-in/clock-out.
     try {
+      // 1. Capture foto JPEG dari kamera untuk verifikasi.
+      final file = await _cameraCtrl!.takePicture();
+      final frameBytes = await file.readAsBytes();
+      if (!mounted) return;
+
+      // 2. Kirim foto ke API /face/verify untuk bandingkan dengan embedding tersimpan.
+      final faceRepo = ApiFaceRepository();
+      final verifyResult = await faceRepo.verify(
+        frame: frameBytes,
+        karyawanId: 0, // karyawan_id diambil dari token di backend
+      );
+      if (!mounted) return;
+
+      // 3. Cek hasil verifikasi wajah.
+      if (!verifyResult.success) {
+        setState(() {
+          _phase = _VerifyPhase.failed;
+          _failMessage = verifyResult.message ?? 'Wajah tidak cocok dengan data terdaftar';
+        });
+        return;
+      }
+
+      // 4. Wajah cocok → lanjut clock-in dengan GPS.
       final pos = await LocationHelper.getCurrentPosition();
       if (!mounted) return;
 
+      final attRepo = ApiAttendanceRepository();
       final result = await attRepo.clockIn(
         latitude: pos?.latitude ?? 0,
         longitude: pos?.longitude ?? 0,
-        faceSimilarityScore: 0.90, // Placeholder.
+        faceSimilarityScore: verifyResult.similarity ?? 0.0,
       );
 
       if (!mounted) return;

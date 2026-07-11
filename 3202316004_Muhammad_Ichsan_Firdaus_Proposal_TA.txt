@@ -6,7 +6,6 @@ RANCANG BANGUN APLIKASI ABSENSI DAN PENGGAJIAN KARYAWAN BERBASIS MOBILE MENGGUNA
 
 
 
-
 OLEH:
 MUHAMMAD ICHSAN FIRDAUS
 3202316004
@@ -39,12 +38,14 @@ Penguji I
 
 
 Muhammad Hasbi, S.T., M.T.
-NIP 197601112014041001Penguji II
+NIP 197601112014041001
+Penguji II
 
 
 
 Suheri, S.T., M.Cs.
-NIP 198307172008121005 Dosen Penguji:
+NIP 198307172008121005 
+Dosen Penguji:
 
 Mengetahui:
 Koordinator Program Studi 
@@ -53,13 +54,15 @@ D-3 Teknik Informatika
 
 
 Mariana Syamsudin, S.T., M.T., Ph.D.
-NIP 197503142006042001 Koordinator Tugas Akhir
+NIP 197503142006042001 
+Koordinator Tugas Akhir
 
 
 
 
 Novi Aryani Fitri, S.T., M.Tr.Kom.
-NIP 199111132022032016HALAMAN PERNYATAAN ORISINALITAS
+NIP 199111132022032016
+HALAMAN PERNYATAAN ORISINALITAS
 
 Saya yang bertanda tangan dibawah ini : 
 Nama                   		: MUHAMMAD ICHSAN FIRDAUS
@@ -295,27 +298,67 @@ A. Analisis Perbandingan
 
 
 Tabel 2.1 Tabel Perbandingan
-NoAspekPenelitian A 
-(Susatyono dkk., 2026)Penelitian B 
-(Lim, 2026)Sistem yang Diusulkan 1Fungsi / Fitur1. Presensi mobile
+No
+Aspek
+Penelitian A 
+(Susatyono dkk., 2026)
+Penelitian B 
+(Lim, 2026)
+Sistem yang Diusulkan 
+1
+Fungsi / Fitur
+1. Presensi mobile
 2. verifikasi wajah (face recognition)
 3. validasi lokasi (geolocation)
 4. dashboard web admin
-5. laporan kehadiran1. Presensi online berbasis geolocation
+5. laporan kehadiran
+1. Presensi online berbasis geolocation
 2. foto real-time
 3. pengajuan cuti & izin
-4. perhitungan jam kerja dan gaji otomatis1. Absensi mobile + geolocation + face recognition (MTCNN + FaceNet via Python FastAPI),
+4. perhitungan jam kerja dan gaji otomatis
+1. Absensi mobile + geolocation + face recognition (MTCNN + FaceNet via Python FastAPI),
 2. dashboard admin web
 3. rekapitulasi penggajian otomatis terintegrasi
-4. kelola data karyawan2Teknologi yang Digunakan1. Flutter (Mobile)
+4. kelola data karyawan
+2
+Teknologi yang Digunakan
+1. Flutter (Mobile)
 2. Laravel Filament (Web Admin)
 3. MySQL
-4. RESTful API1. Flutter (Mobile)
-2. Supabase Realtime Database1. Flutter (Mobile) 
+4. RESTful API
+1. Flutter (Mobile)
+2. Supabase Realtime Database
+1. Flutter (Mobile) 
 2. Framework Laravel (Web Admin) 
 3. MySQL 
 4. RESTful API
-5. Python FastAPI (Microservice AI)3Face RecognitionAda, tidak disebutkan algoritma spesifik         Tidak adaAda, menggunakan MTCNN (deteksi wajah) dan FaceNet (verifikasi identitas) dengan cosine similarity melalui microservice Python FastAPI4Integrasi PenggajianTidak ada. Rekapitulasi gaji masih berpotensi manualAda, perhitungan jam kerja dan gaji otomatis berbasis SupabaseAda, rekapitulasi penggajian otomatis langsung dari data absensi tervalidasi (honorarium + bonus fleksibel)5Metode PengembanganWaterfall.Waterfall.Waterfall.6KeterbatasanBelum terintegrasi dengan otomatisasi sistem penggajian, sehingga rekapitulasi gaji masih berpotensi manual.Menggunakan Database as a Service (Supabase) sehingga sangat bergantung pada pihak ketiga dan tidak memiliki backend web khusus untuk admin.Sistem difokuskan secara spesifik (single-tenant) untuk kebutuhan operasional Kafe Satu Per Dua Kopitiam dan platform mobile difokuskan untuk Android 7Hasil yang DicapaiDeteksi lokasi akurat dan pengenalan wajah berhasil meningkatkan kedisiplinan dan efisiensi kehadiran karyawan.Mampu meningkatkan efisiensi proses presensi dan perhitungan gaji karyawan secara real-time dan otomatis.Menghilangkan proses rekapitulasi manual dengan mengintegrasikan data absensi tervalidasi lokasi langsung ke perhitungan honorarium otomatis.
+5. Python FastAPI (Microservice AI)
+3
+Face Recognition
+Ada, tidak disebutkan algoritma spesifik
+         Tidak ada
+Ada, menggunakan MTCNN (deteksi wajah) dan FaceNet (verifikasi identitas) dengan cosine similarity melalui microservice Python FastAPI
+4
+Integrasi Penggajian
+Tidak ada. Rekapitulasi gaji masih berpotensi manual
+Ada, perhitungan jam kerja dan gaji otomatis berbasis Supabase
+Ada, rekapitulasi penggajian otomatis langsung dari data absensi tervalidasi (honorarium + bonus fleksibel)
+5
+Metode Pengembangan
+Waterfall.
+Waterfall.
+Waterfall.
+6
+Keterbatasan
+Belum terintegrasi dengan otomatisasi sistem penggajian, sehingga rekapitulasi gaji masih berpotensi manual.
+Menggunakan Database as a Service (Supabase) sehingga sangat bergantung pada pihak ketiga dan tidak memiliki backend web khusus untuk admin.
+Sistem difokuskan secara spesifik (single-tenant) untuk kebutuhan operasional Kafe Satu Per Dua Kopitiam dan platform mobile difokuskan untuk Android 
+7
+Hasil yang Dicapai
+Deteksi lokasi akurat dan pengenalan wajah berhasil meningkatkan kedisiplinan dan efisiensi kehadiran karyawan.
+Mampu meningkatkan efisiensi proses presensi dan perhitungan gaji karyawan secara real-time dan otomatis.
+Menghilangkan proses rekapitulasi manual dengan mengintegrasikan data absensi tervalidasi lokasi langsung ke perhitungan honorarium otomatis.
+
       Berdasarkan perbandingan pada Tabel 2.1 di atas, dapat disimpulkan bahwa penerapan teknologi geolocation terbukti efektif dalam memvalidasi presensi karyawan. Namun, sistem-sistem terdahulu masih memiliki celah, baik dari tidak adanya integrasi langsung ke sistem penggajian (seperti pada Penelitian A) maupun ketiadaan dashboard kontrol administrator yang mandiri (seperti pada Penelitian B). Selain itu, tidak ada penelitian terdahulu yang menggunakan pipeline face recognition berbasis MTCNN dan FaceNet melalui microservice Python FastAPI yang terintegrasi langsung dengan backend Laravel.
       Oleh karena itu, Sistem Informasi Absensi dan Penggajian Karyawan yang diusulkan ini dirancang untuk menutupi kelemahan tersebut. Kebaruan dari sistem ini terletak pada perpaduan infrastruktur aplikasi mobile terdedikasi (Flutter) untuk pencatatan geolocation secara akurat disertai verifikasi identitas melalui face recognition (MTCNN + FaceNet), yang datanya secara real-time ditarik oleh backend (Laravel) untuk langsung dikonversi menjadi perhitungan honorarium secara otomatis. Dengan penyesuaian ini, sistem yang diusulkan diharapkan dapat memberikan peningkatan dari sisi efisiensi waktu kerja admin, keakuratan data penggajian, serta kemudahan pemantauan secara terpusat bagi pemilik Kafe Satu Per Dua Kopitiam. 
 2.2 Dasar Teori
@@ -341,7 +384,7 @@ Secara umum, proses face recognition terdiri dari tiga tahap utama:
 2. Feature Extraction (Ekstraksi Fitur) Setelah wajah terdeteksi, tahap berikutnya adalah mengekstrak fitur unik wajah tersebut ke dalam bentuk embedding vektor, yaitu representasi matematis wajah dalam ruang berdimensi tinggi. Pada penelitian ini digunakan FaceNet, sebuah model deep learning yang dikembangkan oleh Google yang mampu mengubah gambar wajah menjadi vektor embedding berdimensi 128 atau 512. FaceNet dilatih menggunakan teknik triplet loss sehingga wajah orang yang sama akan menghasilkan embedding yang berdekatan, sedangkan wajah orang berbeda akan menghasilkan embedding yang berjauhan dalam ruang vektor tersebut [8].
 3. Face Verification (Verifikasi Wajah) Tahap terakhir adalah membandingkan embedding vektor wajah yang baru ditangkap dengan embedding vektor wajah referensi yang sudah tersimpan di database menggunakan metode Cosine Similarity. Cosine similarity mengukur kemiripan dua vektor berdasarkan sudut di antara keduanya, bukan jarak absolutnya, sehingga lebih robust terhadap perbedaan skala pencahayaan. Rumus cosine similarity adalah sebagai berikut:
 
-Similarity(A, B) = (A · B) / (||A|| × ||B||)
+Similarity(A, B) = (A ï¿½ B) / (||A|| ï¿½ ||B||)
 
 Nilai cosine similarity berkisar antara -1 hingga 1, di mana nilai 1 berarti kedua vektor identik, nilai 0 berarti tidak berkorelasi, dan nilai -1 berarti berlawanan arah. Dalam konteks verifikasi wajah, semakin tinggi nilai similarity maka semakin mirip kedua wajah tersebut [7].
 
@@ -383,7 +426,7 @@ f. Black Box Testing
 g. Laragon
       Laragon adalah universal development environment yang sangat cepat, ringan, dan mudah dioperasikan untuk pengembangan aplikasi web modern. Dalam penelitian ini, Laragon digunakan sebagai web server lokal (menggantikan perangkat lunak seperti XAMPP) yang stabil untuk menjalankan framework Laravel sekaligus mengelola basis data MySQL. Penggunaan Laragon mempermudah dan mempercepat proses konfigurasi database serta pengujian sistem presensi karyawan secara lokal sebelum diimplementasikan secara penuh[8].
 h. MTCNN (Multi-task Cascaded Convolutional Networks)
-      MTCNN adalah algoritma deteksi wajah berbasis deep learning yang bekerja melalui tiga tahap jaringan konvolusional bertingkat secara berurutan, yaitu P-Net (Proposal Network), R-Net (Refine Network), dan O-Net (Output Network). Setiap tahap secara bertahap menyaring kandidat area wajah dan menentukan posisi lima landmark wajah mata kiri, mata kanan, hidung, sudut mulut kiri, dan sudut mulut kanan untuk menghasilkan deteksi yang presisi pada berbagai sudut dan kondisi pencahayaan[9]. Dalam penelitian ini, MTCNN digunakan sebagai tahap pertama pipeline face recognition untuk mendeteksi dan melakukan alignment wajah dari frame kamera. Gambar wajah yang berhasil terdeteksi kemudian diubah ukurannya menjadi 160×160 piksel sebelum diproses lebih lanjut oleh FaceNet. 
+      MTCNN adalah algoritma deteksi wajah berbasis deep learning yang bekerja melalui tiga tahap jaringan konvolusional bertingkat secara berurutan, yaitu P-Net (Proposal Network), R-Net (Refine Network), dan O-Net (Output Network). Setiap tahap secara bertahap menyaring kandidat area wajah dan menentukan posisi lima landmark wajah mata kiri, mata kanan, hidung, sudut mulut kiri, dan sudut mulut kanan untuk menghasilkan deteksi yang presisi pada berbagai sudut dan kondisi pencahayaan[9]. Dalam penelitian ini, MTCNN digunakan sebagai tahap pertama pipeline face recognition untuk mendeteksi dan melakukan alignment wajah dari frame kamera. Gambar wajah yang berhasil terdeteksi kemudian diubah ukurannya menjadi 160ï¿½160 piksel sebelum diproses lebih lanjut oleh FaceNet. 
 i. FaceNet
       FaceNet adalah model deep learning yang dikembangkan oleh Google untuk mengonversi gambar wajah menjadi vektor representasi numerik berdimensi tetap yang disebut face embedding. Model ini menggunakan pendekatan triplet loss function untuk memaksimalkan perbedaan antar wajah yang berbeda sekaligus meminimalkan jarak antar wajah dari individu yang sama, sehingga setiap orang memiliki representasi vektor yang unik dan dapat dibedakan secara konsisten [9]. Dalam penelitian ini, FaceNet digunakan untuk menghasilkan embedding wajah karyawan pada tahap registrasi sebanyak tiga kali pengambilan foto, kemudian rata-rata (mean embedding) dari ketiga vektor tersebut disimpan sebagai representasi akhir yang lebih stabil terhadap variasi pencahayaan, sudut, maupun ekspresi. Pada saat absensi, embedding wajah yang baru ditangkap dibandingkan dengan embedding yang tersimpan menggunakan perhitungan cosine similarity dengan nilai ambang batas tertentu untuk menentukan kecocokan identitas.
 j. Python FastAPI
@@ -417,19 +460,123 @@ riwayat kehadiran pribadi. Karyawan harus terlebih dahulu terdaftar oleh admin d
 B. Kebutuhan Fungsional:
     Kebutuhan fungsional mendeskripsikan fitur-fitur yang wajib tersedia dalam sistem agar dapat memenuhi tujuan pengembangan. Kebutuhan fungsional dibagi berdasarkan aktor yang menggunakan fitur tersebut.
 a) Kebutuhan Fungsional Karyawan (Aplikasi Mobile)  
-NoKodeNama FiturDeskripsi1KF-01Login KaryawanKaryawan dapat masuk ke aplikasi menggunakan username dan password yang telah didaftarkan oleh admin. Token autentikasi disimpan secara lokal menggunakan Laravel Sanctum.2KF-02Absensi Masuk (Clock-In) dengan Geolocation dan Face RecognitionKaryawan dapat melakukan absen masuk yang divalidasi melalui dua tahap: (1) validasi lokasi GPS menggunakan geofence Haversine, dan (2) verifikasi wajah menggunakan MTCNN dan FaceNet melalui microservice Python FastAPI disertai liveness check dasar.3KF-03Absensi Pulang (Clock-Out)Karyawan dapat melakukan absen pulang yang divalidasi lokasi GPS. Jam pulang disimpan sebagai waktu server resmi ke tabel absensi.4KF-04Riwayat KehadiranKaryawan dapat melihat histori kehadiran bulanan termasuk jam masuk, jam pulang, dan status kehadiran (hadir, terlambat, izin).5KF-05Pengajuan IzinKaryawan dapat mengajukan permohonan izin tidak hadir disertai tanggal dan alasan. Status izin ditampilkan secara real-time (pending, approved, rejected).6KF-06Profil KaryawanKaryawan dapat melihat data profil pribadi termasuk nama, NIK, jabatan, tanggal bergabung, dan status aktif.7KF-07Registrasi Wajah (Face Enrollment)Karyawan baru wajib melakukan registrasi wajah saat pertama kali login agar dapat menggunakan fitur verifikasi wajah saat absensi.Tabel 3.1 Kebutuhan Fungsional Karyawan (Aplikasi Mobile) 
+No
+Kode
+Nama Fitur
+Deskripsi
+1
+KF-01
+Login Karyawan
+Karyawan dapat masuk ke aplikasi menggunakan username dan password yang telah didaftarkan oleh admin. Token autentikasi disimpan secara lokal menggunakan Laravel Sanctum.
+2
+KF-02
+Absensi Masuk (Clock-In) dengan Geolocation dan Face Recognition
+Karyawan dapat melakukan absen masuk yang divalidasi melalui dua tahap: (1) validasi lokasi GPS menggunakan geofence Haversine, dan (2) verifikasi wajah menggunakan MTCNN dan FaceNet melalui microservice Python FastAPI disertai liveness check dasar.
+3
+KF-03
+Absensi Pulang (Clock-Out)
+Karyawan dapat melakukan absen pulang yang divalidasi lokasi GPS. Jam pulang disimpan sebagai waktu server resmi ke tabel absensi.
+4
+KF-04
+Riwayat Kehadiran
+Karyawan dapat melihat histori kehadiran bulanan termasuk jam masuk, jam pulang, dan status kehadiran (hadir, terlambat, izin).
+5
+KF-05
+Pengajuan Izin
+Karyawan dapat mengajukan permohonan izin tidak hadir disertai tanggal dan alasan. Status izin ditampilkan secara real-time (pending, approved, rejected).
+6
+KF-06
+Profil Karyawan
+Karyawan dapat melihat data profil pribadi termasuk nama, NIK, jabatan, tanggal bergabung, dan status aktif.
+7
+KF-07
+Registrasi Wajah (Face Enrollment)
+Karyawan baru wajib melakukan registrasi wajah saat pertama kali login agar dapat menggunakan fitur verifikasi wajah saat absensi.
+Tabel 3.1 Kebutuhan Fungsional Karyawan (Aplikasi Mobile) 
 
 
 b) Kebutuhan Fungsional Administrator (Dashboard Web)
-NoKodeNama FiturDeskripsi1AF-01Login AdminAdmin dapat mengakses dashboard web menggunakan username dan password dengan role admin.2AF-02Dashboard MonitoringAdmin dapat memantau ringkasan operasional harian: jumlah karyawan aktif, hadir hari ini, terlambat, belum absen, izin pending, dan ringkasan pengeluaran gaji.3AF-03Manajemen Karyawan (CRUD)Admin dapat menambah, mengubah, menonaktifkan, dan mengelola data karyawan termasuk tarif gaji harian, jabatan, dan penugasan lokasi kerja.4AF-04Registrasi & Kelola Wajah KaryawanAdmin dapat memfasilitasi atau me-reset data wajah karyawan melalui dashboard web, termasuk melihat status ketersediaan data wajah setiap karyawan.5AF-05Manajemen Lokasi & GeofenceAdmin dapat mengatur titik koordinat geofence, radius absensi (default 50 m), dan status aktif lokasi kerja.6AF-06Monitor Absensi Real-TimeAdmin dapat memantau data absensi harian seluruh karyawan secara langsung, termasuk status kehadiran, jam masuk/pulang, koordinat GPS, dan hasil verifikasi wajah.7AF-07Approval Pengajuan IzinAdmin dapat meninjau daftar pengajuan izin karyawan dan melakukan persetujuan (approved) atau penolakan (rejected).8AF-08Manajemen BonusAdmin dapat menambahkan bonus fleksibel per karyawan per periode (bonus kerajinan, lembur, dll.) yang terintegrasi otomatis dengan perhitungan payroll.9AF-09Rekapitulasi Penggajian (Payroll)Admin dapat menghitung total honorarium per karyawan per periode berdasarkan rumus: Total Gaji = (Total Hadir x Tarif Harian) + Total Bonus.10AF-1Audit Log Verifikasi WajahAdmin dapat melihat riwayat hasil verifikasi wajah setiap karyawan saat absensi, termasuk nilai similarity score dan timestamp verifikasi.Tabel 3.2 Kebutuhan Fungsional Administrator (Dashboard Web)
+No
+Kode
+Nama Fitur
+Deskripsi
+1
+AF-01
+Login Admin
+Admin dapat mengakses dashboard web menggunakan username dan password dengan role admin.
+2
+AF-02
+Dashboard Monitoring
+Admin dapat memantau ringkasan operasional harian: jumlah karyawan aktif, hadir hari ini, terlambat, belum absen, izin pending, dan ringkasan pengeluaran gaji.
+3
+AF-03
+Manajemen Karyawan (CRUD)
+Admin dapat menambah, mengubah, menonaktifkan, dan mengelola data karyawan termasuk tarif gaji harian, jabatan, dan penugasan lokasi kerja.
+4
+AF-04
+Registrasi & Kelola Wajah Karyawan
+Admin dapat memfasilitasi atau me-reset data wajah karyawan melalui dashboard web, termasuk melihat status ketersediaan data wajah setiap karyawan.
+5
+AF-05
+Manajemen Lokasi & Geofence
+Admin dapat mengatur titik koordinat geofence, radius absensi (default 50 m), dan status aktif lokasi kerja.
+6
+AF-06
+Monitor Absensi Real-Time
+Admin dapat memantau data absensi harian seluruh karyawan secara langsung, termasuk status kehadiran, jam masuk/pulang, koordinat GPS, dan hasil verifikasi wajah.
+7
+AF-07
+Approval Pengajuan Izin
+Admin dapat meninjau daftar pengajuan izin karyawan dan melakukan persetujuan (approved) atau penolakan (rejected).
+8
+AF-08
+Manajemen Bonus
+Admin dapat menambahkan bonus fleksibel per karyawan per periode (bonus kerajinan, lembur, dll.) yang terintegrasi otomatis dengan perhitungan payroll.
+9
+AF-09
+Rekapitulasi Penggajian (Payroll)
+Admin dapat menghitung total honorarium per karyawan per periode berdasarkan rumus: Total Gaji = (Total Hadir x Tarif Harian) + Total Bonus.
+10
+AF-1
+Audit Log Verifikasi Wajah
+Admin dapat melihat riwayat hasil verifikasi wajah setiap karyawan saat absensi, termasuk nilai similarity score dan timestamp verifikasi.
+Tabel 3.2 Kebutuhan Fungsional Administrator (Dashboard Web)
 C. Kebutuhan Non-Fungsional
   Kebutuhan non-fungsional mendeskripsikan kualitas dan batasan sistem yang harus dipenuhi agar sistem dapat berfungsi secara optimal. Berikut adalah kebutuhan non-fungsional yang ditetapkan:
-NoKodeKategoriDeskripsi1NF-01KeamananSeluruh komunikasi antara client dan server menggunakan HTTPS. Autentikasi menggunakan 
-token Bearer (Laravel Sanctum). Password disimpan dengan enkripsi bcrypt. Validasi GPS dan face recognition dilakukan di sisi server untuk mencegah manipulasi.2NF-02PerformaProses verifikasi wajah melalui microservice FastAPI diselesaikan dalam waktu kurang dari 3 detik. Respons API untuk absensi normal kurang dari 2 detik.3NF-03KetersediaanSistem tersedia selama jam operasional kafe 
+No
+Kode
+Kategori
+Deskripsi
+1
+NF-01
+Keamanan
+Seluruh komunikasi antara client dan server menggunakan HTTPS. Autentikasi menggunakan 
+token Bearer (Laravel Sanctum). Password disimpan dengan enkripsi bcrypt. Validasi GPS dan face recognition dilakukan di sisi server untuk mencegah manipulasi.
+2
+NF-02
+Performa
+Proses verifikasi wajah melalui microservice FastAPI diselesaikan dalam waktu kurang dari 3 detik. Respons API untuk absensi normal kurang dari 2 detik.
+3
+NF-03
+Ketersediaan
+Sistem tersedia selama jam operasional kafe 
 (minimal 07.00-23.00 WIB). Mode offline pada 
-mobile memastikan absensi tetap dapat dilakukan meskipun koneksi terputus sementara.4NF-04SkalabilitasSistem dirancang untuk single-tenant (1 kafe, 32 karyawan) dengan arsitektur yang memungkinkan pengembangan multi-tenant pada iterasi berikutnya.5NF-05Kemudahan PenggunaanAntarmuka aplikasi mobile dirancang sederhana dan intuitif sehingga dapat dioperasikan oleh 
-karyawan paruh waktu tanpa pelatihan teknis khusus.6NF-06KompatibilitasAplikasi mobile dioptimalkan untuk Android 
-(minimum API level 21/Android 5.0). Dashboard web dapat diakses dari browser modern (Chrome, Firefox, Edge).Tabel 3.3 Kebutuhan Non-Fungsional Sistem
+mobile memastikan absensi tetap dapat dilakukan meskipun koneksi terputus sementara.
+4
+NF-04
+Skalabilitas
+Sistem dirancang untuk single-tenant (1 kafe, 32 karyawan) dengan arsitektur yang memungkinkan pengembangan multi-tenant pada iterasi berikutnya.
+5
+NF-05
+Kemudahan Penggunaan
+Antarmuka aplikasi mobile dirancang sederhana dan intuitif sehingga dapat dioperasikan oleh 
+karyawan paruh waktu tanpa pelatihan teknis khusus.
+6
+NF-06
+Kompatibilitas
+Aplikasi mobile dioptimalkan untuk Android 
+(minimum API level 21/Android 5.0). Dashboard web dapat diakses dari browser modern (Chrome, Firefox, Edge).
+Tabel 3.3 Kebutuhan Non-Fungsional Sistem
 
 
 
@@ -508,7 +655,7 @@ a) Entitas users merupakan entitas inti untuk autentikasi yang menyimpan data ak
 b) Entitas karyawan merupakan entitas sentral dalam sistem karena hampir seluruh proses bisnis utama berpusat padanya. Entitas ini menyimpan data profil karyawan seperti NIK, jabatan, tarif gaji harian, dan status keaktifan. Entitas karyawan berelasi banyak ke satu (N:1) dengan entitas lokasi_kerja melalui atribut lokasi_kerja_id, yang menandakan bahwa setiap karyawan ditugaskan pada satu lokasi kerja tertentu. Sementara itu, entitas lokasi_kerja menyimpan koordinat geografis geofence beserta radius absensi yang dikonfigurasi oleh administrator.
 c) Entitas absensi menyimpan seluruh data kehadiran karyawan, termasuk jam masuk, jam pulang, koordinat GPS saat absensi, dan hasil verifikasi wajah. Tiga atribut baru ditambahkan untuk mendukung fitur face recognition, yaitu face_verified yang menyimpan status keberhasilan verifikasi, face_similarity_score yang menyimpan nilai cosine similarity hasil FaceNet, dan face_image_path yang menyimpan path foto selfie untuk keperluan audit. Entitas ini berelasi N:1 dengan entitas karyawan melalui atribut karyawan_id.
 d) Entitas face_embeddings merupakan entitas baru yang ditambahkan untuk mendukung fitur face recognition. Entitas ini menyimpan vektor embedding wajah karyawan hasil ekstraksi model FaceNet dalam format JSON berdimensi 128 atau 512. Relasi antara face_embeddings dan karyawan bersifat satu ke satu (1:1) karena setiap karyawan hanya memiliki satu data embedding wajah yang aktif pada satu waktu. Atribut is_aktif memungkinkan administrator untuk menonaktifkan embedding lama dan meminta karyawan melakukan registrasi ulang jika diperlukan.
-e) Entitas penggajian menyimpan hasil rekapitulasi honorarium per karyawan per periode, termasuk total hari hadir, tarif harian yang berlaku, total honorarium, akumulasi bonus, dan total gaji akhir. Rumus perhitungan yang tercermin pada struktur tabel ini adalah Total Gaji = (Total Hadir × Tarif Harian) + Total Bonus. Entitas bonus menyimpan data bonus fleksibel yang ditambahkan administrator per karyawan per periode, dan nilainya akan secara otomatis diakumulasi ke dalam perhitungan penggajian. Kedua entitas ini berelasi N:1 dengan entitas karyawan.
+e) Entitas penggajian menyimpan hasil rekapitulasi honorarium per karyawan per periode, termasuk total hari hadir, tarif harian yang berlaku, total honorarium, akumulasi bonus, dan total gaji akhir. Rumus perhitungan yang tercermin pada struktur tabel ini adalah Total Gaji = (Total Hadir ï¿½ Tarif Harian) + Total Bonus. Entitas bonus menyimpan data bonus fleksibel yang ditambahkan administrator per karyawan per periode, dan nilainya akan secara otomatis diakumulasi ke dalam perhitungan penggajian. Kedua entitas ini berelasi N:1 dengan entitas karyawan.
 f) Entitas izin menyimpan data pengajuan izin tidak hadir dari karyawan, termasuk tanggal izin, alasan, dan status persetujuan. Atribut status menggunakan nilai pending, approved, atau rejected untuk merepresentasikan alur persetujuan izin. Entitas ini memiliki dua relasi foreign key, yaitu ke entitas karyawan sebagai pengaju izin dan ke entitas users sebagai administrator yang memprosesnya.
 
 
@@ -524,7 +671,57 @@ B. Struktur Tabel
       Berikut adalah rancangan struktur tabel database yang akan digunakan dalam sistem:
 
 Tabel 3.4 Struktur Tabel users
-NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2nameVARCHAR100Nama lengkap pengguna3usernameVARCHAR50Username unik untuk login (UNIQUE)4emailVARCHAR100Email pengguna (UNIQUE)5passwordVARCHAR255Kata sandi terenkripsi (bcrypt)6roleENUM-Peran: 'admin' atau 'karyawan'7statusENUM-Status akun: 'aktif' atau 'nonaktif'8created_atTIMESTAMP-Waktu pembuatan akun9updated_atTIMESTAMP-Waktu pembaruan akun
+No
+Nama Field
+Tipe Data
+Panjang
+Keterangan
+1
+id
+BIGINT UNSIGNED
+11
+Primary Key, Auto Increment
+2
+name
+VARCHAR
+100
+Nama lengkap pengguna
+3
+username
+VARCHAR
+50
+Username unik untuk login (UNIQUE)
+4
+email
+VARCHAR
+100
+Email pengguna (UNIQUE)
+5
+password
+VARCHAR
+255
+Kata sandi terenkripsi (bcrypt)
+6
+role
+ENUM
+-
+Peran: 'admin' atau 'karyawan'
+7
+status
+ENUM
+-
+Status akun: 'aktif' atau 'nonaktif'
+8
+created_at
+TIMESTAMP
+-
+Waktu pembuatan akun
+9
+updated_at
+TIMESTAMP
+-
+Waktu pembaruan akun
+
 
 
 
@@ -533,7 +730,67 @@ NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, 
 
 
 Tabel 3 5 Struktur Tabel karyawan
-NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2user_idBIGINT UNSIGNED11Foreign Key ? users.id3nikVARCHAR20Nomor Induk Karyawan (UNIQUE)4nama_lengkapVARCHAR100Nama lengkap karyawan5jabatanVARCHAR100Jabatan atau posisi kerja6lokasi_kerja_idBIGINT UNSIGNED11Foreign Key ? lokasi_kerja.id7tarif_gaji_harianDECIMAL10,2Tarif gaji per hari (Rupiah)8tgl_bergabungDATE-Tanggal mulai bergabung sebagai karyawan9statusENUM-Status: 'aktif' atau 'nonaktif'10created_atTIMESTAMP-Waktu data dibuat11updated_atTIMESTAMP-Waktu data diperbarui
+No
+Nama Field
+Tipe Data
+Panjang
+Keterangan
+1
+id
+BIGINT UNSIGNED
+11
+Primary Key, Auto Increment
+2
+user_id
+BIGINT UNSIGNED
+11
+Foreign Key ? users.id
+3
+nik
+VARCHAR
+20
+Nomor Induk Karyawan (UNIQUE)
+4
+nama_lengkap
+VARCHAR
+100
+Nama lengkap karyawan
+5
+jabatan
+VARCHAR
+100
+Jabatan atau posisi kerja
+6
+lokasi_kerja_id
+BIGINT UNSIGNED
+11
+Foreign Key ? lokasi_kerja.id
+7
+tarif_gaji_harian
+DECIMAL
+10,2
+Tarif gaji per hari (Rupiah)
+8
+tgl_bergabung
+DATE
+-
+Tanggal mulai bergabung sebagai karyawan
+9
+status
+ENUM
+-
+Status: 'aktif' atau 'nonaktif'
+10
+created_at
+TIMESTAMP
+-
+Waktu data dibuat
+11
+updated_at
+TIMESTAMP
+-
+Waktu data diperbarui
+
 
 
 
@@ -554,11 +811,146 @@ NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, 
 
 
 Tabel 3.6 Struktur Tabel lokasi_kerja
-NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2nama_lokasiVARCHAR100Nama lokasi kerja3latitudeDECIMAL10,8Koordinat garis lintang titik geofence4longitudeDECIMAL11,8Koordinat garis bujur titik geofence5radius_meterINT11Radius geofence dalam meter (default: 50)6is_aktifBOOLEAN-Status aktif lokasi kerja7created_atTIMESTAMP-Waktu data dibuat8updated_atTIMESTAMP-Waktu data diperbarui
+No
+Nama Field
+Tipe Data
+Panjang
+Keterangan
+1
+id
+BIGINT UNSIGNED
+11
+Primary Key, Auto Increment
+2
+nama_lokasi
+VARCHAR
+100
+Nama lokasi kerja
+3
+latitude
+DECIMAL
+10,8
+Koordinat garis lintang titik geofence
+4
+longitude
+DECIMAL
+11,8
+Koordinat garis bujur titik geofence
+5
+radius_meter
+INT
+11
+Radius geofence dalam meter (default: 50)
+6
+is_aktif
+BOOLEAN
+-
+Status aktif lokasi kerja
+7
+created_at
+TIMESTAMP
+-
+Waktu data dibuat
+8
+updated_at
+TIMESTAMP
+-
+Waktu data diperbarui
+
 
 
 Tabel 3.7 Struktur Tabel absensi
-NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED11Foreign Key ? karyawan.id3tanggalDATE-Tanggal kehadiran4jam_masukTIME-Jam clock-in karyawan (waktu server)5jam_pulangTIME-Jam clock-out karyawan (waktu server)6lat_masukDECIMAL10,8Koordinat latitude saat masuk7lng_masukDECIMAL11,8Koordinat longitude saat masuk8lat_pulangDECIMAL10,8Koordinat latitude saat pulang9lng_pulangDECIMAL11,8Koordinat longitude saat pulang10status_kehadiranENUM-Status: 'hadir', 'terlambat', 'izin'11face_verifiedBOOLEAN-[BARU] Status verifikasi wajah: TRUE jika wajah terverifikasi, FALSE jika gagal atau tidak digunakan12face_similarity_scoreDECIMAL5,4[BARU] Nilai cosine similarity hasil FaceNet (0.0000-1.0000). Disimpan untuk keperluan audit oleh admin13face_image_pathVARCHAR255[BARU] Path file foto selfie yang diambil saat absensi, disimpan di storage server untuk keperluan audit14keteranganTEXT-Catatan tambahan (opsional)15is_syncedBOOLEAN-Menandakan data sudah tersinkron dari mode offline ke server16created_atTIMESTAMP-Waktu data dibuat (waktu server)17updated_atTIMESTAMP-Waktu data diperbarui
+No
+Nama Field
+Tipe Data
+Panjang
+Keterangan
+1
+id
+BIGINT UNSIGNED
+11
+Primary Key, Auto Increment
+2
+karyawan_id
+BIGINT UNSIGNED
+11
+Foreign Key ? karyawan.id
+3
+tanggal
+DATE
+-
+Tanggal kehadiran
+4
+jam_masuk
+TIME
+-
+Jam clock-in karyawan (waktu server)
+5
+jam_pulang
+TIME
+-
+Jam clock-out karyawan (waktu server)
+6
+lat_masuk
+DECIMAL
+10,8
+Koordinat latitude saat masuk
+7
+lng_masuk
+DECIMAL
+11,8
+Koordinat longitude saat masuk
+8
+lat_pulang
+DECIMAL
+10,8
+Koordinat latitude saat pulang
+9
+lng_pulang
+DECIMAL
+11,8
+Koordinat longitude saat pulang
+10
+status_kehadiran
+ENUM
+-
+Status: 'hadir', 'terlambat', 'izin'
+11
+face_verified
+BOOLEAN
+-
+[BARU] Status verifikasi wajah: TRUE jika wajah terverifikasi, FALSE jika gagal atau tidak digunakan
+12
+face_similarity_score
+DECIMAL
+5,4
+[BARU] Nilai cosine similarity hasil FaceNet (0.0000-1.0000). Disimpan untuk keperluan audit oleh admin
+13
+face_image_path
+VARCHAR
+255
+[BARU] Path file foto selfie yang diambil saat absensi, disimpan di storage server untuk keperluan audit
+14
+keterangan
+TEXT
+-
+Catatan tambahan (opsional)
+15
+is_synced
+BOOLEAN
+-
+Menandakan data sudah tersinkron dari mode offline ke server
+16
+created_at
+TIMESTAMP
+-
+Waktu data dibuat (waktu server)
+17
+updated_at
+TIMESTAMP
+-
+Waktu data diperbarui
+
 
 
 
@@ -569,7 +961,77 @@ NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, 
 
 
 Tabel 3.8 Struktur Tabel penggajian
-NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED11Foreign Key ? karyawan.id3periode_bulanTINYINT2Bulan periode penggajian (1-12)4periode_tahunSMALLINT4Tahun periode penggajian5total_hadirINT11Total hari kehadiran tervalidasi pada periode6tarif_harianDECIMAL10,2Tarif harian yang berlaku saat rekapitulasi7total_honorariumDECIMAL12,2Total honorarium = total_hadir × tarif_harian8total_bonusDECIMAL12,2Akumulasi bonus dari tabel bonus pada periode yang sama9total_gajiDECIMAL12,2Total gaji akhir = total_honorarium + total_bonus10status_bayarENUM-Status pembayaran: 'belum_dibayar' atau 'sudah_dibayar'11tanggal_bayarDATE-Tanggal pembayaran honorarium (diisi setelah pembayaran)12created_atTIMESTAMP-Waktu data dibuat13updated_atTIMESTAMP-Waktu data diperbarui
+No
+Nama Field
+Tipe Data
+Panjang
+Keterangan
+1
+id
+BIGINT UNSIGNED
+11
+Primary Key, Auto Increment
+2
+karyawan_id
+BIGINT UNSIGNED
+11
+Foreign Key ? karyawan.id
+3
+periode_bulan
+TINYINT
+2
+Bulan periode penggajian (1-12)
+4
+periode_tahun
+SMALLINT
+4
+Tahun periode penggajian
+5
+total_hadir
+INT
+11
+Total hari kehadiran tervalidasi pada periode
+6
+tarif_harian
+DECIMAL
+10,2
+Tarif harian yang berlaku saat rekapitulasi
+7
+total_honorarium
+DECIMAL
+12,2
+Total honorarium = total_hadir ï¿½ tarif_harian
+8
+total_bonus
+DECIMAL
+12,2
+Akumulasi bonus dari tabel bonus pada periode yang sama
+9
+total_gaji
+DECIMAL
+12,2
+Total gaji akhir = total_honorarium + total_bonus
+10
+status_bayar
+ENUM
+-
+Status pembayaran: 'belum_dibayar' atau 'sudah_dibayar'
+11
+tanggal_bayar
+DATE
+-
+Tanggal pembayaran honorarium (diisi setelah pembayaran)
+12
+created_at
+TIMESTAMP
+-
+Waktu data dibuat
+13
+updated_at
+TIMESTAMP
+-
+Waktu data diperbarui
+
 
 
 
@@ -577,12 +1039,147 @@ NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, 
 
 
 Tabel 3.9 Struktur Tabel bonus
-NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED-Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED-Foreign Key ? karyawan.id3periode_bulanTINYINT2Bulan periode bonus (nilai 1-12)4periode_tahunSMALLINT4Tahun periode bonus5nominalDECIMAL12,2Jumlah nominal bonus dalam Rupiah6keteranganTEXT-Keterangan jenis bonus (contoh: bonus kerajinan, lembur)7created_atTIMESTAMP-Waktu data dibuat8updated_atTIMESTAMP-Waktu data diperbarui
+No
+Nama Field
+Tipe Data
+Panjang
+Keterangan
+1
+id
+BIGINT UNSIGNED
+-
+Primary Key, Auto Increment
+2
+karyawan_id
+BIGINT UNSIGNED
+-
+Foreign Key ? karyawan.id
+3
+periode_bulan
+TINYINT
+2
+Bulan periode bonus (nilai 1-12)
+4
+periode_tahun
+SMALLINT
+4
+Tahun periode bonus
+5
+nominal
+DECIMAL
+12,2
+Jumlah nominal bonus dalam Rupiah
+6
+keterangan
+TEXT
+-
+Keterangan jenis bonus (contoh: bonus kerajinan, lembur)
+7
+created_at
+TIMESTAMP
+-
+Waktu data dibuat
+8
+updated_at
+TIMESTAMP
+-
+Waktu data diperbarui
+
 Tabel 3.10 Struktur Tabel izin
-NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED-Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED-Foreign Key ? karyawan.id3tanggalDATE-Tanggal izin yang diajukan4alasanTEXT-Alasan pengajuan izin dari karyawan5statusENUM-Status izin: 'pending', 'approved', 'rejected'6diproses_olehBIGINT UNSIGNED-Foreign Key ? users.id (admin yang memproses)7created_atTIMESTAMP-Waktu data dibuat8updated_atTIMESTAMP-Waktu data diperbarui
+No
+Nama Field
+Tipe Data
+Panjang
+Keterangan
+1
+id
+BIGINT UNSIGNED
+-
+Primary Key, Auto Increment
+2
+karyawan_id
+BIGINT UNSIGNED
+-
+Foreign Key ? karyawan.id
+3
+tanggal
+DATE
+-
+Tanggal izin yang diajukan
+4
+alasan
+TEXT
+-
+Alasan pengajuan izin dari karyawan
+5
+status
+ENUM
+-
+Status izin: 'pending', 'approved', 'rejected'
+6
+diproses_oleh
+BIGINT UNSIGNED
+-
+Foreign Key ? users.id (admin yang memproses)
+7
+created_at
+TIMESTAMP
+-
+Waktu data dibuat
+8
+updated_at
+TIMESTAMP
+-
+Waktu data diperbarui
+
 
 Tabel 3.11 Struktur Tabel face_embeddings
-NoNama FieldTipe DataPanjangKeterangan1idBIGINT UNSIGNED11Primary Key, Auto Increment2karyawan_idBIGINT UNSIGNED11Foreign Key ? karyawan.id (UNIQUE, satu karyawan satu embedding)3embedding_vectorJSON-Array vektor 128-dimensi atau 512-dimensi hasil ekstraksi FaceNet. Disimpan dalam format JSON (contoh: [0.234, -0.112, ...])4foto_referensi_pathVARCHAR255Path file foto referensi yang digunakan saat proses face enrollment untuk keperluan verifikasi ulang jika diperlukan5tgl_registrasiDATE-Tanggal wajah karyawan pertama kali diregistrasi ke dalam sistem6is_aktifBOOLEAN-Status aktif embedding. Dapat dinonaktifkan oleh admin untuk me-reset data wajah karyawan7created_atTIMESTAMP-Waktu data dibuat8updated_atTIMESTAMP-Waktu data diperbarui (saat enrollment ulang)
+No
+Nama Field
+Tipe Data
+Panjang
+Keterangan
+1
+id
+BIGINT UNSIGNED
+11
+Primary Key, Auto Increment
+2
+karyawan_id
+BIGINT UNSIGNED
+11
+Foreign Key ? karyawan.id (UNIQUE, satu karyawan satu embedding)
+3
+embedding_vector
+JSON
+-
+Array vektor 128-dimensi atau 512-dimensi hasil ekstraksi FaceNet. Disimpan dalam format JSON (contoh: [0.234, -0.112, ...])
+4
+foto_referensi_path
+VARCHAR
+255
+Path file foto referensi yang digunakan saat proses face enrollment untuk keperluan verifikasi ulang jika diperlukan
+5
+tgl_registrasi
+DATE
+-
+Tanggal wajah karyawan pertama kali diregistrasi ke dalam sistem
+6
+is_aktif
+BOOLEAN
+-
+Status aktif embedding. Dapat dinonaktifkan oleh admin untuk me-reset data wajah karyawan
+7
+created_at
+TIMESTAMP
+-
+Waktu data dibuat
+8
+updated_at
+TIMESTAMP
+-
+Waktu data diperbarui (saat enrollment ulang)
+
 
 
 
@@ -682,7 +1279,75 @@ Gambar 3.11 Wireframe Halaman Dashboard Admin
    Spesifikasi teknologi menjelaskan seluruh teknologi, framework, bahasa pemrograman, dan alat bantu yang digunakan dalam pengembangan Sistem Informasi Absensi dan Penggajian Karyawan Berbasis Mobile Menggunakan Geolocation pada Kafe Satu Per Dua Kopitiam Pontianak.
    
 Tabel 3.13 Spesifikasi Teknologi yang Digunakan
-NoKategoriTeknologi / ToolsFungsi dalam Sistem1Bahasa PemrogramanDartPengembangan aplikasi mobile Flutter untuk Android.2Bahasa PemrogramanPHP 8.xPengembangan backend dan dashboard web menggunakan Laravel.3Bahasa PemrogramanPython 3.10+[BARU] Pengembangan microservice face recognition menggunakan FastAPI.4Bahasa PemrogramanSQLManajemen dan manipulasi data pada basis data MySQL.5Framework MobileFlutter 3.xFramework pengembangan aplikasi mobile Android dengan satu codebase.6Framework BackendLaravel 11.xFramework PHP MVC untuk backend API dan dashboard web admin.7Framework APIFastAPI[BARU] Framework Python ringan dan performa tinggi untuk microservice face recognition.8Library Face DetectionMTCNN[BARU] Library Python untuk mendeteksi dan mengekstrak area wajah dari foto selfie.9Library Face RecognitionFaceNet (Keras)[BARU] Library Python untuk mengekstrak embedding vektor wajah dan menghitung cosine similarity.10Autentikasi APILaravel SanctumToken-based authentication untuk mobile dan web client.11Basis DataMySQL 8.xPenyimpanan data permanen seluruh entitas sistem.12Dev EnvironmentLaragonDevelopment environment lokal (Apache, PHP, MySQL).13Code EditorVisual Studio CodeEditor utama pengembangan backend Laravel, Dart Flutter, dan Python FastAPI.14Desain UIFigmaPerancangan wireframe dan mockup antarmuka mobile dan web.15Version ControlGit & GitHubManajemen kode sumber dan kolaborasi pengembangan.16UML Diagramdraw.io / StarUMLPembuatan diagram UML (Use Case, Activity, Sequence, Class Diagram) dan ERD.
+No
+Kategori
+Teknologi / Tools
+Fungsi dalam Sistem
+1
+Bahasa Pemrograman
+Dart
+Pengembangan aplikasi mobile Flutter untuk Android.
+2
+Bahasa Pemrograman
+PHP 8.x
+Pengembangan backend dan dashboard web menggunakan Laravel.
+3
+Bahasa Pemrograman
+Python 3.10+
+[BARU] Pengembangan microservice face recognition menggunakan FastAPI.
+4
+Bahasa Pemrograman
+SQL
+Manajemen dan manipulasi data pada basis data MySQL.
+5
+Framework Mobile
+Flutter 3.x
+Framework pengembangan aplikasi mobile Android dengan satu codebase.
+6
+Framework Backend
+Laravel 11.x
+Framework PHP MVC untuk backend API dan dashboard web admin.
+7
+Framework API
+FastAPI
+[BARU] Framework Python ringan dan performa tinggi untuk microservice face recognition.
+8
+Library Face Detection
+MTCNN
+[BARU] Library Python untuk mendeteksi dan mengekstrak area wajah dari foto selfie.
+9
+Library Face Recognition
+FaceNet (Keras)
+[BARU] Library Python untuk mengekstrak embedding vektor wajah dan menghitung cosine similarity.
+10
+Autentikasi API
+Laravel Sanctum
+Token-based authentication untuk mobile dan web client.
+11
+Basis Data
+MySQL 8.x
+Penyimpanan data permanen seluruh entitas sistem.
+12
+Dev Environment
+Laragon
+Development environment lokal (Apache, PHP, MySQL).
+13
+Code Editor
+Visual Studio Code
+Editor utama pengembangan backend Laravel, Dart Flutter, dan Python FastAPI.
+14
+Desain UI
+Figma
+Perancangan wireframe dan mockup antarmuka mobile dan web.
+15
+Version Control
+Git & GitHub
+Manajemen kode sumber dan kolaborasi pengembangan.
+16
+UML Diagram
+draw.io / StarUML
+Pembuatan diagram UML (Use Case, Activity, Sequence, Class Diagram) dan ERD.
+
 3.7 Rencana Pengujian
    Rencana pengujian menjelaskan metode dan skenario pengujian yang akan diterapkan untuk memastikan seluruh fungsionalitas dan kualitas sistem berjalan sesuai dengan kebutuhan yang telah ditetapkan.
 
@@ -707,14 +1372,498 @@ A. Jenis Pengujian:
 B. Skenario Pengujian:
    Berikut adalah skenario pengujian Black Box Testing untuk fitur-fitur utama sistem:
 Tabel 3.14 Skenario Pengujian Fitur Autentikasi dan Absensi Mobile
-NoSkenario PengujianInputHasil yang DiharapkanStatus1Login dengan kredensial validID & password benarKaryawan berhasil masuk ke halaman utamaBelum diuji2Login dengan kredensial tidak validID atau password salahSistem menampilkan pesan kesalahanBelum diuji3Absen masuk dalam radius geofence + wajah terverifikasiGPS dalam radius 50m; foto wajah terdaftar; liveness check lolosData absen tersimpan; face_verified = TRUE; similarity score tercatatBelum diuji4Absen masuk di luar radius geofenceGPS di luar radius 50mProses absensi dihentikan; pesan Lokasi tidak valid ditampilkanBelum diuji5Absen masuk dalam radius namun wajah tidak dikenaliGPS valid; foto wajah berbeda/tidak terdaftarProses absensi ditolak; pesan Wajah tidak dikenali ditampilkan; face_verified = FALSEBelum diuji6Liveness check gagalFoto statis / foto dari layarProses verifikasi dihentikan sebelum mencapai FastAPI; pesan Verifikasi hidup gagalBelum diuji7Absen pulang setelah absen masukKaryawan sudah absen masuk; GPS validData jam pulang tersimpan; status kehadiran diperbaruiBelum diuji8Melihat riwayat kehadiranKaryawan membuka halaman riwayatDaftar riwayat absensi dengan data lengkap termasuk status face_verified ditampilkanBelum diuji9Karyawan mengajukan izinInput tanggal dan alasan izinData izin tersimpan dengan status pending; notifikasi dikirim ke adminBelum diuji
+No
+Skenario Pengujian
+Input
+Hasil yang Diharapkan
+Status
+1
+Login dengan kredensial valid
+ID & password benar
+Karyawan berhasil masuk ke halaman utama
+Belum diuji
+2
+Login dengan kredensial tidak valid
+ID atau password salah
+Sistem menampilkan pesan kesalahan
+Belum diuji
+3
+Absen masuk dalam radius geofence + wajah terverifikasi
+GPS dalam radius 50m; foto wajah terdaftar; liveness check lolos
+Data absen tersimpan; face_verified = TRUE; similarity score tercatat
+Belum diuji
+4
+Absen masuk di luar radius geofence
+GPS di luar radius 50m
+Proses absensi dihentikan; pesan Lokasi tidak valid ditampilkan
+Belum diuji
+5
+Absen masuk dalam radius namun wajah tidak dikenali
+GPS valid; foto wajah berbeda/tidak terdaftar
+Proses absensi ditolak; pesan Wajah tidak dikenali ditampilkan; face_verified = FALSE
+Belum diuji
+6
+Liveness check gagal
+Foto statis / foto dari layar
+Proses verifikasi dihentikan sebelum mencapai FastAPI; pesan Verifikasi hidup gagal
+Belum diuji
+7
+Absen pulang setelah absen masuk
+Karyawan sudah absen masuk; GPS valid
+Data jam pulang tersimpan; status kehadiran diperbarui
+Belum diuji
+8
+Melihat riwayat kehadiran
+Karyawan membuka halaman riwayat
+Daftar riwayat absensi dengan data lengkap termasuk status face_verified ditampilkan
+Belum diuji
+9
+Karyawan mengajukan izin
+Input tanggal dan alasan izin
+Data izin tersimpan dengan status pending; notifikasi dikirim ke admin
+Belum diuji
+
 Tabel 3.15 Skenario Pengujian Fitur Dashboard Web Administrator
-NoSkenario PengujianInputHasil yang DiharapkanStatus1Tambah data karyawan baruData lengkap termasuk tarif harianData karyawan tersimpan di tabel karyawanBelum diuji2Registrasi wajah karyawan (face enrollment)Admin memfasilitasi pengambilan foto karyawan baruEmbedding wajah tersimpan di tabel face_embeddings; status wajah karyawan aktifBelum diuji3Reset data wajah karyawanAdmin menonaktifkan embedding karyawan tertentuis_aktif pada face_embeddings berubah menjadi FALSE; karyawan perlu enrollment ulangBelum diuji4Monitor absensi real-timeAdmin membuka halaman monitoring pada hari aktifData absensi ditampilkan termasuk kolom status verifikasi wajah (face_verified) dan similarity scoreBelum diuji5Audit log verifikasi wajahAdmin membuka menu audit logRiwayat verifikasi wajah setiap karyawan beserta foto selfie dan similarity score ditampilkanBelum diuji6Approve/reject izin karyawanAdmin klik tombol approve/rejectStatus izin berubah; notifikasi dikirim ke karyawan melalui FCMBelum diuji7Rekapitulasi penggajianAdmin memilih periode bulan/tahun dan klik hitungTotal honorarium per karyawan dihitung dan ditampilkan dengan benarBelum diuji
+No
+Skenario Pengujian
+Input
+Hasil yang Diharapkan
+Status
+1
+Tambah data karyawan baru
+Data lengkap termasuk tarif harian
+Data karyawan tersimpan di tabel karyawan
+Belum diuji
+2
+Registrasi wajah karyawan (face enrollment)
+Admin memfasilitasi pengambilan foto karyawan baru
+Embedding wajah tersimpan di tabel face_embeddings; status wajah karyawan aktif
+Belum diuji
+3
+Reset data wajah karyawan
+Admin menonaktifkan embedding karyawan tertentu
+is_aktif pada face_embeddings berubah menjadi FALSE; karyawan perlu enrollment ulang
+Belum diuji
+4
+Monitor absensi real-time
+Admin membuka halaman monitoring pada hari aktif
+Data absensi ditampilkan termasuk kolom status verifikasi wajah (face_verified) dan similarity score
+Belum diuji
+5
+Audit log verifikasi wajah
+Admin membuka menu audit log
+Riwayat verifikasi wajah setiap karyawan beserta foto selfie dan similarity score ditampilkan
+Belum diuji
+6
+Approve/reject izin karyawan
+Admin klik tombol approve/reject
+Status izin berubah; notifikasi dikirim ke karyawan melalui FCM
+Belum diuji
+7
+Rekapitulasi penggajian
+Admin memilih periode bulan/tahun dan klik hitung
+Total honorarium per karyawan dihitung dan ditampilkan dengan benar
+Belum diuji
+
 3.8 Jadwal Penyelesaian Tugas Akhir 
    Jadwal penyelesaian Tugas Akhir merupakan rencana waktu yang disusun untuk memastikan bahwa setiap tahapan dan pengembangan sistem dapat diselesaikan secara terstruktur dan tepat waktu. Jadwal ini mencakup seluruh aktivitas yang akan dilakukan, mulai dari persiapan hingga penyelesaian laporan akhir. Jadwal penyelesaian Tugas akhir dapat disajikan sesuai Lampiran  1
 
 Lampiran 1 Jadwal Penyelesaian Tugas Akhir
-NOKEGIATANTAHUN 2026DESEMBERJANUARIFEBRUARIMARETAPRILMEIJUNIJULIAGUSTUS1Studi Pustaka dan Penulisan Proposal TA2Revisi dan Seminar Judul3Observasi4Wawancara dan Pengumpulan Data5Analisis dan Desain Sistem6Pembuatan Sistem Program7Pengujian Sistem8Seminar Progress9Penulisan Tugas Akhir10Sidang Tugas Akhir   
+NO
+KEGIATAN
+TAHUN 2026
+
+
+DESEMBER
+JANUARI
+FEBRUARI
+MARET
+APRIL
+MEI
+JUNI
+JULI
+AGUSTUS
+1
+Studi Pustaka dan Penulisan Proposal TA
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2
+Revisi dan Seminar Judul
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3
+Observasi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4
+Wawancara dan Pengumpulan Data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5
+Analisis dan Desain Sistem
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6
+Pembuatan Sistem Program
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7
+Pengujian Sistem
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8
+Seminar Progress
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9
+Penulisan Tugas Akhir
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10
+Sidang Tugas Akhir
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
    DAFTAR PUSTAKA
 [1]	D. S. Purnia, A. Rifai, and S. Rahmatullah, "Penerapan Metode Waterfall dalam Perancangan Sistem Informasi Aplikasi Bantuan Sosial Berbasis Android".
 [2]	M. Jannah and I. Nawangsih, "IMPLEMENTASI APLIKASI ABSENSI KARYAWAN MENGGUNAKAN GEOLOCATION," vol. 7, 2023.
@@ -724,7 +1873,7 @@ NOKEGIATANTAHUN 2026DESEMBERJANUARIFEBRUARIMARETAPRILMEIJUNIJULIAGU
 [6]	Valentino Lim, "Perancangan Sistem Presensi Online dan Penggajian Karyawan Berbasis Mobile," J. Komput. Teknol. Inf. Sist. Inf. JUKTISI, vol. 4, no. 3, pp. 1669-1679, Dec. 2025, doi: 10.62712/juktisi.v4i3.732.
 [7]	Y. R. Nusantoko and A. Prapanca, "Pengembangan Aplikasi Human Resource Information System Berbasis Mobile Dengan Absensi Wajah Menggunakan Metode CNN Pada BMT Bahtera Pekalongan," vol. 06, 2025.
 [8]	S. Rizkyansah, "ANALISIS DAN PERANCANGAN SISTEM PRESENSI KARYAWAN PT BERKAH UNTUK SEMESTA," vol. 1, no. 1, 2025.
-[9]	J. P. Sitanggang, J. S. Asri, and I. Sutanto, "Rancang Bangun Sistem Absensi Berbasis Mobile Dengan Memanfaatkan Pengenalan Wajah (Studi Kasus : PT. Ginsa Inti Pratama)," J. Sist. Inf., vol. 5, 2025.
+[9]	J. P. Sitanggang, J. S. Asri, and I. Sutanto, "Rancang Bangun Sistem Absensi Berbasis Mobile Dengan Memanfaatkan Pengenalan Wajah (Studi Kasusï¿½: PT. Ginsa Inti Pratama)," J. Sist. Inf., vol. 5, 2025.
 
 
 
