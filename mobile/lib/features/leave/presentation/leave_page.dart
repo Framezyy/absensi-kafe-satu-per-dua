@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -8,8 +9,6 @@ import '../data/api_leave_repository.dart';
 import '../domain/leave_request.dart';
 
 /// Layar Pengajuan Izin — Wireframe 3.8.
-///
-/// Menggunakan API Laravel: `GET /leaves`, `POST /leaves`.
 class LeavePage extends ConsumerStatefulWidget {
   const LeavePage({super.key});
 
@@ -116,65 +115,169 @@ class _LeavePageState extends ConsumerState<LeavePage> {
   Widget build(BuildContext context) {
     final df = DateFormat('d MMM yyyy', 'id_ID');
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Pengajuan Izin')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text('Ajukan Izin', style: Theme.of(context).textTheme.headlineSmall),
-                    const SizedBox(height: 16),
-                    _DateField(label: 'Tanggal Mulai', value: _tanggalMulai != null ? df.format(_tanggalMulai!) : null, onTap: () => _pickDate(isMulai: true)),
-                    const SizedBox(height: 12),
-                    _DateField(label: 'Tanggal Selesai (opsional)', value: _tanggalSelesai != null ? df.format(_tanggalSelesai!) : null, onTap: () => _pickDate(isMulai: false)),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _alasanCtrl,
-                      maxLines: 3,
-                      decoration: const InputDecoration(labelText: 'Alasan', alignLabelWithHint: true),
-                      validator: (v) => (v == null || v.trim().isEmpty) ? 'Alasan wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 20),
-                    FilledButton(
-                      onPressed: _submitting ? null : _submit,
-                      child: _submitting
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Text('Kirim Pengajuan'),
-                    ),
-                  ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F5F2),
+        body: Column(
+          children: [
+            // Header
+            Container(
+              padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 16, 20, 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF3D2314), Color(0xFF6F4E37)],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
                 ),
               ),
+              child: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Pengajuan Izin', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  // Form card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 4))],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 36, height: 36,
+                                decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                                child: const Icon(Icons.edit_calendar_rounded, color: AppColors.warning, size: 20),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Ajukan Izin', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          _DateField(label: 'Tanggal Mulai', value: _tanggalMulai != null ? df.format(_tanggalMulai!) : null, onTap: () => _pickDate(isMulai: true)),
+                          const SizedBox(height: 12),
+                          _DateField(label: 'Tanggal Selesai (opsional)', value: _tanggalSelesai != null ? df.format(_tanggalSelesai!) : null, onTap: () => _pickDate(isMulai: false)),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _alasanCtrl,
+                            maxLines: 3,
+                            decoration: const InputDecoration(labelText: 'Alasan', hintText: 'Contoh: Ada acara keluarga', alignLabelWithHint: true),
+                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Alasan wajib diisi' : null,
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            height: 50,
+                            child: FilledButton(
+                              onPressed: _submitting ? null : _submit,
+                              style: FilledButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              ),
+                              child: _submitting
+                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                  : const Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.send_rounded, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Kirim Pengajuan', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text('Riwayat Izin', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                  const SizedBox(height: 12),
+                  if (_loading)
+                    const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator()))
+                  else if (_leaves.isEmpty)
+                    const EmptyState(icon: Icons.event_note, message: 'Belum ada pengajuan izin')
+                  else
+                    ...List.generate(_leaves.length, (i) {
+                      final l = _leaves[i];
+                      return _LeaveTile(leave: l, df: df);
+                    }),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LeaveTile extends StatelessWidget {
+  const _LeaveTile({required this.leave, required this.df});
+  final LeaveRequest leave;
+  final DateFormat df;
+
+  @override
+  Widget build(BuildContext context) {
+    final (color, icon, label) = switch (leave.status) {
+      LeaveStatus.pending => (AppColors.warning, Icons.hourglass_top_rounded, 'Menunggu'),
+      LeaveStatus.approved => (AppColors.success, Icons.check_circle_rounded, 'Disetujui'),
+      LeaveStatus.rejected => (AppColors.error, Icons.cancel_rounded, 'Ditolak'),
+    };
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${df.format(leave.tanggalMulai)}'
+                  '${leave.tanggalSelesai != leave.tanggalMulai ? " – ${df.format(leave.tanggalSelesai)}" : ""}',
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                ),
+                const SizedBox(height: 3),
+                Text(leave.alasan, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
-          Text('Riwayat Izin', style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 12),
-          if (_loading)
-            const Center(child: CircularProgressIndicator())
-          else if (_leaves.isEmpty)
-            const EmptyState(icon: Icons.event_note, message: 'Belum ada pengajuan izin')
-          else
-            ...List.generate(_leaves.length, (i) {
-              final l = _leaves[i];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: _StatusBadge(status: l.status),
-                  title: Text(
-                    '${df.format(l.tanggalMulai)}'
-                    '${l.tanggalSelesai != l.tanggalMulai ? ' – ${df.format(l.tanggalSelesai)}' : ''}',
-                  ),
-                  subtitle: Text(l.alasan, maxLines: 2, overflow: TextOverflow.ellipsis),
-                ),
-              );
-            }),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+            child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+          ),
         ],
       ),
     );
@@ -192,28 +295,9 @@ class _DateField extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: InputDecorator(
-        decoration: InputDecoration(labelText: label, suffixIcon: const Icon(Icons.calendar_today, size: 20)),
-        child: Text(value ?? 'Pilih tanggal', style: TextStyle(color: value != null ? null : AppColors.textSecondary)),
+        decoration: InputDecoration(labelText: label, suffixIcon: const Icon(Icons.calendar_today_rounded, size: 18)),
+        child: Text(value ?? 'Pilih tanggal', style: TextStyle(color: value != null ? AppColors.textPrimary : AppColors.textSecondary)),
       ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.status});
-  final LeaveStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final (color, icon) = switch (status) {
-      LeaveStatus.pending => (AppColors.warning, Icons.hourglass_top),
-      LeaveStatus.approved => (AppColors.success, Icons.check_circle),
-      LeaveStatus.rejected => (AppColors.error, Icons.cancel),
-    };
-    return Container(
-      width: 40, height: 40,
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
-      child: Icon(icon, color: color, size: 22),
     );
   }
 }

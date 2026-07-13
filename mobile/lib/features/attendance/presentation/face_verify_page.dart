@@ -11,7 +11,6 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/utils/location_helper.dart';
 import '../../face_enroll/data/api_face_repository.dart';
 import '../../face_enroll/data/camera_image_converter.dart';
 import '../data/api_attendance_repository.dart';
@@ -33,7 +32,19 @@ enum VerifyAction {
 /// Random 1 aksi dari [VerifyAction] → auto-capture → kirim ke
 /// FastAPI → sukses/gagal.
 class FaceVerifyPage extends ConsumerStatefulWidget {
-  const FaceVerifyPage({super.key});
+  const FaceVerifyPage({
+    super.key,
+    this.action = 'in',
+    this.latitude = 0,
+    this.longitude = 0,
+  });
+
+  /// Aksi absensi: 'in' (masuk) atau 'out' (pulang).
+  final String action;
+
+  /// Koordinat GPS yang sudah diambil di halaman absensi.
+  final double latitude;
+  final double longitude;
 
   @override
   ConsumerState<FaceVerifyPage> createState() => _FaceVerifyPageState();
@@ -226,16 +237,20 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
         return;
       }
 
-      // 4. Wajah cocok → lanjut clock-in dengan GPS.
-      final pos = await LocationHelper.getCurrentPosition();
-      if (!mounted) return;
-
+      // 4. Wajah cocok → clock-in / clock-out sesuai action.
+      //    Koordinat sudah diambil di halaman absensi (widget.latitude/longitude).
       final attRepo = ApiAttendanceRepository();
-      final result = await attRepo.clockIn(
-        latitude: pos?.latitude ?? 0,
-        longitude: pos?.longitude ?? 0,
-        faceSimilarityScore: verifyResult.similarity ?? 0.0,
-      );
+      final isClockIn = widget.action != 'out';
+      final result = isClockIn
+          ? await attRepo.clockIn(
+              latitude: widget.latitude,
+              longitude: widget.longitude,
+              faceSimilarityScore: verifyResult.similarity ?? 0.0,
+            )
+          : await attRepo.clockOut(
+              latitude: widget.latitude,
+              longitude: widget.longitude,
+            );
 
       if (!mounted) return;
       if (result.isSuccess) {

@@ -46,15 +46,22 @@ class AttendanceRecord {
       );
     }
 
+    // Laravel mengembalikan kolom decimal sebagai String (mis. "0.8700")
+    // untuk menjaga presisi. Parser ini menerima String maupun num.
+    double? parseDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
     return AttendanceRecord(
       tanggal: tanggal,
       jamMasuk: parseTime(json['jam_masuk'] as String?),
       jamPulang: parseTime(json['jam_pulang'] as String?),
       terlambat: json['status_kehadiran'] == 'terlambat',
       lokasiNama: '',
-      faceSimilarity: json['face_similarity_score'] != null
-          ? (json['face_similarity_score'] as num).toDouble()
-          : null,
+      faceSimilarity: parseDouble(json['face_similarity_score']),
     );
   }
 }

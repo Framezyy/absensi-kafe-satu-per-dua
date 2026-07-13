@@ -42,12 +42,19 @@ class AuthController extends AsyncNotifier<AppUser?> {
   }
 
   /// Logout user dan kembali ke layar login.
+  ///
+  /// Logout selalu dianggap sukses dari sisi aplikasi: token lokal
+  /// dihapus di repository (best-effort ke server). State langsung
+  /// di-set `null` supaya router redirect ke /login dalam sekali tekan
+  /// dan tidak memunculkan error palsu.
   Future<void> logout() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
+    try {
       await ref.read(authRepositoryProvider).logout();
-      return null;
-    });
+    } catch (_) {
+      // Abaikan error server — token lokal sudah dihapus,
+      // user tetap dianggap keluar.
+    }
+    state = const AsyncValue.data(null);
   }
 
   /// Tandai user sebagai sudah enroll wajah.

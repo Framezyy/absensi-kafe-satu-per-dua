@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../domain/auth_exceptions.dart';
 import 'auth_controller.dart';
 
-/// Layar Splash & Login — Wireframe 3.4.
-///
-/// Layout:
-/// - Hero section atas dengan brand color, logo bulat, nama kafe, tagline
-/// - Form card di bawah dengan field username & password + tombol Masuk
-/// - Inline error banner di atas form bila login gagal
-/// - Card kecil "akun uji" hanya ditampilkan di mode debug
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -21,16 +16,36 @@ class LoginPage extends ConsumerStatefulWidget {
   ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends ConsumerState<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _passwordFocus = FocusNode();
   bool _obscure = true;
   String? _errorMessage;
+  late AnimationController _animCtrl;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut),
+    );
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
+    _animCtrl.forward();
+  }
 
   @override
   void dispose() {
+    _animCtrl.dispose();
     _usernameCtrl.dispose();
     _passwordCtrl.dispose();
     _passwordFocus.dispose();
@@ -39,9 +54,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    // Jangan unfocus di sini — menyebabkan tap pertama ter-dismiss
-    // oleh perubahan focus, bukan oleh button onPressed.
-    // Keyboard di-dismiss otomatis oleh ScrollViewKeyboardDismissBehavior.
     setState(() => _errorMessage = null);
 
     await ref.read(authControllerProvider.notifier).login(
@@ -58,6 +70,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ? err.message
             : 'Terjadi kesalahan, silakan coba lagi';
       });
+      return;
+    }
+
+    // Login sukses → navigasi eksplisit. Global redirect di
+    // StatefulShellRoute kadang tidak langsung apply saat state berubah
+    // (butuh 2x tekan di cold start), jadi kita paksa pindah.
+    // Router guard akan arahkan ke /enroll dulu jika belum enroll wajah.
+    final user = state.value;
+    if (user != null && context.mounted) {
+      context.go(user.hasFaceEnrolled ? AppRoutes.home : AppRoutes.enroll);
     }
   }
 
@@ -65,180 +87,229 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
     final isLoading = state.isLoading;
+    final size = MediaQuery.sizeOf(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      // Status bar match brand color, ikon putih.
       value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: AppColors.primaryDark,
+        statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
-        body: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag,
-            child: Column(
-              children: [
-                _Hero(),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                  child: Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              'Masuk ke akun Anda',
-                              style: Theme.of(context).textTheme.headlineSmall,
+        body: Container(
+          width: size.width,
+          height: size.height,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF3D2314),
+                Color(0xFF6F4E37),
+                Color(0xFF8B6B4F),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  SizedBox(height: size.height * 0.06),
+                  // Logo & Brand
+                  FadeTransition(
+                    opacity: _fadeAnim,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 96,
+                          height: 96,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.1),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              width: 2,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Silakan masukkan username dan password',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: 20),
-                            if (_errorMessage != null) ...[
-                              _ErrorBanner(message: _errorMessage!),
-                              const SizedBox(height: 16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
                             ],
-                            TextFormField(
-                              controller: _usernameCtrl,
-                              enabled: !isLoading,
-                              textInputAction: TextInputAction.next,
-                              autofillHints: const [AutofillHints.username],
-                              decoration: const InputDecoration(
-                                labelText: 'Username',
-                                prefixIcon: Icon(Icons.person_outline),
-                              ),
-                              validator: (v) => (v == null || v.trim().isEmpty)
-                                  ? 'Username wajib diisi'
-                                  : null,
-                              onFieldSubmitted: (_) =>
-                                  _passwordFocus.requestFocus(),
+                          ),
+                          child: const Icon(Icons.coffee_rounded, size: 48, color: Colors.white),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          AppConstants.appNameShort,
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                            shadows: [
+                              Shadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Sistem Absensi Karyawan',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontWeight: FontWeight.w500,
                             ),
-                            const SizedBox(height: 14),
-                            TextFormField(
-                              controller: _passwordCtrl,
-                              focusNode: _passwordFocus,
-                              enabled: !isLoading,
-                              obscureText: _obscure,
-                              autofillHints: const [AutofillHints.password],
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                prefixIcon: const Icon(Icons.lock_outline),
-                                suffixIcon: IconButton(
-                                  tooltip: _obscure
-                                      ? 'Tampilkan password'
-                                      : 'Sembunyikan password',
-                                  icon: Icon(_obscure
-                                      ? Icons.visibility_off
-                                      : Icons.visibility),
-                                  onPressed: () =>
-                                      setState(() => _obscure = !_obscure),
-                                ),
-                              ),
-                              validator: (v) => (v == null || v.isEmpty)
-                                  ? 'Password wajib diisi'
-                                  : null,
-                              onFieldSubmitted: (_) => _submit(),
-                            ),
-                            const SizedBox(height: 24),
-                            FilledButton(
-                              onPressed: isLoading ? null : _submit,
-                              child: isLoading
-                                  ? const SizedBox(
-                                      height: 22,
-                                      width: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.4,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Text('Masuk'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: size.height * 0.05),
+                  // Form Card
+                  SlideTransition(
+                    position: _slideAnim,
+                    child: FadeTransition(
+                      opacity: _fadeAnim,
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 30,
+                              offset: const Offset(0, 12),
                             ),
                           ],
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const Text(
+                                'Selamat Datang',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Masuk untuk mulai absen',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary.withValues(alpha: 0.8),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              if (_errorMessage != null) ...[
+                                _ErrorBanner(message: _errorMessage!),
+                                const SizedBox(height: 16),
+                              ],
+                              TextFormField(
+                                controller: _usernameCtrl,
+                                enabled: !isLoading,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.username],
+                                decoration: InputDecoration(
+                                  labelText: 'Username',
+                                  hintText: 'Masukkan username',
+                                  prefixIcon: Container(
+                                    margin: const EdgeInsets.only(left: 12, right: 8),
+                                    child: const Icon(Icons.person_outline_rounded, size: 22),
+                                  ),
+                                  prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                                ),
+                                validator: (v) => (v == null || v.trim().isEmpty)
+                                    ? 'Username wajib diisi'
+                                    : null,
+                                onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _passwordCtrl,
+                                focusNode: _passwordFocus,
+                                enabled: !isLoading,
+                                obscureText: _obscure,
+                                autofillHints: const [AutofillHints.password],
+                                decoration: InputDecoration(
+                                  labelText: 'Password',
+                                  hintText: 'Masukkan password',
+                                  prefixIcon: Container(
+                                    margin: const EdgeInsets.only(left: 12, right: 8),
+                                    child: const Icon(Icons.lock_outline_rounded, size: 22),
+                                  ),
+                                  prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                                      size: 20,
+                                    ),
+                                    onPressed: () => setState(() => _obscure = !_obscure),
+                                  ),
+                                ),
+                                validator: (v) => (v == null || v.isEmpty)
+                                    ? 'Password wajib diisi'
+                                    : null,
+                                onFieldSubmitted: (_) => _submit(),
+                              ),
+                              const SizedBox(height: 28),
+                              SizedBox(
+                                height: 52,
+                                child: FilledButton(
+                                  onPressed: isLoading ? null : _submit,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  child: isLoading
+                                      ? const SizedBox(
+                                          height: 22, width: 22,
+                                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                                        )
+                                      : const Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.login_rounded, size: 20),
+                                            SizedBox(width: 8),
+                                            Text('Masuk', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                          ],
+                                        ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const _DevHintCard(),
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Hero atas dengan brand color, logo bulat, nama kafe, tagline.
-class _Hero extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final padding = MediaQuery.paddingOf(context).top;
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(24, padding + 32, 24, 32),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColors.primaryDark, AppColors.primary],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 88,
-            height: 88,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.35),
-                width: 2,
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
-            child: const Icon(Icons.coffee, size: 44, color: Colors.white),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            AppConstants.appName,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: 0.2,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Aplikasi absensi karyawan',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white.withValues(alpha: 0.85),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-/// Banner error inline (di atas form), warna error theme.
 class _ErrorBanner extends StatelessWidget {
   const _ErrorBanner({required this.message});
   final String message;
@@ -246,70 +317,30 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFECACA)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.close_rounded, color: AppColors.error, size: 16),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
-                color: AppColors.error,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(color: AppColors.error, fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Card bantu untuk dev: dua akun mock.
-///
-/// Akan dihapus saat integrasi backend (Phase 4).
-class _DevHintCard extends StatelessWidget {
-  const _DevHintCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.info_outline,
-                    size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 6),
-                Text(
-                  'Akun uji (dev only)',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            const Text('• karyawan1 / 123456 — belum enroll wajah',
-                style: TextStyle(fontSize: 12)),
-            const Text('• karyawan2 / 123456 — sudah enroll wajah',
-                style: TextStyle(fontSize: 12)),
-          ],
-        ),
       ),
     );
   }

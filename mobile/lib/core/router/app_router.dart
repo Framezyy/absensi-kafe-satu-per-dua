@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,18 +13,13 @@ import '../../features/history/presentation/history_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/leave/presentation/leave_page.dart';
 import '../../features/profile/presentation/profile_page.dart';
+import '../../shared/widgets/main_shell.dart';
 import 'app_routes.dart';
 
 /// Listenable yang mendengarkan perubahan state auth + enrollment di
-/// Riverpod, lalu memberi tahu GoRouter untuk re-evaluasi `redirect`.
-///
-/// Implementasi guard mengikuti keputusan plan #6e:
-/// - belum login           → /login
-/// - login & belum enroll  → /enroll (paksa, no skip, no back)
-/// - login & sudah enroll  → /home (akses /enroll di-block, redirect ke /home)
+/// Riverpod, lalu memberi tahu GoRouter untuk re-evaluasi redirect.
 class AppRouterNotifier extends ChangeNotifier {
   AppRouterNotifier(this._ref) {
-    // Trigger re-evaluasi redirect setiap kali user / status enroll berubah.
     _ref.listen<AsyncValue<AppUser?>>(
       authControllerProvider,
       (_, _) => notifyListeners(),
@@ -41,33 +37,31 @@ class AppRouterNotifier extends ChangeNotifier {
     final goingToLogin = loc == AppRoutes.login;
     final goingToEnroll = loc == AppRoutes.enroll;
 
-    // 1. Belum login → paksa ke /login.
     if (!isLoggedIn) {
       return goingToLogin ? null : AppRoutes.login;
     }
-
-    // 2. Sudah login tapi belum enroll → paksa ke /enroll.
-    //    /enroll adalah satu-satunya layar yang boleh diakses.
     if (!hasFaceEnrolled) {
       return goingToEnroll ? null : AppRoutes.enroll;
     }
-
-    // 3. Sudah login & sudah enroll:
-    //    - jika masih di /login atau /enroll → tendang ke /home.
-    //    - akses /enroll di-block (sesuai plan: enrollment one-time).
     if (goingToLogin || goingToEnroll) {
       return AppRoutes.home;
     }
-
     return null;
   }
 }
+
+final _rootKey = GlobalKey<NavigatorState>();
+final _homeTabKey = GlobalKey<NavigatorState>();
+final _historyTabKey = GlobalKey<NavigatorState>();
+final _leaveTabKey = GlobalKey<NavigatorState>();
+final _profileTabKey = GlobalKey<NavigatorState>();
 
 /// Provider GoRouter aplikasi.
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = AppRouterNotifier(ref);
 
   return GoRouter(
+    navigatorKey: _rootKey,
     initialLocation: AppRoutes.login,
     debugLogDiagnostics: kDebugMode,
     refreshListenable: notifier,
@@ -83,35 +77,71 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.enrollName,
         builder: (_, _) => const FaceEnrollPage(),
       ),
-      GoRoute(
-        path: AppRoutes.home,
-        name: AppRoutes.homeName,
-        builder: (_, _) => const HomePage(),
-      ),
+      // Rute full-screen di atas shell (tanpa bottom nav).
       GoRoute(
         path: AppRoutes.attendance,
         name: AppRoutes.attendanceName,
+        parentNavigatorKey: _rootKey,
         builder: (_, _) => const AttendancePage(),
       ),
       GoRoute(
         path: AppRoutes.verify,
         name: AppRoutes.verifyName,
-        builder: (_, _) => const FaceVerifyPage(),
+        parentNavigatorKey: _rootKey,
+        builder: (_, state) {
+          final q = state.uri.queryParameters;
+          return FaceVerifyPage(
+            action: q['action'] ?? 'in',
+            latitude: double.tryParse(q['lat'] ?? '') ?? 0,
+            longitude: double.tryParse(q['lng'] ?? '') ?? 0,
+          );
+        },
       ),
-      GoRoute(
-        path: AppRoutes.history,
-        name: AppRoutes.historyName,
-        builder: (_, _) => const HistoryPage(),
-      ),
-      GoRoute(
-        path: AppRoutes.leave,
-        name: AppRoutes.leaveName,
-        builder: (_, _) => const LeavePage(),
-      ),
-      GoRoute(
-        path: AppRoutes.profile,
-        name: AppRoutes.profileName,
-        builder: (_, _) => const ProfilePage(),
+      // Shell dengan bottom navigation (4 tab).
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, navigationShell) => MainShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: _homeTabKey,
+            routes: [
+              GoRoute(
+                path: AppRoutes.home,
+                name: AppRoutes.homeName,
+                builder: (_, _) => const HomePage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _historyTabKey,
+            routes: [
+              GoRoute(
+                path: AppRoutes.history,
+                name: AppRoutes.historyName,
+                builder: (_, _) => const HistoryPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _leaveTabKey,
+            routes: [
+              GoRoute(
+                path: AppRoutes.leave,
+                name: AppRoutes.leaveName,
+                builder: (_, _) => const LeavePage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _profileTabKey,
+            routes: [
+              GoRoute(
+                path: AppRoutes.profile,
+                name: AppRoutes.profileName,
+                builder: (_, _) => const ProfilePage(),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );

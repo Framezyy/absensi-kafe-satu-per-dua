@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -6,219 +9,489 @@ import 'package:intl/intl.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../attendance/data/api_attendance_repository.dart';
+import '../../attendance/data/api_location_repository.dart';
 import '../../attendance/domain/attendance_record.dart';
+import '../../attendance/domain/lokasi_kerja.dart';
 import '../../auth/presentation/auth_controller.dart';
 
-/// Provider untuk absensi hari ini (dari API).
-final todayAttendanceProvider = FutureProvider<AttendanceRecord?>((ref) async {
+/// Absensi hari ini.
+final todayAttendanceProvider = FutureProvider.autoDispose<AttendanceRecord?>((ref) async {
   final user = ref.watch(currentUserProvider);
   if (user == null || !user.hasFaceEnrolled) return null;
-  final repo = ApiAttendanceRepository();
-  return repo.getToday();
+  return ApiAttendanceRepository().getToday();
 });
 
-/// Layar Beranda — Wireframe 3.5.
-class HomePage extends ConsumerWidget {
+/// Lokasi kerja aktif (untuk jadwal jam masuk & toleransi).
+final activeLocationProvider = FutureProvider.autoDispose<LokasiKerja?>((ref) async {
+  return ApiLocationRepository().getActiveLocation();
+});
+
+/// Riwayat bulan berjalan (untuk ringkasan + 3 terakhir).
+final monthHistoryProvider = FutureProvider.autoDispose<List<AttendanceRecord>>((ref) async {
+  final user = ref.watch(currentUserProvider);
+  if (user == null || !user.hasFaceEnrolled) return [];
+  final now = DateTime.now();
+  return ApiAttendanceRepository().getHistory(year: now.year, month: now.month);
+});
+
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
-    final todayAsync = ref.watch(todayAttendanceProvider);
-    final df = DateFormat('EEEE, d MMMM yyyy', 'id_ID');
-    final now = DateTime.now();
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Beranda'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => context.push(AppRoutes.profile),
-            tooltip: 'Profil',
-          ),
-        ],
+class _HomePageState extends ConsumerState<HomePage> {
+  late Timer _clockTimer;
+  DateTime _now = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _now = DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer.cancel();
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    ref.invalidate(todayAttendanceProvider);
+    ref.invalidate(activeLocationProvider);
+    ref.invalidate(monthHistoryProvider);
+    await Future.wait([
+      ref.read(todayAttendanceProvider.future),
+      ref.read(activeLocationProvider.future),
+      ref.read(monthHistoryProvider.future),
+    ]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
+    final today = ref.watch(todayAttendanceProvider);
+    final lokasi = ref.watch(activeLocationProvider);
+    final history = ref.watch(monthHistoryProvider);
+    final greeting = _now.hour < 12 ? 'Pagi' : _now.hour < 15 ? 'Siang' : _now.hour < 18 ? 'Sore' : 'Malam';
+    final hasEnrolled = user?.hasFaceEnrolled ?? false;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        children: [
-          Text(
-            'Selamat ${now.hour < 12 ? 'Pagi' : now.hour < 17 ? 'Sore' : 'Malam'}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F5F2),
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _header(greeting, user?.nama ?? '-'),
+              Transform.translate(
+                offset: const Offset(0, -28),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      _clockCard(),
+                      const SizedBox(height: 16),
+                      today.when(
+                        data: (rec) => _statusCard(rec, hasEnrolled),
+                        loading: () => _loadingCard(),
+                        error: (_, _) => _statusCard(null, hasEnrolled),
+                      ),
+                      const SizedBox(height: 16),
+                      _absenButton(today.value, hasEnrolled),
+                      const SizedBox(height: 16),
+                      lokasi.when(
+                        data: (l) => l != null ? _scheduleCard(l) : const SizedBox.shrink(),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 16),
+                      history.when(
+                        data: (list) => _summaryCard(list),
+                        loading: () => _loadingCard(),
+                        error: (_, _) => _summaryCard(const []),
+                      ),
+                      const SizedBox(height: 16),
+                      history.when(
+                        data: (list) => _recentCard(list),
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 ),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(user?.nama ?? '-', style: Theme.of(context).textTheme.headlineMedium),
-          Text(df.format(now), style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 16),
-          todayAsync.when(
-            data: (record) => _AttendanceCard(
-              record: record,
-              hasEnrolled: user?.hasFaceEnrolled ?? false,
+        ),
+      ),
+    );
+  }
+
+  // ── Header dengan greeting ──
+  Widget _header(String greeting, String nama) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 20, 20, 44),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [Color(0xFF3D2314), Color(0xFF6F4E37)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28), bottomRight: Radius.circular(28),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Selamat $greeting,', style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.7))),
+                const SizedBox(height: 2),
+                Text(nama, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white)),
+              ],
             ),
-            loading: () => const Card(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Center(child: CircularProgressIndicator()),
+          ),
+          Container(
+            width: 48, height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+            ),
+            child: Center(
+              child: Text(
+                nama.isNotEmpty ? nama[0].toUpperCase() : '?',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
               ),
             ),
-            error: (e, _) => _AttendanceCard(record: null, hasEnrolled: user?.hasFaceEnrolled ?? false),
           ),
-          const SizedBox(height: 20),
-          Text('Menu Cepat', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 10),
-          _QuickGrid(hasEnrolled: user?.hasFaceEnrolled ?? false),
         ],
       ),
     );
   }
-}
 
-class _AttendanceCard extends StatelessWidget {
-  const _AttendanceCard({required this.record, required this.hasEnrolled});
-  final AttendanceRecord? record;
-  final bool hasEnrolled;
-
-  @override
-  Widget build(BuildContext context) {
-    final noRecord = record == null;
-    return Card(
-      elevation: 2,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: noRecord
-                ? [AppColors.surfaceVariant, AppColors.surface]
-                : [AppColors.primary.withValues(alpha: 0.06), AppColors.surface],
+  // ── Kartu jam live ──
+  Widget _clockCard() {
+    final jam = DateFormat('HH:mm:ss').format(_now);
+    final tanggal = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(_now);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 16, offset: const Offset(0, 4))],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(jam, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.textPrimary, fontFeatures: [FontFeature.tabularFigures()])),
+              const SizedBox(height: 2),
+              Text(tanggal, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            ],
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
+          Container(
+            width: 48, height: 48,
+            decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
+            child: const Icon(Icons.access_time_filled_rounded, color: AppColors.primary, size: 26),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Kartu status hari ini ──
+  Widget _statusCard(AttendanceRecord? rec, bool hasEnrolled) {
+    final hasMasuk = rec?.hasMasuk ?? false;
+    final hasPulang = rec?.hasPulang ?? false;
+    final (bg, icon, title, sub) = !hasMasuk
+        ? (AppColors.textSecondary, Icons.schedule_rounded, 'Belum Absen', hasEnrolled ? 'Silakan absen masuk hari ini' : 'Daftarkan wajah terlebih dahulu')
+        : hasPulang
+            ? (const Color(0xFF2E7D32), Icons.task_alt_rounded, 'Absensi Selesai', 'Masuk ${rec!.jamMasukStr} • Pulang ${rec.jamPulangStr}')
+            : (const Color(0xFF2E7D32), Icons.check_circle_rounded, 'Sudah Masuk', 'Jangan lupa absen pulang nanti');
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 3))],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 50, height: 50,
+                decoration: BoxDecoration(color: bg.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(15)),
+                child: Icon(icon, color: bg, size: 28),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: bg)),
+                    const SizedBox(height: 2),
+                    Text(sub, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  ],
+                ),
+              ),
+              if (rec?.terlambat ?? false)
                 Container(
-                  width: 44, height: 44,
-                  decoration: BoxDecoration(
-                    color: noRecord ? AppColors.border : AppColors.success.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    noRecord ? Icons.access_time : Icons.check_circle,
-                    color: noRecord ? AppColors.textSecondary : AppColors.success,
-                    size: 26,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: AppColors.warning.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+                  child: const Text('Telat', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.warning)),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        noRecord ? 'Belum Absen' : 'Sudah Masuk',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: noRecord ? AppColors.textSecondary : AppColors.success,
-                            ),
-                      ),
-                      if (noRecord && !hasEnrolled)
-                        const Text('Daftarkan wajah terlebih dahulu',
-                            style: TextStyle(fontSize: 12, color: AppColors.error)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (record != null) ...[
-              const SizedBox(height: 16),
-              const Divider(height: 1),
-              const SizedBox(height: 14),
-              Row(
+            ],
+          ),
+          if (hasMasuk) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: const Color(0xFFF8FAF8), borderRadius: BorderRadius.circular(12)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _TimeDisplay(label: 'Jam Masuk', time: record!.jamMasukStr, isLate: record!.terlambat),
-                  const SizedBox(width: 24),
-                  _TimeDisplay(label: 'Jam Pulang', time: record!.jamPulangStr),
-                  const Spacer(),
-                  if (record!.terlambat)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text('Terlambat', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.warning)),
-                    ),
+                  _timeCol('Masuk', rec!.jamMasukStr, Icons.login_rounded, rec.terlambat),
+                  Container(width: 1, height: 32, color: AppColors.divider),
+                  _timeCol('Pulang', rec.jamPulangStr, Icons.logout_rounded, false),
                 ],
               ),
-            ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _timeCol(String label, String time, IconData icon, bool late) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 14, color: AppColors.textSecondary),
+            const SizedBox(width: 4),
+            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(time, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, fontFamily: 'monospace', color: late ? AppColors.warning : AppColors.textPrimary)),
+      ],
+    );
+  }
+
+  // ── Tombol Absen besar ──
+  Widget _absenButton(AttendanceRecord? rec, bool hasEnrolled) {
+    final hasMasuk = rec?.hasMasuk ?? false;
+    final hasPulang = rec?.hasPulang ?? false;
+    final done = hasMasuk && hasPulang;
+
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.attendance),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+        decoration: BoxDecoration(
+          gradient: done
+              ? null
+              : const LinearGradient(colors: [AppColors.primary, Color(0xFF8B6B4F)]),
+          color: done ? Colors.white : null,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: done ? 0.0 : 0.3), blurRadius: 16, offset: const Offset(0, 6))],
+          border: done ? Border.all(color: AppColors.divider) : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46, height: 46,
+              decoration: BoxDecoration(
+                color: done ? AppColors.primary.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(Icons.fingerprint_rounded, color: done ? AppColors.primary : Colors.white, size: 28),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    done ? 'Absensi Hari Ini Selesai' : (hasMasuk ? 'Absen Pulang' : 'Absen Masuk Sekarang'),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: done ? AppColors.textPrimary : Colors.white),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    done ? 'Sampai jumpa besok!' : 'Verifikasi wajah + lokasi',
+                    style: TextStyle(fontSize: 12, color: done ? AppColors.textSecondary : Colors.white.withValues(alpha: 0.8)),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded, color: done ? AppColors.textSecondary : Colors.white, size: 18),
           ],
         ),
       ),
     );
   }
-}
 
-class _TimeDisplay extends StatelessWidget {
-  const _TimeDisplay({required this.label, required this.time, this.isLate = false});
-  final String label;
-  final String time;
-  final bool isLate;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 2),
-        Text(time, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, fontFamily: 'monospace', color: isLate ? AppColors.warning : AppColors.textPrimary)),
-      ],
-    );
-  }
-}
-
-class _QuickGrid extends StatelessWidget {
-  const _QuickGrid({required this.hasEnrolled});
-  final bool hasEnrolled;
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 4, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 0.85,
-      children: [
-        _QuickButton(icon: Icons.fingerprint, label: 'Absen', color: hasEnrolled ? AppColors.primary : AppColors.border, onTap: () => context.push(AppRoutes.attendance)),
-        _QuickButton(icon: Icons.history, label: 'Riwayat', color: AppColors.info, onTap: () => context.push(AppRoutes.history)),
-        _QuickButton(icon: Icons.event_note, label: 'Izin', color: AppColors.warning, onTap: () => context.push(AppRoutes.leave)),
-        _QuickButton(icon: Icons.person, label: 'Profil', color: AppColors.textSecondary, onTap: () => context.push(AppRoutes.profile)),
-      ],
-    );
-  }
-}
-
-class _QuickButton extends StatelessWidget {
-  const _QuickButton({required this.icon, required this.label, required this.color, required this.onTap});
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+  // ── Kartu jadwal kerja ──
+  Widget _scheduleCard(LokasiKerja l) {
+    final jamMasuk = l.jamMasukStandar.length >= 5 ? l.jamMasukStandar.substring(0, 5) : l.jamMasukStandar;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 2))],
+      ),
+      child: Row(
         children: [
-          Container(width: 48, height: 48, decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)), child: Icon(icon, color: color, size: 26)),
-          const SizedBox(height: 6),
-          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(color: AppColors.info.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+            child: const Icon(Icons.schedule_rounded, color: AppColors.info, size: 24),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Jadwal Kerja', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                const SizedBox(height: 2),
+                Text('Masuk $jamMasuk  •  Toleransi ${l.toleransiMenit} menit', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+              ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  // ── Ringkasan bulan ini ──
+  Widget _summaryCard(List<AttendanceRecord> list) {
+    final hadir = list.where((r) => r.hadir).length;
+    final terlambat = list.where((r) => r.terlambat).length;
+    final bulan = DateFormat('MMMM yyyy', 'id_ID').format(_now);
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 3))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.bar_chart_rounded, size: 18, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text('Ringkasan $bulan', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _stat('Hadir', '$hadir', Icons.check_circle_rounded, AppColors.success),
+              _stat('Terlambat', '$terlambat', Icons.schedule_rounded, AppColors.warning),
+              _stat('Total Hari', '${list.length}', Icons.calendar_month_rounded, AppColors.info),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _stat(String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(height: 8),
+          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+
+  // ── Riwayat 3 terakhir ──
+  Widget _recentCard(List<AttendanceRecord> list) {
+    if (list.isEmpty) return const SizedBox.shrink();
+    final recent = list.take(3).toList();
+    final df = DateFormat('E, d MMM', 'id_ID');
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 3))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.history_rounded, size: 18, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  const Text('Riwayat Terakhir', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                ],
+              ),
+              GestureDetector(
+                onTap: () => context.go(AppRoutes.history),
+                child: const Text('Lihat semua', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...recent.map((r) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(
+                        color: (r.terlambat ? AppColors.warning : AppColors.success).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(r.terlambat ? Icons.schedule_rounded : Icons.check_circle_rounded, size: 18, color: r.terlambat ? AppColors.warning : AppColors.success),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(df.format(r.tanggal), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
+                    Text('${r.jamMasukStr} - ${r.jamPulangStr}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontFamily: 'monospace')),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _loadingCard() {
+    return Container(
+      height: 90,
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      child: const Center(child: CircularProgressIndicator()),
     );
   }
 }

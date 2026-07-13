@@ -7,8 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as img;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/presentation/auth_controller.dart';
 import '../data/api_face_repository.dart';
@@ -80,6 +82,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   late final AnimationController _pulseAnim;
   bool _initializing = true;
   String? _initError;
+  bool _permissionDenied = false; // izin kamera ditolak (butuh handling khusus).
+  bool _permissionPermanent = false; // ditolak permanen (harus buka Settings).
 
   // Sensor orientation kamera depan (dibaca dari CameraDescription).
   late int _sensorOrientation;
@@ -102,6 +106,35 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   }
 
   Future<void> _initCamera() async {
+    // Reset state error sebelum mencoba (untuk kasus retry).
+    setState(() {
+      _initializing = true;
+      _initError = null;
+      _permissionDenied = false;
+      _permissionPermanent = false;
+    });
+
+    // 1. Minta izin kamera secara eksplisit dulu.
+    final status = await Permission.camera.request();
+    if (!mounted) return;
+
+    if (status.isPermanentlyDenied) {
+      setState(() {
+        _initializing = false;
+        _permissionDenied = true;
+        _permissionPermanent = true;
+      });
+      return;
+    }
+    if (!status.isGranted) {
+      setState(() {
+        _initializing = false;
+        _permissionDenied = true;
+      });
+      return;
+    }
+
+    // 2. Izin diberikan → inisialisasi kamera.
     try {
       final cameras = await availableCameras();
       final front = cameras.firstWhere(
@@ -139,9 +172,28 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
     }
   }
 
+  /// Keluar dari halaman enrollment dengan aman.
+  ///
+  /// Karena /enroll adalah rute root (tidak bisa di-pop), keluar dilakukan
+  /// dengan logout supaya router mengarahkan kembali ke halaman login.
+  /// WAJIB `await` logout dulu supaya state jadi null SEBELUM navigasi —
+  /// kalau tidak, router guard menendang balik ke /enroll (butuh 2x klik).
+  Future<void> _exitEnrollment() async {
+    await ref.read(authControllerProvider.notifier).logout();
+    if (mounted) context.go(AppRoutes.login);
+  }
+
   void _startImageStream() {
     _cameraCtrl?.startImageStream((image) {
-      if (_isProcessing || _step == _EnrollStep.sending || _step == _EnrollStep.done) return;
+      // Jangan proses frame saat: sedang proses, sedang kirim, selesai,
+      // atau dalam kondisi error (_timedOut). Ini mencegah kamera terus
+      // meng-capture & mengirim enroll berulang saat error ditampilkan.
+      if (_isProcessing ||
+          _timedOut ||
+          _step == _EnrollStep.sending ||
+          _step == _EnrollStep.done) {
+        return;
+      }
       _isProcessing = true;
       _processFrame(image).whenComplete(() => _isProcessing = false);
     });
@@ -401,7 +453,50 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
       );
     }
 
-    // Error kamera.
+    // Izin kamera ditolak.
+    if (_permissionDenied) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.no_photography_rounded, color: Colors.orangeAccent, size: 64),
+              const SizedBox(height: 16),
+              const Text(
+                'Izin Kamera Diperlukan',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _permissionPermanent
+                    ? 'Izin kamera diblokir permanen. Aktifkan manual lewat Pengaturan aplikasi untuk mendaftarkan wajah.'
+                    : 'Aplikasi butuh akses kamera untuk mendaftarkan wajah Anda. Silakan izinkan kamera.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: _permissionPermanent
+                    ? () async {
+                        await openAppSettings();
+                      }
+                    : _initCamera,
+                icon: Icon(_permissionPermanent ? Icons.settings_rounded : Icons.camera_alt_rounded),
+                label: Text(_permissionPermanent ? 'Buka Pengaturan' : 'Izinkan Kamera'),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: _exitEnrollment,
+                child: const Text('Kembali ke Login', style: TextStyle(color: Colors.white60)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Error kamera lain.
     if (_initError != null) {
       return Center(
         child: Padding(
@@ -415,9 +510,15 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white70)),
               const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Kembali'),
+              FilledButton.icon(
+                onPressed: _initCamera,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Coba Lagi'),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: _exitEnrollment,
+                child: const Text('Kembali ke Login', style: TextStyle(color: Colors.white60)),
               ),
             ],
           ),
@@ -565,12 +666,14 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
             children: [
               Icon(stepIcon, color: Colors.white, size: 28),
               const SizedBox(width: 12),
-              Text(
-                stepLabel,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+              Flexible(
+                child: Text(
+                  stepLabel,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -612,11 +715,9 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
           const SizedBox(height: 12),
           if (isDuplicate)
             FilledButton.icon(
-              onPressed: () {
-                ref.read(authControllerProvider.notifier).logout();
-              },
+              onPressed: _exitEnrollment,
               icon: const Icon(Icons.arrow_back),
-              label: const Text('Kembali'),
+              label: const Text('Kembali ke Login'),
             )
           else
             FilledButton.icon(
