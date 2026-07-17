@@ -19,27 +19,36 @@ class KaryawanController extends Controller {
     }
 
     public function store(Request $request) {
+        // Normalisasi username ke lowercase sebelum validasi & simpan.
+        $request->merge([
+            'username' => strtolower(trim($request->username ?? '')),
+        ]);
+
         $request->validate([
             'nama' => 'required|string|max:255',
-            'nik' => 'required|string|max:20|unique:karyawan,nik',
             'jabatan' => 'required|string|max:100',
+            'username' => 'required|string|min:4|max:50|regex:/^[a-z0-9._]+$/|unique:users,username',
+            'password' => 'required|string|size:12',
             'tarif_harian' => 'required|integer|min:0',
             'tanggal_bergabung' => 'required|date',
             'lokasi_kerja_id' => 'nullable|exists:lokasi_kerja,id',
+        ], [
+            'username.regex' => 'Username hanya boleh huruf kecil, angka, titik, dan garis bawah.',
+            'username.unique' => 'Username sudah dipakai karyawan lain.',
+            'password.size' => 'Password harus tepat 12 karakter.',
         ]);
 
         $user = User::create([
             'name' => $request->nama,
-            'username' => strtolower(str_replace(' ', '', $request->nama)) . rand(10, 99),
-            'email' => strtolower(str_replace(' ', '.', $request->nama)) . rand(10, 99) . '@kafe12.com',
-            'password' => Hash::make('123456'),
+            'username' => $request->username,
+            'email' => $request->username . '@kafe12.com',
+            'password' => Hash::make($request->password),
             'role' => 'karyawan',
             'status' => 'aktif',
         ]);
 
         Karyawan::create([
             'user_id' => $user->id,
-            'nik' => $request->nik,
             'nama_lengkap' => $request->nama,
             'jabatan' => $request->jabatan,
             'lokasi_kerja_id' => $request->lokasi_kerja_id,
@@ -48,7 +57,13 @@ class KaryawanController extends Controller {
             'status' => 'aktif',
         ]);
 
-        return redirect()->route('admin.karyawan.index')->with('success', 'Karyawan berhasil ditambahkan.');
+        return redirect()->route('admin.karyawan.index')
+            ->with('success', 'Karyawan berhasil ditambahkan.')
+            ->with('new_credential', [
+                'nama' => $request->nama,
+                'username' => $request->username,
+                'password' => $request->password,
+            ]);
     }
 
     public function edit($id) {
@@ -58,13 +73,25 @@ class KaryawanController extends Controller {
     }
 
     public function update(Request $request, $id) {
-        $k = Karyawan::findOrFail($id);
+        $k = Karyawan::with('user')->findOrFail($id);
+
+        // Normalisasi username ke lowercase sebelum validasi.
+        $request->merge([
+            'username' => strtolower(trim($request->username ?? '')),
+        ]);
+
         $request->validate([
             'nama' => 'required|string|max:255',
             'jabatan' => 'required|string|max:100',
-            'tarif_harian' => 'required|integer|min:0',
+            'tarif_harian' => 'required|numeric|min:0',
             'status' => 'required|in:aktif,nonaktif',
             'lokasi_kerja_id' => 'nullable|exists:lokasi_kerja,id',
+            'username' => 'required|string|min:4|max:50|regex:/^[a-z0-9._]+$/|unique:users,username,' . $k->user_id,
+            'password' => 'nullable|string|size:12',
+        ], [
+            'username.regex' => 'Username hanya boleh huruf kecil, angka, titik, dan garis bawah.',
+            'username.unique' => 'Username sudah dipakai karyawan lain.',
+            'password.size' => 'Password harus tepat 12 karakter.',
         ]);
 
         $k->update([
@@ -75,8 +102,43 @@ class KaryawanController extends Controller {
             'lokasi_kerja_id' => $request->lokasi_kerja_id,
         ]);
 
-        $k->user->update(['name' => $request->nama, 'status' => $request->status]);
+        // Update akun login (nama, username, status). Password hanya jika diisi.
+        $userData = [
+            'name' => $request->nama,
+            'username' => $request->username,
+            'status' => $request->status,
+        ];
+        if ($request->filled('password')) {
+            $userData['password'] = Hash::make($request->password);
+        }
+        $k->user->update($userData);
 
         return redirect()->route('admin.karyawan.index')->with('success', 'Karyawan berhasil diperbarui.');
+    }
+
+    public function destroy($id) {
+        $k = Karyawan::with('user')->findOrFail($id);
+        $nama = $k->nama_lengkap;
+
+        // Hapus semua data terkait karyawan.
+        $k->absensi()->delete();
+        $k->faceEmbedding()->delete();
+        $k->izin()->delete();
+        $k->bonus()->delete();
+        $k->penggajian()->delete();
+
+        // Simpan referensi user untuk dihapus setelah karyawan.
+        $user = $k->user;
+
+        $k->delete();
+
+        // Hapus akun login (user) beserta token-nya.
+        if ($user) {
+            $user->tokens()->delete();
+            $user->delete();
+        }
+
+        return redirect()->route('admin.karyawan.index')
+            ->with('success', "Karyawan \"{$nama}\" beserta seluruh datanya berhasil dihapus.");
     }
 }

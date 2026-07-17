@@ -46,12 +46,14 @@ class ApiAttendanceRepository implements AttendanceRepository {
     required double latitude,
     required double longitude,
     double? faceSimilarityScore,
+    bool isMocked = false,
   }) async {
     try {
       final response = await _dio.post('/attendance/clock-in', data: {
         'latitude': latitude,
         'longitude': longitude,
         'face_similarity_score': faceSimilarityScore,
+        'is_mocked': isMocked,
       });
       return ClockResult(
         status: ClockStatus.success,
@@ -73,11 +75,13 @@ class ApiAttendanceRepository implements AttendanceRepository {
   Future<ClockResult> clockOut({
     required double latitude,
     required double longitude,
+    bool isMocked = false,
   }) async {
     try {
       final response = await _dio.post('/attendance/clock-out', data: {
         'latitude': latitude,
         'longitude': longitude,
+        'is_mocked': isMocked,
       });
       return ClockResult(
         status: ClockStatus.success,

@@ -99,7 +99,7 @@ class ProfilePage extends ConsumerWidget {
                 padding: const EdgeInsets.all(20),
                 children: [
                   _InfoCard(items: [
-                    _InfoRow(icon: Icons.badge_outlined, label: 'NIK', value: user?.nik ?? '-'),
+                    _InfoRow(icon: Icons.badge_outlined, label: 'ID Karyawan', value: user?.idKaryawan ?? '-'),
                     _InfoRow(icon: Icons.work_outline_rounded, label: 'Jabatan', value: user?.jabatan ?? '-'),
                     _InfoRow(icon: Icons.calendar_today_rounded, label: 'Bergabung', value: user != null ? df.format(user.tanggalBergabung) : '-'),
                     _InfoRow(icon: Icons.circle, label: 'Status', value: (user?.statusAktif ?? false) ? 'Aktif' : 'Tidak Aktif', valueColor: (user?.statusAktif ?? false) ? AppColors.success : AppColors.error),

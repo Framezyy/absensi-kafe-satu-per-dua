@@ -4,7 +4,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Karyawan extends Model {
     protected $table = 'karyawan';
-    protected $fillable = ['user_id', 'nik', 'nama_lengkap', 'jabatan', 'lokasi_kerja_id', 'tarif_gaji_harian', 'tgl_bergabung', 'status'];
+    protected $fillable = ['user_id', 'nama_lengkap', 'jabatan', 'lokasi_kerja_id', 'tarif_gaji_harian', 'tgl_bergabung', 'status'];
+
+    /// ID Karyawan format KRY-001 (dari primary key, bukan data pribadi).
+    public function getKodeKaryawanAttribute(): string
+    {
+        return 'KRY-' . str_pad($this->id, 3, '0', STR_PAD_LEFT);
+    }
     protected function casts(): array {
         return ['tarif_gaji_harian' => 'decimal:2', 'tgl_bergabung' => 'date'];
     }

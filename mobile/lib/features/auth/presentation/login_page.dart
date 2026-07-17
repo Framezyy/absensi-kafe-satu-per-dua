@@ -89,6 +89,24 @@ class _LoginPageState extends ConsumerState<LoginPage>
     final isLoading = state.isLoading;
     final size = MediaQuery.sizeOf(context);
 
+    // Notif kalau sesi berakhir paksa (mis. akun dihapus admin -> 401).
+    ref.listen<bool>(sessionExpiredProvider, (prev, next) {
+      if (next == true) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sesi Anda telah berakhir. Silakan login kembali.'),
+              backgroundColor: AppColors.error,
+              duration: Duration(seconds: 4),
+            ),
+          );
+          // Reset flag supaya tidak muncul berulang.
+          ref.read(sessionExpiredProvider.notifier).reset();
+        });
+      }
+    });
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: Colors.transparent,

@@ -37,6 +37,7 @@ class FaceVerifyPage extends ConsumerStatefulWidget {
     this.action = 'in',
     this.latitude = 0,
     this.longitude = 0,
+    this.isMocked = false,
   });
 
   /// Aksi absensi: 'in' (masuk) atau 'out' (pulang).
@@ -45,6 +46,9 @@ class FaceVerifyPage extends ConsumerStatefulWidget {
   /// Koordinat GPS yang sudah diambil di halaman absensi.
   final double latitude;
   final double longitude;
+
+  /// Flag lokasi palsu (Fake GPS) terdeteksi di halaman absensi.
+  final bool isMocked;
 
   @override
   ConsumerState<FaceVerifyPage> createState() => _FaceVerifyPageState();
@@ -246,10 +250,12 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
               latitude: widget.latitude,
               longitude: widget.longitude,
               faceSimilarityScore: verifyResult.similarity ?? 0.0,
+              isMocked: widget.isMocked,
             )
           : await attRepo.clockOut(
               latitude: widget.latitude,
               longitude: widget.longitude,
+              isMocked: widget.isMocked,
             );
 
       if (!mounted) return;
@@ -372,7 +378,7 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
             ),
             const SizedBox(height: 20),
             Text(
-              'Sudah Masuk — Pukul $hh:$mm',
+              '${widget.action == "out" ? "Sudah Pulang" : "Sudah Masuk"} — Pukul $hh:$mm',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 22,

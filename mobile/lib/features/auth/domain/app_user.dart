@@ -15,7 +15,7 @@ abstract class AppUser with _$AppUser {
     required int id,
     required String username,
     @JsonKey(name: 'nama') required String nama,
-    required String nik,
+    @JsonKey(name: 'id_karyawan') required String idKaryawan,
     required String jabatan,
     @JsonKey(name: 'tanggal_bergabung') required DateTime tanggalBergabung,
     @JsonKey(name: 'status_aktif') required bool statusAktif,

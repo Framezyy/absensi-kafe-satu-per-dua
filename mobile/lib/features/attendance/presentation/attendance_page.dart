@@ -139,14 +139,39 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
     if (!mounted) return;
     if (pos != null) setState(() => _currentPos = pos);
 
+    // ── Deteksi Fake GPS ──
+    // Android menandai lokasi dari aplikasi mock/fake GPS dengan isMocked=true.
+    // Absensi ditolak supaya karyawan tidak bisa memalsukan lokasi.
+    if (pos != null && pos.isMocked) {
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          icon: const Icon(Icons.gpp_bad_rounded, color: AppColors.error, size: 48),
+          title: const Text('Lokasi Palsu Terdeteksi'),
+          content: const Text(
+            'Aplikasi mendeteksi Anda menggunakan Fake GPS / Mock Location. '
+            'Nonaktifkan aplikasi lokasi palsu dan matikan Mock Location di '
+            'Opsi Pengembang, lalu coba absen kembali.',
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Mengerti'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     if (!_insideRadius) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Anda di luar radius lokasi kerja.')),
       );
       return;
     }
-    // Kirim action + koordinat ke halaman verifikasi wajah.
-    context.push('${AppRoutes.verify}?action=$action&lat=${pos?.latitude ?? 0}&lng=${pos?.longitude ?? 0}');
+    // Kirim action + koordinat + flag mock ke halaman verifikasi wajah.
+    context.push('${AppRoutes.verify}?action=$action&lat=${pos?.latitude ?? 0}&lng=${pos?.longitude ?? 0}&mocked=${pos?.isMocked ?? false}');
   }
 
   @override

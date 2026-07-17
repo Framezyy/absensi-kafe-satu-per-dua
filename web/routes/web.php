@@ -25,6 +25,7 @@ Route::prefix("admin")->name("admin.")->group(function () {
         Route::post("karyawan", [KaryawanController::class, "store"])->name("karyawan.store");
         Route::get("karyawan/{id}/edit", [KaryawanController::class, "edit"])->name("karyawan.edit");
         Route::put("karyawan/{id}", [KaryawanController::class, "update"])->name("karyawan.update");
+        Route::delete("karyawan/{id}", [KaryawanController::class, "destroy"])->name("karyawan.destroy");
 
         Route::get("lokasi", [LokasiController::class, "index"])->name("lokasi.index");
         Route::put("lokasi/{id}", [LokasiController::class, "update"])->name("lokasi.update");

@@ -15,10 +15,17 @@ class AttendanceController extends Controller {
     }
 
     public function clockIn(Request $request) {
-        $request->validate(['latitude' => 'required|numeric', 'longitude' => 'required|numeric', 'face_similarity_score' => 'nullable|numeric']);
+        $request->validate(['latitude' => 'required|numeric', 'longitude' => 'required|numeric', 'face_similarity_score' => 'nullable|numeric', 'is_mocked' => 'nullable|boolean']);
         $karyawan = $request->user()->karyawan;
         $lokasi = $karyawan->lokasiKerja;
         if (!$lokasi) return response()->json(['message' => 'Lokasi kerja belum ditetapkan.'], 422);
+
+        // Anti Fake GPS: tolak absensi jika lokasi palsu terdeteksi (validasi
+        // server-side, backup dari cek client). Flag dari Position.isMocked.
+        if ($request->boolean('is_mocked')) {
+            return response()->json(['message' => 'Terdeteksi lokasi palsu (Fake GPS). Nonaktifkan aplikasi lokasi palsu untuk absen.'], 422);
+        }
+
         if (!GeofenceService::isInsideRadius($request->latitude, $request->longitude, $lokasi->latitude, $lokasi->longitude, $lokasi->radius_meter)) {
             return response()->json(['message' => 'Anda di luar radius lokasi kerja.'], 422);
         }
@@ -31,15 +38,21 @@ class AttendanceController extends Controller {
 
         $absensi = Absensi::updateOrCreate(
             ['karyawan_id' => $karyawan->id, 'tanggal' => today()],
-            ['jam_masuk' => $jamMasuk->format('H:i:s'), 'lat_masuk' => $request->latitude, 'lng_masuk' => $request->longitude, 'status_kehadiran' => $status, 'face_verified' => true, 'face_similarity_score' => $request->face_similarity_score]
+            ['jam_masuk' => $jamMasuk->format('H:i:s'), 'lat_masuk' => $request->latitude, 'lng_masuk' => $request->longitude, 'status_kehadiran' => $status, 'face_verified' => true, 'face_similarity_score' => $request->face_similarity_score, 'is_mocked_masuk' => $request->boolean('is_mocked')]
         );
         return response()->json(['message' => 'Absen masuk berhasil.', 'data' => $absensi]);
     }
 
     public function clockOut(Request $request) {
-        $request->validate(['latitude' => 'required|numeric', 'longitude' => 'required|numeric']);
+        $request->validate(['latitude' => 'required|numeric', 'longitude' => 'required|numeric', 'is_mocked' => 'nullable|boolean']);
         $karyawan = $request->user()->karyawan;
         $lokasi = $karyawan->lokasiKerja;
+
+        // Anti Fake GPS: tolak absen pulang jika lokasi palsu terdeteksi.
+        if ($request->boolean('is_mocked')) {
+            return response()->json(['message' => 'Terdeteksi lokasi palsu (Fake GPS). Nonaktifkan aplikasi lokasi palsu untuk absen.'], 422);
+        }
+
         if (!GeofenceService::isInsideRadius($request->latitude, $request->longitude, $lokasi->latitude, $lokasi->longitude, $lokasi->radius_meter)) {
             return response()->json(['message' => 'Anda di luar radius lokasi kerja.'], 422);
         }
@@ -47,7 +60,7 @@ class AttendanceController extends Controller {
         if (!$absensi || !$absensi->jam_masuk) return response()->json(['message' => 'Belum absen masuk hari ini.'], 422);
         if ($absensi->jam_pulang) return response()->json(['message' => 'Sudah absen pulang hari ini.'], 422);
 
-        $absensi->update(['jam_pulang' => Carbon::now()->format('H:i:s'), 'lat_pulang' => $request->latitude, 'lng_pulang' => $request->longitude]);
+        $absensi->update(['jam_pulang' => Carbon::now()->format('H:i:s'), 'lat_pulang' => $request->latitude, 'lng_pulang' => $request->longitude, 'is_mocked_pulang' => $request->boolean('is_mocked')]);
         return response()->json(['message' => 'Absen pulang berhasil.', 'data' => $absensi]);
     }
 

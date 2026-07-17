@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/http/dio_client.dart';
 import '../data/api_auth_repository.dart';
 import '../data/auth_repository.dart';
 import '../data/mock_auth_repository.dart';
@@ -18,15 +19,39 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return _useApi ? ApiAuthRepository() : MockAuthRepository();
 });
 
+/// Flag: sesi berakhir paksa (mis. akun dihapus admin -> server balas 401).
+/// Dipakai UI untuk menampilkan notifikasi "sesi berakhir" saat di login.
+class SessionExpiredNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void trigger() => state = true;
+  void reset() => state = false;
+}
+
+final sessionExpiredProvider =
+    NotifierProvider<SessionExpiredNotifier, bool>(SessionExpiredNotifier.new);
+
 /// State autentikasi (sumber kebenaran user yang login).
 ///
 /// `null` = belum login, `AppUser` = sudah login.
 class AuthController extends AsyncNotifier<AppUser?> {
   @override
   Future<AppUser?> build() async {
+    // Daftarkan handler 401 global: kalau token invalid/dihapus admin,
+    // paksa logout supaya router redirect ke /login (tidak stuck loading).
+    DioClient.instance.onUnauthorized = _handleUnauthorized;
+
     // Sengaja `ref.read` supaya override repository tidak me-reset session.
     final repo = ref.read(authRepositoryProvider);
     return repo.getCurrentUser();
+  }
+
+  /// Dipanggil interceptor Dio saat server balas 401.
+  void _handleUnauthorized() {
+    // Hanya proses kalau user memang sedang login.
+    if (state.value == null) return;
+    ref.read(sessionExpiredProvider.notifier).trigger();
+    state = const AsyncValue.data(null);
   }
 
   /// Login dengan username + password.

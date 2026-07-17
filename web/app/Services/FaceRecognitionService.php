@@ -7,6 +7,21 @@ use Illuminate\Http\UploadedFile;
 class FaceRecognitionService {
     private string $baseUrl;
 
+    /**
+     * Threshold verifikasi absensi harian (identitas harus yakin cocok).
+     */
+    public const VERIFY_THRESHOLD = 0.70;
+
+    /**
+     * Threshold deteksi duplikat saat enrollment. Sengaja lebih rendah
+     * dari VERIFY_THRESHOLD karena wajah orang yang SAMA difoto pada
+     * waktu/pencahayaan/sudut berbeda sering hanya menghasilkan
+     * similarity 0.6-0.65. Deteksi duplikat butuh sensitivitas lebih
+     * tinggi (tangkap lebih banyak calon), sementara orang berbeda
+     * umumnya < 0.45 sehingga 0.55 tetap aman dari false positive.
+     */
+    public const DUPLICATE_THRESHOLD = 0.55;
+
     public function __construct() {
         $this->baseUrl = config('services.fastapi.url', 'http://127.0.0.1:8001');
     }
@@ -130,7 +145,7 @@ class FaceRecognitionService {
         return $dot / (sqrt($normA) * sqrt($normB));
     }
 
-    public function findDuplicateFace(array $newEmbedding, $existingEmbeddings, float $threshold = 0.7): array {
+    public function findDuplicateFace(array $newEmbedding, $existingEmbeddings, float $threshold = self::DUPLICATE_THRESHOLD): array {
         $highestSimilarity = 0.0;
         $matchedKaryawan = null;
 

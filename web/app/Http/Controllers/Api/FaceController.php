@@ -53,7 +53,14 @@ class FaceController extends Controller {
             });
 
         if ($otherEmbeddings->isNotEmpty()) {
-            $dup = $this->faceService->findDuplicateFace($newEmbedding, $otherEmbeddings);
+            // Pakai threshold duplikat (0.55) yang lebih sensitif daripada
+            // threshold verifikasi harian (0.70), karena wajah orang sama
+            // difoto beda waktu/sudut sering hanya menghasilkan similarity 0.6-0.65.
+            $dup = $this->faceService->findDuplicateFace(
+                $newEmbedding,
+                $otherEmbeddings,
+                FaceRecognitionService::DUPLICATE_THRESHOLD
+            );
             if ($dup['found']) {
                 Log::warning("ENROLLMENT DITOLAK: karyawan_id={$karyawan->id} wajah mirip {$dup['nama']} (sim={$dup['similarity']})");
                 return response()->json([

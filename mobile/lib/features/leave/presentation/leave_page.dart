@@ -91,12 +91,15 @@ class _LeavePageState extends ConsumerState<LeavePage> {
         alasan: _alasanCtrl.text.trim(),
       );
       if (!mounted) return;
+      // Reset form dulu (menghapus error validasi), baru clear controller.
+      // Urutan penting: reset() mengembalikan text ke nilai awal, jadi
+      // clear() harus dipanggil SETELAH reset() supaya field benar-benar kosong.
+      _formKey.currentState!.reset();
+      _alasanCtrl.clear();
       setState(() {
         _submitting = false;
         _tanggalMulai = null;
         _tanggalSelesai = null;
-        _alasanCtrl.clear();
-        _formKey.currentState!.reset();
       });
       _loadLeaves();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -144,7 +147,11 @@ class _LeavePageState extends ConsumerState<LeavePage> {
               ),
             ),
             Expanded(
-              child: ListView(
+              child: RefreshIndicator(
+                onRefresh: _loadLeaves,
+                color: AppColors.primary,
+                child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(20),
                 children: [
                   // Form card
@@ -220,6 +227,7 @@ class _LeavePageState extends ConsumerState<LeavePage> {
                       return _LeaveTile(leave: l, df: df);
                     }),
                 ],
+                ),
               ),
             ),
           ],

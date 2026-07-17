@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -20,9 +21,16 @@ class AuthController extends Controller
             "password" => "required",
         ]);
 
-        // Mock: admin/password untuk Phase 2 (tanpa DB).
-        if ($credentials["username"] === "admin" && $credentials["password"] === "password") {
-            session(["admin_logged_in" => true, "admin_user" => ["nama" => "Administrator", "email" => "admin@kafe12.com"]]);
+        // Cek ke database: user dengan role admin (username case-insensitive).
+        $user = User::whereRaw("LOWER(username) = ?", [strtolower($credentials["username"])])
+            ->where("role", "admin")
+            ->first();
+
+        if ($user && Hash::check($credentials["password"], $user->password)) {
+            session([
+                "admin_logged_in" => true,
+                "admin_user" => ["nama" => $user->name, "email" => $user->email],
+            ]);
             return redirect()->route("admin.dashboard");
         }
 

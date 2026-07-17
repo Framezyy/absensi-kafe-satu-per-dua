@@ -94,6 +94,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             action: q['action'] ?? 'in',
             latitude: double.tryParse(q['lat'] ?? '') ?? 0,
             longitude: double.tryParse(q['lng'] ?? '') ?? 0,
+            isMocked: q['mocked'] == 'true',
           );
         },
       ),
