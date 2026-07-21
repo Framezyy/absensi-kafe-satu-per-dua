@@ -20,36 +20,38 @@ class DioClient {
   /// Di-set oleh AuthController untuk memicu force-logout + redirect login.
   void Function()? onUnauthorized;
 
-  late final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: Env.apiBaseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    ),
-  )..interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = await _storage.read(key: _tokenKey);
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          return handler.next(options);
-        },
-        onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            // Token expired/invalid (mis. akun dihapus admin) — hapus token
-            // lokal lalu picu force-logout supaya app redirect ke login.
-            await _storage.delete(key: _tokenKey);
-            onUnauthorized?.call();
-          }
-          return handler.next(error);
-        },
-      ),
-    );
+  late final Dio dio =
+      Dio(
+          BaseOptions(
+            baseUrl: Env.apiBaseUrl,
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 10),
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+          ),
+        )
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) async {
+              final token = await _storage.read(key: _tokenKey);
+              if (token != null) {
+                options.headers['Authorization'] = 'Bearer $token';
+              }
+              return handler.next(options);
+            },
+            onError: (error, handler) async {
+              if (error.response?.statusCode == 401) {
+                // Token expired/invalid (mis. akun dihapus admin) — hapus token
+                // lokal lalu picu force-logout supaya app redirect ke login.
+                await _storage.delete(key: _tokenKey);
+                onUnauthorized?.call();
+              }
+              return handler.next(error);
+            },
+          ),
+        );
 
   /// Simpan token setelah login berhasil.
   Future<void> saveToken(String token) =>

@@ -50,14 +50,14 @@
                 <div class="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-widest text-stone-500">Manajemen</div>
                 <x-nav-link route="admin.karyawan.index" :active="request()->routeIs('admin.karyawan.*')" label="Karyawan" icon="users" />
                 <x-nav-link route="admin.lokasi.index" :active="request()->routeIs('admin.lokasi.*')" label="Lokasi Kerja" icon="map-pin" />
+                <x-nav-link route="admin.shifts.index" :active="request()->routeIs('admin.shifts.*')" label="Shift" icon="clock" />
+                <x-nav-link route="admin.jadwal.index" :active="request()->routeIs('admin.jadwal.*')" label="Jadwal Kerja" icon="calendar" />
                 <x-nav-link route="admin.izin.index" :active="request()->routeIs('admin.izin.*')" label="Approval Izin" icon="clipboard-check" />
+                <x-nav-link route="admin.corrections.index" :active="request()->routeIs('admin.corrections.*')" label="Koreksi Absensi" icon="clock-edit" />
 
                 <div class="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-widest text-stone-500">Keuangan</div>
-                <x-nav-link route="admin.bonus.index" :active="request()->routeIs('admin.bonus.*')" label="Bonus" icon="gift" />
                 <x-nav-link route="admin.payroll.index" :active="request()->routeIs('admin.payroll.*')" label="Rekap Payroll" icon="wallet" />
 
-                <div class="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-widest text-stone-500">Keamanan</div>
-                <x-nav-link route="admin.audit.index" :active="request()->routeIs('admin.audit.*')" label="Audit Wajah" icon="shield" />
             </nav>
 
             {{-- Mini profile --}}

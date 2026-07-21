@@ -26,19 +26,18 @@
             </div>
         </div>
         <button id="btnEdit" class="flex items-center gap-2 self-start rounded-2xl px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-amber-500/25 transition hover:shadow-amber-500/40 sm:self-auto" style="background: linear-gradient(135deg, #d97706, #b45309);"
-            data-id="{{ $lokasi->id }}" data-nama="{{ $lokasi->nama_lokasi }}" data-lat="{{ $lokasi->latitude }}" data-lng="{{ $lokasi->longitude }}" data-radius="{{ $lokasi->radius_meter }}" data-jam="{{ \Carbon\Carbon::parse($lokasi->jam_masuk_standar)->format('H:i') }}" data-toleransi="{{ $lokasi->toleransi_menit }}">
+            data-id="{{ $lokasi->id }}" data-nama="{{ $lokasi->nama_lokasi }}" data-lat="{{ $lokasi->latitude }}" data-lng="{{ $lokasi->longitude }}" data-radius="{{ $lokasi->radius_meter }}">
             <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             Edit Lokasi
         </button>
     </div>
 
     {{-- Detail grid --}}
-    <div class="grid grid-cols-2 gap-px bg-stone-100 sm:grid-cols-4">
+    <div class="grid grid-cols-1 gap-px bg-stone-100 sm:grid-cols-3">
         @php
             $details = [
                 ["Radius Geofence", $lokasi->radius_meter . " meter", "M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z"],
-                ["Jam Masuk", \Carbon\Carbon::parse($lokasi->jam_masuk_standar)->format("H:i") . " WIB", "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"],
-                ["Toleransi", $lokasi->toleransi_menit . " menit", "M13 10V3L4 14h7v7l9-11h-7z"],
+                ["Koordinat", number_format($lokasi->latitude, 5) . ", " . number_format($lokasi->longitude, 5), "M3 11l18-5v12L3 13v-2z"],
                 ["Karyawan", $lokasi->karyawan_count . " orang", "M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-2.13a4 4 0 100-8 4 4 0 000 8z"],
             ];
         @endphp
@@ -95,16 +94,7 @@
                     <label class="mb-1.5 block text-sm font-semibold text-stone-700">Nama Lokasi</label>
                     <input type="text" name="nama_lokasi" id="inputNama" required class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="mb-1.5 block text-sm font-semibold text-stone-700">Jam Masuk Standar</label>
-                        <input type="time" name="jam_masuk_standar" id="inputJam" class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15">
-                    </div>
-                    <div>
-                        <label class="mb-1.5 block text-sm font-semibold text-stone-700">Toleransi (menit)</label>
-                        <input type="number" name="toleransi_menit" id="inputToleransi" min="0" max="60" class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15">
-                    </div>
-                </div>
+                <div class="rounded-2xl border border-amber-100 bg-amber-50/60 px-4 py-3 text-xs text-amber-800">Jam kerja dan toleransi keterlambatan dikelola pada menu <strong>Shift</strong>. Lokasi hanya menjadi sumber validasi geofence.</div>
                 <div class="text-xs text-stone-400">Koordinat: <span id="coordDisplay" class="font-mono"></span></div>
                 <div class="flex justify-end gap-3 pt-2">
                     <button type="button" id="btnBatal" class="rounded-2xl border border-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-600 transition hover:bg-stone-50">Batal</button>
@@ -125,8 +115,6 @@ document.addEventListener("DOMContentLoaded", function() {
     var btnLokasi = document.getElementById("btnLokasi");
     var radiusSlider = document.getElementById("radiusSlider");
     var inputNama = document.getElementById("inputNama");
-    var inputJam = document.getElementById("inputJam");
-    var inputToleransi = document.getElementById("inputToleransi");
     var inputLat = document.getElementById("inputLat");
     var inputLng = document.getElementById("inputLng");
     var inputRadius = document.getElementById("inputRadius");
@@ -142,8 +130,6 @@ document.addEventListener("DOMContentLoaded", function() {
             var data = this.dataset;
             modal.classList.remove("hidden");
             inputNama.value = data.nama;
-            inputJam.value = data.jam;
-            inputToleransi.value = data.toleransi;
             inputLat.value = data.lat;
             inputLng.value = data.lng;
             inputRadius.value = data.radius;

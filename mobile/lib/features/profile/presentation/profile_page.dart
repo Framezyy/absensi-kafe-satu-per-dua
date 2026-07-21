@@ -40,7 +40,12 @@ class ProfilePage extends ConsumerWidget {
             // Header gradient
             Container(
               width: double.infinity,
-              padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 16, 20, 28),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.paddingOf(context).top + 16,
+                20,
+                28,
+              ),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -56,38 +61,63 @@ class ProfilePage extends ConsumerWidget {
                 children: [
                   const Align(
                     alignment: Alignment.centerLeft,
-                    child: Text('Profil', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
+                    child: Text(
+                      'Profil',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Container(
-                    width: 72, height: 72,
+                    width: 72,
+                    height: 72,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white.withValues(alpha: 0.15),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 2,
+                      ),
                     ),
                     child: Center(
                       child: Text(
                         (user?.nama ?? '?')[0].toUpperCase(),
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white),
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     user?.nama ?? '-',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       user?.jabatan ?? '-',
-                      style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.85)),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
                     ),
                   ),
                 ],
@@ -98,26 +128,63 @@ class ProfilePage extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  _InfoCard(items: [
-                    _InfoRow(icon: Icons.badge_outlined, label: 'ID Karyawan', value: user?.idKaryawan ?? '-'),
-                    _InfoRow(icon: Icons.work_outline_rounded, label: 'Jabatan', value: user?.jabatan ?? '-'),
-                    _InfoRow(icon: Icons.calendar_today_rounded, label: 'Bergabung', value: user != null ? df.format(user.tanggalBergabung) : '-'),
-                    _InfoRow(icon: Icons.circle, label: 'Status', value: (user?.statusAktif ?? false) ? 'Aktif' : 'Tidak Aktif', valueColor: (user?.statusAktif ?? false) ? AppColors.success : AppColors.error),
-                  ]),
+                  _InfoCard(
+                    items: [
+                      _InfoRow(
+                        icon: Icons.badge_outlined,
+                        label: 'ID Karyawan',
+                        value: user?.idKaryawan ?? '-',
+                      ),
+                      _InfoRow(
+                        icon: Icons.work_outline_rounded,
+                        label: 'Jabatan',
+                        value: user?.jabatan ?? '-',
+                      ),
+                      _InfoRow(
+                        icon: Icons.calendar_today_rounded,
+                        label: 'Bergabung',
+                        value: user != null
+                            ? df.format(user.tanggalBergabung)
+                            : '-',
+                      ),
+                      _InfoRow(
+                        icon: Icons.circle,
+                        label: 'Status',
+                        value: (user?.statusAktif ?? false)
+                            ? 'Aktif'
+                            : 'Tidak Aktif',
+                        valueColor: (user?.statusAktif ?? false)
+                            ? AppColors.success
+                            : AppColors.error,
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 24),
                   SizedBox(
                     height: 52,
                     child: OutlinedButton.icon(
-                      onPressed: isLoggingOut ? null : () => _handleLogout(context, ref),
+                      onPressed: isLoggingOut
+                          ? null
+                          : () => _handleLogout(context, ref),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.error,
-                        side: BorderSide(color: AppColors.error.withValues(alpha: 0.4)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        side: BorderSide(
+                          color: AppColors.error.withValues(alpha: 0.4),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
                       icon: isLoggingOut
-                          ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Icon(Icons.logout_rounded, size: 20),
-                      label: Text(isLoggingOut ? 'Sedang keluar...' : 'Keluar dari Akun'),
+                      label: Text(
+                        isLoggingOut ? 'Sedang keluar...' : 'Keluar dari Akun',
+                      ),
                     ),
                   ),
                 ],
@@ -140,7 +207,13 @@ class _InfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 12, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: items.asMap().entries.map((e) {
@@ -148,7 +221,12 @@ class _InfoCard extends StatelessWidget {
           return Column(
             children: [
               e.value,
-              if (!isLast) Divider(height: 1, indent: 56, color: AppColors.divider.withValues(alpha: 0.5)),
+              if (!isLast)
+                Divider(
+                  height: 1,
+                  indent: 56,
+                  color: AppColors.divider.withValues(alpha: 0.5),
+                ),
             ],
           );
         }).toList(),
@@ -158,8 +236,16 @@ class _InfoCard extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.label, required this.value, this.valueColor});
-  final IconData icon; final String label; final String value; final Color? valueColor;
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color? valueColor;
 
   @override
   Widget build(BuildContext context) {
@@ -168,8 +254,12 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(icon, size: 18, color: AppColors.primary),
           ),
           const SizedBox(width: 14),
@@ -177,9 +267,22 @@ class _InfoRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: valueColor ?? AppColors.textPrimary)),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: valueColor ?? AppColors.textPrimary,
+                  ),
+                ),
               ],
             ),
           ),

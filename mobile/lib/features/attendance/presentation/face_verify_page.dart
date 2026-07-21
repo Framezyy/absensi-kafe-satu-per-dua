@@ -13,7 +13,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../face_enroll/data/api_face_repository.dart';
 import '../../face_enroll/data/camera_image_converter.dart';
-import '../data/api_attendance_repository.dart';
+import '../data/attendance_providers.dart';
 
 /// Aksi liveness yang diminta saat verifikasi absensi.
 enum VerifyAction {
@@ -54,13 +54,7 @@ class FaceVerifyPage extends ConsumerStatefulWidget {
   ConsumerState<FaceVerifyPage> createState() => _FaceVerifyPageState();
 }
 
-enum _VerifyPhase {
-  preparing,
-  detecting,
-  sending,
-  success,
-  failed,
-}
+enum _VerifyPhase { preparing, detecting, sending, success, failed }
 
 class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
     with SingleTickerProviderStateMixin {
@@ -148,8 +142,11 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
   }
 
   Future<void> _processFrame(CameraImage image) async {
-    final inputImage =
-        cameraImageToInputImage(image, _cameraCtrl!.description, _sensorOrientation);
+    final inputImage = cameraImageToInputImage(
+      image,
+      _cameraCtrl!.description,
+      _sensorOrientation,
+    );
     if (inputImage == null) return;
 
     final faces = await _faceDetector.processImage(inputImage);
@@ -169,7 +166,8 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
   void _detectBlink(Face face) {
     // Cooldown: cegah trigger berulang dalam 500ms.
     if (_lastBlinkCapture != null &&
-        DateTime.now().difference(_lastBlinkCapture!) < AppConstants.blinkCooldown) {
+        DateTime.now().difference(_lastBlinkCapture!) <
+            AppConstants.blinkCooldown) {
       return;
     }
 
@@ -204,7 +202,8 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
 
     if (met) {
       _poseStableStart ??= DateTime.now();
-      if (DateTime.now().difference(_poseStableStart!) >= AppConstants.poseStableDuration) {
+      if (DateTime.now().difference(_poseStableStart!) >=
+          AppConstants.poseStableDuration) {
         _onActionDetected();
       }
     } else {
@@ -228,7 +227,7 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
       final faceRepo = ApiFaceRepository();
       final verifyResult = await faceRepo.verify(
         frame: frameBytes,
-        karyawanId: 0, // karyawan_id diambil dari token di backend
+        action: widget.action == 'out' ? 'clock_out' : 'clock_in',
       );
       if (!mounted) return;
 
@@ -236,31 +235,58 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
       if (!verifyResult.success) {
         setState(() {
           _phase = _VerifyPhase.failed;
-          _failMessage = verifyResult.message ?? 'Wajah tidak cocok dengan data terdaftar';
+          _failMessage =
+              verifyResult.message ?? 'Wajah tidak cocok dengan data terdaftar';
         });
         return;
       }
 
       // 4. Wajah cocok → clock-in / clock-out sesuai action.
       //    Koordinat sudah diambil di halaman absensi (widget.latitude/longitude).
-      final attRepo = ApiAttendanceRepository();
-      final isClockIn = widget.action != 'out';
+      final attRepo = ref.read(attendanceRepositoryProvider);
+      final isClockIn = widget.action == 'in';
+      final verificationToken = verifyResult.verificationToken;
+      if (verificationToken == null || verificationToken.isEmpty) {
+        setState(() {
+          _phase = _VerifyPhase.failed;
+          _failMessage = 'Token verifikasi wajah tidak tersedia.';
+        });
+        return;
+      }
       final result = isClockIn
           ? await attRepo.clockIn(
               latitude: widget.latitude,
               longitude: widget.longitude,
-              faceSimilarityScore: verifyResult.similarity ?? 0.0,
+              faceVerificationToken: verificationToken,
               isMocked: widget.isMocked,
             )
           : await attRepo.clockOut(
               latitude: widget.latitude,
               longitude: widget.longitude,
+              faceVerificationToken: verificationToken,
               isMocked: widget.isMocked,
             );
 
       if (!mounted) return;
       if (result.isSuccess) {
-        _clockTime = DateTime.now();
+        _clockTime =
+            result.serverTime ??
+            (isClockIn ? result.record?.clockInAt : result.record?.clockOutAt);
+        if (_clockTime == null) {
+          setState(() {
+            _phase = _VerifyPhase.failed;
+            _failMessage = 'Server tidak mengembalikan waktu absensi.';
+          });
+          return;
+        }
+        ref.invalidate(todayAttendanceProvider);
+        final clockMonth = _clockTime!;
+        ref.invalidate(
+          monthHistoryProvider((
+            year: clockMonth.year,
+            month: clockMonth.month,
+          )),
+        );
         setState(() => _phase = _VerifyPhase.success);
         HapticFeedback.mediumImpact();
 
@@ -332,8 +358,10 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
           children: [
             CircularProgressIndicator(color: Colors.white),
             SizedBox(height: 16),
-            Text('Menginisialisasi kamera...',
-                style: TextStyle(color: Colors.white70)),
+            Text(
+              'Menginisialisasi kamera...',
+              style: TextStyle(color: Colors.white70),
+            ),
           ],
         ),
       );
@@ -348,9 +376,11 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 56),
               const SizedBox(height: 16),
-              Text(_initError!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white70)),
+              Text(
+                _initError!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70),
+              ),
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -373,8 +403,13 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
             TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: 1.0),
               duration: const Duration(milliseconds: 500),
-              builder: (ctx, v, child) => Transform.scale(scale: v, child: child),
-              child: const Icon(Icons.check_circle, color: AppColors.success, size: 96),
+              builder: (ctx, v, child) =>
+                  Transform.scale(scale: v, child: child),
+              child: const Icon(
+                Icons.check_circle,
+                color: AppColors.success,
+                size: 96,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -403,7 +438,10 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
           children: [
             CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
             SizedBox(height: 20),
-            Text('Memverifikasi...', style: TextStyle(color: Colors.white70, fontSize: 16)),
+            Text(
+              'Memverifikasi...',
+              style: TextStyle(color: Colors.white70, fontSize: 16),
+            ),
           ],
         ),
       );
@@ -422,7 +460,11 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
               Text(
                 _failMessage ?? 'Verifikasi gagal',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
@@ -433,8 +475,10 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () => context.go(AppRoutes.home),
-                child: const Text('Kembali ke Beranda',
-                    style: TextStyle(color: Colors.white60)),
+                child: const Text(
+                  'Kembali ke Beranda',
+                  style: TextStyle(color: Colors.white60),
+                ),
               ),
             ],
           ),
@@ -458,7 +502,10 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(16),
@@ -497,11 +544,17 @@ class _FaceVerifyPageState extends ConsumerState<FaceVerifyPage>
               children: [
                 FadeTransition(
                   opacity: _pulseAnim,
-                  child: const Icon(Icons.circle, color: AppColors.success, size: 10),
+                  child: const Icon(
+                    Icons.circle,
+                    color: AppColors.success,
+                    size: 10,
+                  ),
                 ),
                 const SizedBox(width: 8),
-                const Text('Kamera aktif — ikuti instruksi',
-                    style: TextStyle(color: Colors.white70, fontSize: 13)),
+                const Text(
+                  'Kamera aktif — ikuti instruksi',
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
               ],
             ),
           ),

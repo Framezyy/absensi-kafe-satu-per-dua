@@ -86,6 +86,8 @@ Buka http://localhost:8000 di browser.
 | POST | /api/attendance/clock-in | Absen masuk (validasi geofence) |
 | POST | /api/attendance/clock-out | Absen pulang |
 | GET | /api/attendance/history | Riwayat per bulan |
+| GET | /api/attendance/corrections | Riwayat koreksi absensi |
+| POST | /api/attendance/corrections | Ajukan koreksi lupa absen pulang |
 | GET | /api/leaves | List izin |
 | POST | /api/leaves | Ajukan izin |
 | GET | /api/locations/active | Lokasi kerja aktif |
@@ -98,7 +100,9 @@ Buka http://localhost:8000 di browser.
 - Login dengan Sanctum token
 - Registrasi wajah 3-tahap (blink, noleh kiri, noleh kanan) via ML Kit
 - Absensi masuk/pulang dengan validasi GPS geofence + verifikasi wajah
+- Jadwal shift pagi/malam, termasuk shift yang melewati tengah malam
 - Riwayat kehadiran per bulan
+- Pengajuan koreksi untuk absensi pulang yang terlupa
 - Pengajuan izin
 - Profil karyawan
 
@@ -107,10 +111,17 @@ Buka http://localhost:8000 di browser.
 - Manajemen karyawan (CRUD)
 - Konfigurasi lokasi geofence (Leaflet map picker)
 - Monitor absensi real-time
+- Manajemen shift dan jadwal kerja karyawan
+- Persetujuan atau penolakan koreksi absensi
 - Approval izin
-- Manajemen bonus
-- Rekap payroll otomatis: (Hadir x Tarif) + Bonus
+- Rekap payroll Rp10.000 per jam, maksimal 480 menit atau Rp80.000 per shift
 - Audit log verifikasi wajah
+
+**Aturan Penggajian:**
+- Gaji dihitung proporsional per menit dari durasi kerja di dalam jadwal shift
+- Datang sebelum jadwal dan pulang setelah jadwal tidak menambah gaji
+- Absensi tidak lengkap tidak dihitung sampai koreksi disetujui admin
+- Sistem tidak menghitung bonus maupun lembur
 
 **Face Recognition:**
 - MTCNN untuk deteksi wajah

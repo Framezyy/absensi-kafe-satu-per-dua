@@ -1,63 +1,38 @@
 @extends("layouts.admin")
 @section("title", "Rekap Payroll")
 @section("content")
+@php
+    $periodDate = \Carbon\Carbon::createFromFormat('Y-m', $period)->startOfMonth();
+    $totalSessions = $payroll->sum('total_hadir');
+    $totalIncomplete = $payroll->sum('total_tidak_lengkap');
+    $totalMinutes = $payroll->sum('total_paid_minutes');
+@endphp
 
-<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-    <div class="relative overflow-hidden rounded-3xl p-6 text-white shadow-lg sm:col-span-1" style="background: linear-gradient(150deg, #3d2417, #5a3620);">
-        <div class="absolute -right-6 -top-6 h-32 w-32 rounded-full opacity-20 blur-2xl" style="background:#f59e0b;"></div>
-        <div class="relative">
-            <div class="text-xs font-semibold uppercase tracking-wide text-amber-300/90">Total Pengeluaran</div>
-            <div class="mt-2 text-2xl font-extrabold">Rp {{ number_format($totalPengeluaran, 0, ",", ".") }}</div>
-            <div class="mt-1 text-xs text-stone-300/70">{{ now()->translatedFormat("F Y") }}</div>
-        </div>
+<div x-data="{ generateOpen: false }">
+    <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div><p class="text-sm text-stone-500">Rekap gaji berdasarkan durasi kerja untuk periode {{ $periodDate->translatedFormat('F Y') }}.</p><p class="mt-1 text-xs text-stone-400">Tarif Rp10.000 per jam, maksimal 480 menit atau Rp80.000 per shift.</p></div>
+        <form method="GET" class="flex flex-col gap-2 sm:flex-row sm:items-end"><div><label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-stone-400">Periode</label><input type="month" name="period" value="{{ $period }}" class="w-full rounded-2xl border border-stone-200 bg-white/80 px-4 py-2.5 text-sm outline-none backdrop-blur focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 sm:w-48"></div><button class="rounded-2xl bg-stone-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-stone-800">Tampilkan</button><button type="button" @click="generateOpen = true" class="flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-amber-500/25" style="background: linear-gradient(135deg, #d97706, #b45309);"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Rekap Ulang</button></form>
     </div>
-    <div class="rounded-3xl border border-white/70 bg-white/80 p-6 shadow-sm backdrop-blur sm:col-span-2">
-        <div class="flex items-start gap-3">
-            <svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <div>
-                <h3 class="text-sm font-extrabold text-stone-800">Cara Perhitungan Gaji</h3>
-                <p class="mt-1 text-sm text-stone-500">Total gaji dihitung otomatis dari data absensi + bonus periode berjalan:</p>
-                <div class="mt-3 rounded-xl bg-stone-50 px-4 py-2.5 font-mono text-sm text-stone-700">Total Gaji = (Hari Hadir × Tarif Harian) + Total Bonus</div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="overflow-hidden rounded-3xl border border-white/70 bg-white/80 shadow-sm backdrop-blur">
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="border-b border-stone-100 text-left text-[11px] font-bold uppercase tracking-wider text-stone-400">
-                    <th class="px-6 py-4">Karyawan</th><th class="px-6 py-4">Hadir</th><th class="px-6 py-4">Telat</th><th class="px-6 py-4">Tarif/Hari</th><th class="px-6 py-4">Bonus</th><th class="px-6 py-4 text-right">Total Gaji</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-stone-50">
-            @foreach($payroll as $p)
-                <tr class="transition hover:bg-amber-50/40">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-9 w-9 items-center justify-center rounded-xl text-[11px] font-bold text-white" style="background: linear-gradient(135deg, #f59e0b, #d97706);">{{ strtoupper(substr($p->nama, 0, 2)) }}</div>
-                            <div><div class="font-semibold text-stone-800">{{ $p->nama }}</div><div class="text-[11px] text-stone-400">{{ $p->jabatan }}</div></div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4"><span class="font-mono font-semibold text-stone-700">{{ $p->hari_hadir }}</span> <span class="text-xs text-stone-400">hari</span></td>
-                    <td class="px-6 py-4">@if($p->terlambat > 0)<span class="rounded bg-amber-100 px-2 py-0.5 font-mono text-xs font-bold text-amber-700">{{ $p->terlambat }}x</span>@else<span class="text-stone-300">0</span>@endif</td>
-                    <td class="px-6 py-4 text-stone-600">Rp {{ number_format($p->tarif_harian, 0, ",", ".") }}</td>
-                    <td class="px-6 py-4 text-green-600">Rp {{ number_format($p->total_bonus, 0, ",", ".") }}</td>
-                    <td class="px-6 py-4 text-right"><span class="font-extrabold text-amber-700">Rp {{ number_format($p->total_gaji, 0, ",", ".") }}</span></td>
-                </tr>
-            @endforeach
-            @if($payroll->isEmpty())
-                <tr><td colspan="6" class="px-6 py-16 text-center text-sm text-stone-400">Belum ada data payroll.</td></tr>
-            @endif
-            </tbody>
-            <tfoot>
-                <tr class="border-t-2 border-stone-100 bg-stone-50/60">
-                    <td colspan="5" class="px-6 py-4 text-right text-sm font-bold text-stone-600">Total Pengeluaran</td>
-                    <td class="px-6 py-4 text-right text-base font-extrabold text-amber-700">Rp {{ number_format($totalPengeluaran, 0, ",", ".") }}</td>
-                </tr>
-            </tfoot>
-        </table>
+    <div class="mb-5 rounded-3xl border border-amber-100 bg-amber-50/60 p-5"><div class="flex items-start gap-3"><svg class="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><div><h3 class="text-sm font-extrabold text-amber-900">Rumus Penggajian</h3><div class="mt-2 rounded-xl bg-white/70 px-4 py-2.5 font-mono text-xs text-stone-700">menit dibayar = min({{ config('payroll.max_paid_minutes_per_shift') }}, overlap waktu hadir dengan jadwal)</div><div class="mt-2 rounded-xl bg-white/70 px-4 py-2.5 font-mono text-xs text-stone-700">gaji sesi = round(menit dibayar × Rp {{ number_format(config('payroll.hourly_rate'),0,',','.') }} ÷ 60)</div><p class="mt-2 text-xs text-amber-800">Total payroll adalah penjumlahan gaji setiap sesi selesai. Absensi tidak lengkap bernilai Rp0 sampai koreksi disetujui. Pembulatan dilakukan per sesi.</p></div></div></div>
+
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="relative overflow-hidden rounded-3xl p-6 text-white shadow-lg sm:col-span-2 xl:col-span-1" style="background: linear-gradient(150deg, #3d2417, #5a3620);"><div class="absolute -right-6 -top-6 h-32 w-32 rounded-full opacity-20 blur-2xl" style="background:#f59e0b;"></div><div class="relative"><div class="text-xs font-semibold uppercase tracking-wide text-amber-300/90">Total Pengeluaran</div><div class="mt-2 text-2xl font-extrabold">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</div><div class="mt-1 text-xs text-stone-300/70">{{ $periodDate->translatedFormat('F Y') }}</div></div></div>
+        @foreach([
+            ['Karyawan', $payroll->count(), 'snapshot payroll', '#eff6ff', '#2563eb', 'M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-2.13a4 4 0 100-8 4 4 0 000 8z'],
+            ['Sesi Selesai', $totalSessions, intdiv($totalMinutes, 60).'j '.($totalMinutes % 60).'m dibayar', '#ecfdf5', '#059669', 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+            ['Tidak Lengkap', $totalIncomplete, 'perlu koreksi', '#fef2f2', '#dc2626', 'M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.71-3L13.71 4a2 2 0 00-3.42 0L3.36 16a2 2 0 001.71 3z']
+        ] as $stat)
+        <div class="flex items-center gap-4 rounded-3xl border border-white/70 bg-white/80 p-5 shadow-sm backdrop-blur"><div class="flex h-12 w-12 items-center justify-center rounded-2xl" style="background:{{ $stat[3] }}"><svg class="h-6 w-6" style="color:{{ $stat[4] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $stat[5] }}"/></svg></div><div><div class="text-2xl font-extrabold text-stone-800">{{ $stat[1] }}</div><div class="text-sm font-semibold text-stone-600">{{ $stat[0] }}</div><div class="text-[11px] text-stone-400">{{ $stat[2] }}</div></div></div>
+        @endforeach
     </div>
+
+    @if($payroll->isNotEmpty())
+    <div class="overflow-hidden rounded-3xl border border-white/70 bg-white/80 shadow-sm backdrop-blur"><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b border-stone-100 text-left text-[11px] font-bold uppercase tracking-wider text-stone-400"><th class="px-6 py-4">Karyawan</th><th class="px-6 py-4">Sesi Selesai</th><th class="px-6 py-4">Durasi Dibayar</th><th class="px-6 py-4">Tidak Lengkap</th><th class="px-6 py-4">Tarif/Jam</th><th class="px-6 py-4 text-right">Total Gaji</th></tr></thead><tbody class="divide-y divide-stone-50">@foreach($payroll as $row)<tr class="transition hover:bg-amber-50/40"><td class="px-6 py-4"><div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-xl text-xs font-bold text-white" style="background:linear-gradient(135deg,#f59e0b,#d97706)">{{ strtoupper(substr($row->karyawan->nama_lengkap,0,2)) }}</div><div><div class="font-semibold text-stone-800">{{ $row->karyawan->nama_lengkap }}</div><div class="text-[11px] text-stone-400">{{ $row->karyawan->jabatan }}</div><a href="{{ route('admin.payroll.show', $row) }}" class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700">Lihat rincian rumus <span>→</span></a></div></div></td><td class="px-6 py-4"><span class="font-mono font-semibold text-stone-700">{{ $row->total_hadir }}</span> <span class="text-xs text-stone-400">shift</span></td><td class="px-6 py-4"><span class="font-mono font-semibold text-stone-700">{{ intdiv($row->total_paid_minutes,60) }}j {{ $row->total_paid_minutes % 60 }}m</span><div class="text-[11px] text-stone-400">{{ $row->total_paid_minutes }} menit</div></td><td class="px-6 py-4">@if($row->total_tidak_lengkap > 0)<span class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-600"><span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>{{ $row->total_tidak_lengkap }} sesi</span>@else<span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700"><span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>Lengkap</span>@endif</td><td class="px-6 py-4 font-semibold text-stone-600">Rp {{ number_format($row->tarif_per_jam,0,',','.') }}</td><td class="px-6 py-4 text-right"><div class="font-extrabold text-amber-700">Rp {{ number_format($row->total_gaji,0,',','.') }}</div><div class="mt-1 font-mono text-[10px] text-stone-400">Σ gaji sesi</div></td></tr>@endforeach</tbody><tfoot><tr class="border-t-2 border-stone-100 bg-stone-50/60"><td colspan="5" class="px-6 py-4 text-right text-sm font-bold text-stone-600">Total Pengeluaran</td><td class="px-6 py-4 text-right text-base font-extrabold text-amber-700">Rp {{ number_format($totalPengeluaran,0,',','.') }}</td></tr></tfoot></table></div></div>
+    @else
+    <div class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-stone-200 bg-white/50 py-16 text-center"><svg class="h-14 w-14 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h.01M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg><p class="mt-3 text-sm font-semibold text-stone-500">Belum ada rekap payroll {{ $periodDate->translatedFormat('F Y') }}</p><p class="mt-1 text-xs text-stone-400">Buat rekap untuk menghitung gaji dari absensi yang telah selesai.</p><button type="button" @click="generateOpen = true" class="mt-4 rounded-2xl bg-amber-700 px-4 py-2.5 text-sm font-bold text-white">Buat Rekap Payroll</button></div>
+    @endif
+
+    <div x-show="generateOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/40 p-4 backdrop-blur-sm" @click.self="generateOpen=false" @keydown.escape.window="generateOpen=false"><div x-show="generateOpen" x-transition class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"><div class="flex items-start gap-4"><div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-50"><svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></div><div><h3 class="text-base font-extrabold text-stone-800">Rekap payroll {{ $periodDate->translatedFormat('F Y') }}?</h3><p class="mt-1 text-sm text-stone-500">Sistem akan menghitung ulang snapshot payroll dari seluruh absensi selesai pada periode ini. Data snapshot sebelumnya akan diperbarui.</p></div></div><form method="POST" action="{{ route('admin.payroll.generate') }}" class="mt-6">@csrf<input type="hidden" name="period" value="{{ $period }}"><div class="flex justify-end gap-3"><button type="button" @click="generateOpen=false" class="rounded-2xl border border-stone-200 px-5 py-2.5 text-sm font-semibold text-stone-600">Batal</button><button class="rounded-2xl px-5 py-2.5 text-sm font-bold text-white" style="background:linear-gradient(135deg,#d97706,#b45309)">Ya, Hitung Ulang</button></div></form></div></div>
 </div>
 @endsection

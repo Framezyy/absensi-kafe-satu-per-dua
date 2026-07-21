@@ -9,12 +9,31 @@ class FaceResult {
   const FaceResult({
     required this.success,
     this.similarity,
+    this.verificationToken,
+    this.expiresAt,
     this.message,
+    this.code,
   });
 
   final bool success;
   final double? similarity;
+  final String? verificationToken;
+  final DateTime? expiresAt;
   final String? message;
+  final String? code;
+
+  factory FaceResult.fromJson(Map<String, dynamic> data) {
+    final success = data['match'] == true;
+    final token = data['verification_token']?.toString();
+    return FaceResult(
+      success: success && token != null && token.isNotEmpty,
+      similarity: ApiFaceRepository._double(data['similarity']),
+      verificationToken: token,
+      expiresAt: DateTime.tryParse(data['expires_at']?.toString() ?? ''),
+      message: data['message']?.toString(),
+      code: data['code']?.toString(),
+    );
+  }
 }
 
 /// Repository face recognition yang berkomunikasi dengan Laravel API.
@@ -23,15 +42,15 @@ class FaceResult {
 /// - `POST /face/enroll` — kirim 3 frame JPEG → FastAPI → simpan embedding
 /// - `POST /face/verify` — kirim 1 frame JPEG → FastAPI → cosine similarity
 class ApiFaceRepository {
-  final _dio = DioClient.instance.dio;
+  ApiFaceRepository({Dio? dio}) : _dio = dio ?? DioClient.instance.dio;
+
+  final Dio _dio;
 
   /// Kirim 3 frame JPEG ke API untuk enrollment.
   ///
   /// Laravel akan meneruskan ke FastAPI untuk generate mean embedding
   /// dari 3 frame, lalu menyimpannya di `face_embeddings` table.
-  Future<FaceResult> enroll({
-    required List<Uint8List> frames,
-  }) async {
+  Future<FaceResult> enroll({required List<Uint8List> frames}) async {
     try {
       final formData = FormData.fromMap({
         'frames[]': frames.asMap().entries.map((entry) {
@@ -55,7 +74,9 @@ class ApiFaceRepository {
     } on DioException catch (e) {
       return FaceResult(
         success: false,
-        message: e.response?.data['message'] as String? ?? 'Gagal mendaftarkan wajah.',
+        message:
+            e.response?.data['message'] as String? ??
+            'Gagal mendaftarkan wajah.',
       );
     }
   }
@@ -65,11 +86,12 @@ class ApiFaceRepository {
   /// Mengembalikan [FaceResult] dengan `success=true` jika similarity ≥ 0.7.
   Future<FaceResult> verify({
     required Uint8List frame,
-    required int karyawanId,
+    required String action,
   }) async {
     try {
       final formData = FormData.fromMap({
         'frame': MultipartFile.fromBytes(frame, filename: 'verify.jpg'),
+        'action': action,
       });
 
       final response = await _dio.post(
@@ -78,17 +100,33 @@ class ApiFaceRepository {
         options: Options(contentType: 'multipart/form-data'),
       );
 
-      final data = response.data;
-      return FaceResult(
-        success: data['match'] as bool,
-        similarity: (data['similarity'] as num).toDouble(),
-        message: data['message'] as String?,
-      );
+      final data = _map(response.data);
+      return FaceResult.fromJson(data);
     } on DioException catch (e) {
       return FaceResult(
         success: false,
-        message: e.response?.data['message'] as String? ?? 'Gagal verifikasi wajah.',
+        message:
+            _map(e.response?.data)['message']?.toString() ??
+            'Gagal verifikasi wajah.',
+        code: _map(e.response?.data)['code']?.toString(),
+      );
+    } catch (_) {
+      return const FaceResult(
+        success: false,
+        message: 'Respons verifikasi wajah tidak valid.',
+        code: 'INVALID_FACE_RESPONSE',
       );
     }
+  }
+
+  static Map<String, dynamic> _map(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return <String, dynamic>{};
+  }
+
+  static double? _double(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '');
   }
 }

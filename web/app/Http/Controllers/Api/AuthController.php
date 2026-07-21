@@ -1,19 +1,23 @@
 <?php
+
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-class AuthController extends Controller {
-    public function login(Request $request) {
+class AuthController extends Controller
+{
+    public function login(Request $request)
+    {
         $request->validate(['username' => 'required', 'password' => 'required']);
         // Normalisasi username ke lowercase supaya karyawan tidak gagal
         // login gara-gara huruf besar/kecil (AndiSaputra = andisaputra).
         $username = strtolower(trim($request->username));
         $user = User::whereRaw('LOWER(username) = ?', [$username])->first();
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages(['username' => ['Username atau password salah.']]);
         }
         // Karyawan nonaktif tidak boleh login.
@@ -23,6 +27,7 @@ class AuthController extends Controller {
         $token = $user->createToken('mobile')->plainTextToken;
         $karyawan = $user->karyawan;
         $hasFaceEnrolled = $karyawan && $karyawan->faceEmbedding && $karyawan->faceEmbedding->is_aktif;
+
         return response()->json([
             'token' => $token,
             'user' => [
@@ -35,10 +40,12 @@ class AuthController extends Controller {
         ]);
     }
 
-    public function me(Request $request) {
+    public function me(Request $request)
+    {
         $user = $request->user();
         $karyawan = $user->karyawan;
         $hasFaceEnrolled = $karyawan && $karyawan->faceEmbedding && $karyawan->faceEmbedding->is_aktif;
+
         return response()->json([
             'id' => $user->id, 'username' => $user->username, 'nama' => $user->name,
             'id_karyawan' => $karyawan->kode_karyawan ?? '', 'jabatan' => $karyawan->jabatan ?? '',
@@ -48,8 +55,10 @@ class AuthController extends Controller {
         ]);
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         $request->user()->currentAccessToken()->delete();
+
         return response()->json(['message' => 'Berhasil logout.']);
     }
 }

@@ -1,24 +1,32 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Karyawan;
 use App\Models\LokasiKerja;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-class KaryawanController extends Controller {
-    public function index() {
+class KaryawanController extends Controller
+{
+    public function index()
+    {
         $karyawan = Karyawan::with(['user', 'lokasiKerja', 'faceEmbedding'])->orderBy('nama_lengkap')->get();
+
         return view('admin.karyawan.index', compact('karyawan'));
     }
 
-    public function create() {
+    public function create()
+    {
         $lokasi = LokasiKerja::where('is_aktif', true)->get();
+
         return view('admin.karyawan.create', compact('lokasi'));
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         // Normalisasi username ke lowercase sebelum validasi & simpan.
         $request->merge([
             'username' => strtolower(trim($request->username ?? '')),
@@ -29,7 +37,6 @@ class KaryawanController extends Controller {
             'jabatan' => 'required|string|max:100',
             'username' => 'required|string|min:4|max:50|regex:/^[a-z0-9._]+$/|unique:users,username',
             'password' => 'required|string|size:12',
-            'tarif_harian' => 'required|integer|min:0',
             'tanggal_bergabung' => 'required|date',
             'lokasi_kerja_id' => 'nullable|exists:lokasi_kerja,id',
         ], [
@@ -41,7 +48,7 @@ class KaryawanController extends Controller {
         $user = User::create([
             'name' => $request->nama,
             'username' => $request->username,
-            'email' => $request->username . '@kafe12.com',
+            'email' => $request->username.'@kafe12.com',
             'password' => Hash::make($request->password),
             'role' => 'karyawan',
             'status' => 'aktif',
@@ -52,7 +59,7 @@ class KaryawanController extends Controller {
             'nama_lengkap' => $request->nama,
             'jabatan' => $request->jabatan,
             'lokasi_kerja_id' => $request->lokasi_kerja_id,
-            'tarif_gaji_harian' => $request->tarif_harian,
+            'tarif_per_jam' => config('payroll.hourly_rate', 10000),
             'tgl_bergabung' => $request->tanggal_bergabung,
             'status' => 'aktif',
         ]);
@@ -66,13 +73,16 @@ class KaryawanController extends Controller {
             ]);
     }
 
-    public function edit($id) {
+    public function edit($id)
+    {
         $k = Karyawan::with('user')->findOrFail($id);
         $lokasi = LokasiKerja::where('is_aktif', true)->get();
+
         return view('admin.karyawan.edit', compact('k', 'lokasi'));
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $k = Karyawan::with('user')->findOrFail($id);
 
         // Normalisasi username ke lowercase sebelum validasi.
@@ -83,10 +93,9 @@ class KaryawanController extends Controller {
         $request->validate([
             'nama' => 'required|string|max:255',
             'jabatan' => 'required|string|max:100',
-            'tarif_harian' => 'required|numeric|min:0',
             'status' => 'required|in:aktif,nonaktif',
             'lokasi_kerja_id' => 'nullable|exists:lokasi_kerja,id',
-            'username' => 'required|string|min:4|max:50|regex:/^[a-z0-9._]+$/|unique:users,username,' . $k->user_id,
+            'username' => 'required|string|min:4|max:50|regex:/^[a-z0-9._]+$/|unique:users,username,'.$k->user_id,
             'password' => 'nullable|string|size:12',
         ], [
             'username.regex' => 'Username hanya boleh huruf kecil, angka, titik, dan garis bawah.',
@@ -97,7 +106,7 @@ class KaryawanController extends Controller {
         $k->update([
             'nama_lengkap' => $request->nama,
             'jabatan' => $request->jabatan,
-            'tarif_gaji_harian' => $request->tarif_harian,
+            'tarif_per_jam' => config('payroll.hourly_rate', 10000),
             'status' => $request->status,
             'lokasi_kerja_id' => $request->lokasi_kerja_id,
         ]);
@@ -116,7 +125,8 @@ class KaryawanController extends Controller {
         return redirect()->route('admin.karyawan.index')->with('success', 'Karyawan berhasil diperbarui.');
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $k = Karyawan::with('user')->findOrFail($id);
         $nama = $k->nama_lengkap;
 
@@ -124,7 +134,6 @@ class KaryawanController extends Controller {
         $k->absensi()->delete();
         $k->faceEmbedding()->delete();
         $k->izin()->delete();
-        $k->bonus()->delete();
         $k->penggajian()->delete();
 
         // Simpan referensi user untuk dihapus setelah karyawan.

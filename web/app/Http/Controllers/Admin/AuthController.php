@@ -11,35 +11,39 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view("admin.login");
+        return view('admin.login');
     }
 
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            "username" => "required",
-            "password" => "required",
+            'username' => 'required',
+            'password' => 'required',
         ]);
 
         // Cek ke database: user dengan role admin (username case-insensitive).
-        $user = User::whereRaw("LOWER(username) = ?", [strtolower($credentials["username"])])
-            ->where("role", "admin")
+        $user = User::whereRaw('LOWER(username) = ?', [strtolower($credentials['username'])])
+            ->where('role', 'admin')
             ->first();
 
-        if ($user && Hash::check($credentials["password"], $user->password)) {
+        if ($user && $user->status === 'aktif' && Hash::check($credentials['password'], $user->password)) {
+            $request->session()->regenerate();
             session([
-                "admin_logged_in" => true,
-                "admin_user" => ["nama" => $user->name, "email" => $user->email],
+                'admin_logged_in' => true,
+                'admin_user' => ['id' => $user->id, 'nama' => $user->name, 'email' => $user->email],
             ]);
-            return redirect()->route("admin.dashboard");
+
+            return redirect()->route('admin.dashboard');
         }
 
-        return back()->withErrors(["username" => "Username atau password salah."])->withInput();
+        return back()->withErrors(['username' => 'Username atau password salah.'])->withInput();
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        session()->forget(["admin_logged_in", "admin_user"]);
-        return redirect()->route("admin.login");
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login');
     }
 }

@@ -28,8 +28,9 @@ class SessionExpiredNotifier extends Notifier<bool> {
   void reset() => state = false;
 }
 
-final sessionExpiredProvider =
-    NotifierProvider<SessionExpiredNotifier, bool>(SessionExpiredNotifier.new);
+final sessionExpiredProvider = NotifierProvider<SessionExpiredNotifier, bool>(
+  SessionExpiredNotifier.new,
+);
 
 /// State autentikasi (sumber kebenaran user yang login).
 ///
@@ -93,8 +94,9 @@ class AuthController extends AsyncNotifier<AppUser?> {
   }
 }
 
-final authControllerProvider =
-    AsyncNotifierProvider<AuthController, AppUser?>(AuthController.new);
+final authControllerProvider = AsyncNotifierProvider<AuthController, AppUser?>(
+  AuthController.new,
+);
 
 /// User yang sedang login (null jika belum login atau masih loading).
 final currentUserProvider = Provider<AppUser?>((ref) {

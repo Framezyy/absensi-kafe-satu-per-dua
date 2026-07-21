@@ -43,10 +43,30 @@ class MainShell extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _NavItem(icon: Icons.home_rounded, label: 'Beranda', active: idx == 0, onTap: () => _goBranch(0)),
-                _NavItem(icon: Icons.history_rounded, label: 'Riwayat', active: idx == 1, onTap: () => _goBranch(1)),
-                _NavItem(icon: Icons.event_note_rounded, label: 'Izin', active: idx == 2, onTap: () => _goBranch(2)),
-                _NavItem(icon: Icons.person_rounded, label: 'Profil', active: idx == 3, onTap: () => _goBranch(3)),
+                _NavItem(
+                  icon: Icons.home_rounded,
+                  label: 'Beranda',
+                  active: idx == 0,
+                  onTap: () => _goBranch(0),
+                ),
+                _NavItem(
+                  icon: Icons.history_rounded,
+                  label: 'Riwayat',
+                  active: idx == 1,
+                  onTap: () => _goBranch(1),
+                ),
+                _NavItem(
+                  icon: Icons.event_note_rounded,
+                  label: 'Izin',
+                  active: idx == 2,
+                  onTap: () => _goBranch(2),
+                ),
+                _NavItem(
+                  icon: Icons.person_rounded,
+                  label: 'Profil',
+                  active: idx == 3,
+                  onTap: () => _goBranch(3),
+                ),
               ],
             ),
           ),
@@ -57,7 +77,12 @@ class MainShell extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({required this.icon, required this.label, required this.active, required this.onTap});
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final bool active;
@@ -65,7 +90,9 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.6);
+    final color = active
+        ? AppColors.primary
+        : AppColors.textSecondary.withValues(alpha: 0.6);
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -74,7 +101,9 @@ class _NavItem extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: active ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
+            color: active
+                ? AppColors.primary.withValues(alpha: 0.1)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(

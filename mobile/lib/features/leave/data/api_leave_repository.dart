@@ -22,12 +22,14 @@ class ApiLeaveRepository {
     DateTime? tanggalSelesai,
     required String alasan,
   }) async {
-    final response = await _dio.post('/leaves', data: {
-      'tanggal_mulai': tanggalMulai.toIso8601String().split('T').first,
-      'tanggal_selesai':
-          tanggalSelesai?.toIso8601String().split('T').first,
-      'alasan': alasan,
-    });
+    final response = await _dio.post(
+      '/leaves',
+      data: {
+        'tanggal_mulai': tanggalMulai.toIso8601String().split('T').first,
+        'tanggal_selesai': tanggalSelesai?.toIso8601String().split('T').first,
+        'alasan': alasan,
+      },
+    );
     return LeaveRequest.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 }

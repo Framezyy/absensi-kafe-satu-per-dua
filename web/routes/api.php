@@ -1,10 +1,12 @@
 <?php
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
+
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\AttendanceCorrectionController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FaceController;
 use App\Http\Controllers\Api\LeaveController;
 use App\Http\Controllers\Api\LocationController;
-use App\Http\Controllers\Api\FaceController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('auth/login', [AuthController::class, 'login']);
 
@@ -16,6 +18,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn']);
     Route::post('attendance/clock-out', [AttendanceController::class, 'clockOut']);
     Route::get('attendance/history', [AttendanceController::class, 'history']);
+    Route::get('attendance/corrections', [AttendanceCorrectionController::class, 'index']);
+    Route::post('attendance/corrections', [AttendanceCorrectionController::class, 'store']);
 
     Route::get('leaves', [LeaveController::class, 'index']);
     Route::post('leaves', [LeaveController::class, 'store']);

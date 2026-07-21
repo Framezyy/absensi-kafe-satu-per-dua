@@ -82,7 +82,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   late final AnimationController _pulseAnim;
   bool _initializing = true;
   String? _initError;
-  bool _permissionDenied = false; // izin kamera ditolak (butuh handling khusus).
+  bool _permissionDenied =
+      false; // izin kamera ditolak (butuh handling khusus).
   bool _permissionPermanent = false; // ditolak permanen (harus buka Settings).
 
   // Sensor orientation kamera depan (dibaca dari CameraDescription).
@@ -200,8 +201,11 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   }
 
   Future<void> _processFrame(CameraImage image) async {
-    final inputImage =
-        cameraImageToInputImage(image, _cameraCtrl!.description, _sensorOrientation);
+    final inputImage = cameraImageToInputImage(
+      image,
+      _cameraCtrl!.description,
+      _sensorOrientation,
+    );
     if (inputImage == null) return;
 
     final faces = await _faceDetector.processImage(inputImage);
@@ -225,7 +229,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   void _detectBlink(Face face, CameraImage image) {
     // Cooldown: cegah trigger berulang dalam 500ms.
     if (_lastBlinkCapture != null &&
-        DateTime.now().difference(_lastBlinkCapture!) < AppConstants.blinkCooldown) {
+        DateTime.now().difference(_lastBlinkCapture!) <
+            AppConstants.blinkCooldown) {
       return;
     }
 
@@ -275,7 +280,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
 
     // Cooldown antar frame.
     if (_lastFrameCapture != null &&
-        DateTime.now().difference(_lastFrameCapture!) < AppConstants.captureCooldown) {
+        DateTime.now().difference(_lastFrameCapture!) <
+            AppConstants.captureCooldown) {
       return;
     }
 
@@ -284,9 +290,11 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
     final leftOpen = face.leftEyeOpenProbability ?? 1.0;
     final rightOpen = face.rightEyeOpenProbability ?? 1.0;
 
-    final isFrontal = yaw.abs() <= AppConstants.yawFrontalMaxAngle &&
+    final isFrontal =
+        yaw.abs() <= AppConstants.yawFrontalMaxAngle &&
         pitch.abs() <= AppConstants.pitchFrontalMaxAngle;
-    final eyesOpen = leftOpen >= AppConstants.eyeOpenForCapture &&
+    final eyesOpen =
+        leftOpen >= AppConstants.eyeOpenForCapture &&
         rightOpen >= AppConstants.eyeOpenForCapture;
 
     if (isFrontal && eyesOpen) {
@@ -315,7 +323,9 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
       final decoded = img.decodeImage(rawBytes);
       if (decoded != null) {
         final resized = img.copyResize(decoded, width: 480);
-        final compressed = Uint8List.fromList(img.encodeJpg(resized, quality: 75));
+        final compressed = Uint8List.fromList(
+          img.encodeJpg(resized, quality: 75),
+        );
         _frames.add(compressed);
       } else {
         _frames.add(rawBytes); // Fallback: pakai raw jika decode gagal.
@@ -354,7 +364,9 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   }
 
   void _onTimeout() {
-    if (!mounted || _step == _EnrollStep.done || _step == _EnrollStep.sending) return;
+    if (!mounted || _step == _EnrollStep.done || _step == _EnrollStep.sending) {
+      return;
+    }
     setState(() => _timedOut = true);
   }
 
@@ -385,7 +397,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
       }
     } else {
       setState(() {
-        _step = _EnrollStep.frontalCapture; // Kembali ke layar kamera agar error terlihat.
+        _step = _EnrollStep
+            .frontalCapture; // Kembali ke layar kamera agar error terlihat.
         _timedOut = true;
         _errorMessage = result.message ?? 'Gagal mendaftarkan wajah';
       });
@@ -428,10 +441,7 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
         ),
         child: Scaffold(
           backgroundColor: Colors.black,
-          body: SafeArea(
-            top: false,
-            child: _buildBody(),
-          ),
+          body: SafeArea(top: false, child: _buildBody()),
         ),
       ),
     );
@@ -446,8 +456,10 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
           children: [
             CircularProgressIndicator(color: Colors.white),
             SizedBox(height: 16),
-            Text('Menginisialisasi kamera...',
-                style: TextStyle(color: Colors.white70)),
+            Text(
+              'Menginisialisasi kamera...',
+              style: TextStyle(color: Colors.white70),
+            ),
           ],
         ),
       );
@@ -461,11 +473,19 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.no_photography_rounded, color: Colors.orangeAccent, size: 64),
+              const Icon(
+                Icons.no_photography_rounded,
+                color: Colors.orangeAccent,
+                size: 64,
+              ),
               const SizedBox(height: 16),
               const Text(
                 'Izin Kamera Diperlukan',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -482,13 +502,22 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
                         await openAppSettings();
                       }
                     : _initCamera,
-                icon: Icon(_permissionPermanent ? Icons.settings_rounded : Icons.camera_alt_rounded),
-                label: Text(_permissionPermanent ? 'Buka Pengaturan' : 'Izinkan Kamera'),
+                icon: Icon(
+                  _permissionPermanent
+                      ? Icons.settings_rounded
+                      : Icons.camera_alt_rounded,
+                ),
+                label: Text(
+                  _permissionPermanent ? 'Buka Pengaturan' : 'Izinkan Kamera',
+                ),
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _exitEnrollment,
-                child: const Text('Kembali ke Login', style: TextStyle(color: Colors.white60)),
+                child: const Text(
+                  'Kembali ke Login',
+                  style: TextStyle(color: Colors.white60),
+                ),
               ),
             ],
           ),
@@ -506,9 +535,11 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 56),
               const SizedBox(height: 16),
-              Text(_initError!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white70)),
+              Text(
+                _initError!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70),
+              ),
               const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: _initCamera,
@@ -518,7 +549,10 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _exitEnrollment,
-                child: const Text('Kembali ke Login', style: TextStyle(color: Colors.white60)),
+                child: const Text(
+                  'Kembali ke Login',
+                  style: TextStyle(color: Colors.white60),
+                ),
               ),
             ],
           ),
@@ -535,12 +569,13 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
             TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: 1.0),
               duration: const Duration(milliseconds: 500),
-              builder: (ctx, value, child) => Transform.scale(
-                scale: value,
-                child: child,
+              builder: (ctx, value, child) =>
+                  Transform.scale(scale: value, child: child),
+              child: const Icon(
+                Icons.check_circle,
+                color: AppColors.success,
+                size: 96,
               ),
-              child: const Icon(Icons.check_circle,
-                  color: AppColors.success, size: 96),
             ),
             const SizedBox(height: 20),
             const Text(
@@ -589,9 +624,7 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
         ),
 
         // Overlay gelap di luar oval guide.
-        Positioned.fill(
-          child: CustomPaint(painter: _OvalOverlayPainter()),
-        ),
+        Positioned.fill(child: CustomPaint(painter: _OvalOverlayPainter())),
 
         // Header: progress + instruksi.
         Positioned(
@@ -645,8 +678,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
                 color: active
                     ? AppColors.success
                     : current
-                        ? Colors.white
-                        : Colors.white30,
+                    ? Colors.white
+                    : Colors.white30,
                 borderRadius: BorderRadius.circular(5),
               ),
             );
@@ -691,7 +724,8 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
   Widget _buildBottom() {
     if (_timedOut) {
       final msg = _errorMessage ?? 'Waktu habis, silakan coba lagi';
-      final isDuplicate = _errorMessage != null && _errorMessage!.contains('sudah terdaftar');
+      final isDuplicate =
+          _errorMessage != null && _errorMessage!.contains('sudah terdaftar');
       return Column(
         children: [
           Container(
@@ -706,8 +740,7 @@ class _FaceEnrollPageState extends ConsumerState<FaceEnrollPage>
                 const Icon(Icons.error_outline, color: Colors.white, size: 20),
                 const SizedBox(width: 8),
                 Flexible(
-                  child: Text(msg,
-                      style: const TextStyle(color: Colors.white)),
+                  child: Text(msg, style: const TextStyle(color: Colors.white)),
                 ),
               ],
             ),

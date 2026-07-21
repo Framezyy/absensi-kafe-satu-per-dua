@@ -9,9 +9,10 @@ class AdminAuth
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!session("admin_logged_in")) {
-            return redirect()->route("admin.login");
+        if (! session('admin_logged_in')) {
+            return redirect()->route('admin.login');
         }
+
         return $next($request);
     }
 }

@@ -18,10 +18,12 @@ void main() {
 
   testWidgets('App boot menampilkan layar Login', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: KafeSatuPerduaApp()));
-    // Tunggu router redirect ke /login & frame pertama selesai.
-    await tester.pumpAndSettle();
+    // Login memiliki animasi berulang, jadi jangan menunggu seluruh animasi idle.
+    for (var i = 0; i < 20 && find.text('Username').evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
 
-    expect(find.text('Masuk'), findsWidgets);
+    expect(find.text('Selamat Datang'), findsOneWidget);
     expect(find.text('Username'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);
   });

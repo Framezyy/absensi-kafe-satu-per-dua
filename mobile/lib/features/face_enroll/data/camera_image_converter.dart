@@ -17,17 +17,12 @@ InputImage? cameraImageToInputImage(
 ) {
   final rawBytes = _extractNv21Bytes(image);
   if (rawBytes == null) {
-    print('[MLKIT] NV21 extraction FAILED: planes=${image.planes.length}, '
-        'w=${image.width}, h=${image.height}');
     return null;
   }
 
   final rotation =
       InputImageRotationValue.fromRawValue(sensorOrientation) ??
-          InputImageRotation.rotation0deg;
-
-  print('[MLKIT] InputImage OK: bytes=${rawBytes.length}, '
-      'rotation=$sensorOrientation, w=${image.width}, h=${image.height}');
+      InputImageRotation.rotation0deg;
 
   return InputImage.fromBytes(
     bytes: rawBytes,
@@ -47,10 +42,6 @@ Uint8List? _extractNv21Bytes(CameraImage image) {
   final h = image.height;
   final expectedSize = w * h * 3 ~/ 2; // NV21 = 1.5 bytes per pixel
 
-  print('[MLKIT] CameraImage: planes=${planes.length}, w=$w, h=$h, '
-      'format=${image.format.group}/${image.format.raw}, '
-      'expectedNv21Size=$expectedSize');
-
   if (planes.isEmpty) return null;
 
   // ── Kasus 1 plane: NV21 kontinu (seluruh buffer di planes[0]) ──
@@ -58,9 +49,6 @@ Uint8List? _extractNv21Bytes(CameraImage image) {
   // Data sudah dalam format NV21, langsung pakai.
   if (planes.length == 1) {
     final bytes = planes[0].bytes;
-    print('[MLKIT] 1-plane NV21: bytes=${bytes.length}, '
-        'stride=${planes[0].bytesPerRow}, expected=$expectedSize');
-
     // Jika ukuran sudah pas, langsung return.
     if (bytes.length == expectedSize) {
       return bytes;
@@ -70,7 +58,6 @@ Uint8List? _extractNv21Bytes(CameraImage image) {
       return Uint8List.sublistView(bytes, 0, expectedSize);
     }
     // Jika kurang dari expected, ada masalah — return apa adanya.
-    print('[MLKIT] WARNING: bytes < expected, returning as-is');
     return bytes;
   }
 
@@ -78,9 +65,6 @@ Uint8List? _extractNv21Bytes(CameraImage image) {
   if (planes.length == 2) {
     final yBytes = planes[0].bytes;
     final uvBytes = planes[1].bytes;
-
-    print('[MLKIT] 2-plane: Y=${yBytes.length}, UV=${uvBytes.length}, '
-        'Y stride=${planes[0].bytesPerRow}, UV stride=${planes[1].bytesPerRow}');
 
     // Jika Y stride == width (tidak ada padding), gabung langsung.
     if (planes[0].bytesPerRow == w) {
@@ -96,7 +80,12 @@ Uint8List? _extractNv21Bytes(CameraImage image) {
     final uvHeight = h ~/ 2;
     final uvWidth = w ~/ 2 * 2;
     for (var row = 0; row < uvHeight; row++) {
-      nv21.setRange(offset, offset + uvWidth, uvBytes, row * planes[1].bytesPerRow);
+      nv21.setRange(
+        offset,
+        offset + uvWidth,
+        uvBytes,
+        row * planes[1].bytesPerRow,
+      );
       offset += uvWidth;
     }
     return nv21;
@@ -107,9 +96,6 @@ Uint8List? _extractNv21Bytes(CameraImage image) {
     final yPlane = planes[0];
     final uPlane = planes[1];
     final vPlane = planes[2];
-
-    print('[MLKIT] 3-plane YUV420: Y=${yPlane.bytes.length}, '
-        'U=${uPlane.bytes.length}, V=${vPlane.bytes.length}');
 
     final yStride = yPlane.bytesPerRow;
     final uvRowStride = uPlane.bytesPerRow;
@@ -136,6 +122,5 @@ Uint8List? _extractNv21Bytes(CameraImage image) {
     return nv21;
   }
 
-  print('[MLKIT] Unsupported plane count: ${planes.length}');
   return null;
 }

@@ -2,7 +2,12 @@ import 'dart:math' as math;
 import 'package:geolocator/geolocator.dart';
 
 /// Status izin & ketersediaan GPS.
-enum LocationStatus { ok, serviceDisabled, permissionDenied, permissionDeniedForever }
+enum LocationStatus {
+  ok,
+  serviceDisabled,
+  permissionDenied,
+  permissionDeniedForever,
+}
 
 /// Hasil pengecekan izin lokasi.
 class LocationPermissionResult {
@@ -62,17 +67,23 @@ class LocationHelper {
   }
 
   /// Buka pengaturan lokasi HP (jika user tolak permanen / GPS mati).
-  static Future<void> openLocationSettings() => Geolocator.openLocationSettings();
+  static Future<void> openLocationSettings() =>
+      Geolocator.openLocationSettings();
   static Future<void> openAppSettings() => Geolocator.openAppSettings();
 
   /// Jarak Haversine (meter) antara dua koordinat.
   /// Konsisten dengan GeofenceService di backend Laravel.
   static double haversineMeters(
-    double lat1, double lng1, double lat2, double lng2) {
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
     const earthRadius = 6371000.0; // meter
     final dLat = _deg2rad(lat2 - lat1);
     final dLng = _deg2rad(lng2 - lng1);
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(_deg2rad(lat1)) *
             math.cos(_deg2rad(lat2)) *
             math.sin(dLng / 2) *

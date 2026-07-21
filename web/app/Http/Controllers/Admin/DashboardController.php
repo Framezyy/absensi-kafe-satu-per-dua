@@ -1,25 +1,28 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
-use App\Models\Karyawan;
 use App\Models\Absensi;
 use App\Models\Izin;
+use App\Models\Karyawan;
 use App\Models\Penggajian;
-use Carbon\Carbon;
+use App\Services\AttendanceOverviewService;
 
-class DashboardController extends Controller {
-    public function index() {
-        $today = Carbon::today();
+class DashboardController extends Controller
+{
+    public function index(AttendanceOverviewService $overview)
+    {
+        $today = today();
+        $rows = $overview->forDate($today);
+        $summary = $overview->summary($rows);
         $karyawanAktif = Karyawan::where('status', 'aktif')->count();
-        $hadirHariIni = Absensi::where('tanggal', $today)->whereNotNull('jam_masuk')->count();
-        $terlambatHariIni = Absensi::where('tanggal', $today)->where('status_kehadiran', 'terlambat')->count();
         $pendingIzin = Izin::where('status', 'pending')->count();
-        $belumAbsen = $karyawanAktif - $hadirHariIni;
 
-        $aktivitas = Absensi::where('tanggal', $today)
+        $aktivitas = Absensi::whereDate('tanggal', $today)
             ->with('karyawan')
-            ->whereNotNull('jam_masuk')
-            ->orderBy('jam_masuk', 'desc')
+            ->whereNotNull('clock_in_at')
+            ->orderByDesc('clock_in_at')
             ->limit(5)
             ->get();
 
@@ -27,9 +30,6 @@ class DashboardController extends Controller {
             ->where('periode_tahun', $today->year)
             ->sum('total_gaji');
 
-        return view('admin.dashboard', compact(
-            'karyawanAktif', 'hadirHariIni', 'terlambatHariIni',
-            'pendingIzin', 'belumAbsen', 'aktivitas', 'totalGajiBulan'
-        ));
+        return view('admin.dashboard', compact('karyawanAktif', 'pendingIzin', 'aktivitas', 'totalGajiBulan', 'summary'));
     }
 }

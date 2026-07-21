@@ -1,10 +1,13 @@
 <?php
+
 namespace App\Services;
+
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\UploadedFile;
 
-class FaceRecognitionService {
+class FaceRecognitionService
+{
     private string $baseUrl;
 
     /**
@@ -22,30 +25,37 @@ class FaceRecognitionService {
      */
     public const DUPLICATE_THRESHOLD = 0.55;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->baseUrl = config('services.fastapi.url', 'http://127.0.0.1:8001');
     }
 
-    public function detect(UploadedFile $file): array {
+    public function detect(UploadedFile $file): array
+    {
         try {
             $response = Http::timeout(60)
                 ->attach('file', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
                 ->post("{$this->baseUrl}/detect");
+
             return $response->json() ?? ['face_detected' => false];
         } catch (\Exception $e) {
-            Log::error('FaceRecognition detect error: ' . $e->getMessage());
+            Log::error('FaceRecognition detect error: '.$e->getMessage());
+
             return ['face_detected' => false, 'error' => $e->getMessage()];
         }
     }
 
-    public function embed(UploadedFile $file): array {
+    public function embed(UploadedFile $file): array
+    {
         try {
             $response = Http::timeout(60)
                 ->attach('file', file_get_contents($file->getRealPath()), $file->getClientOriginalName())
                 ->post("{$this->baseUrl}/embed");
+
             return $response->json() ?? ['success' => false];
         } catch (\Exception $e) {
-            Log::error('FaceRecognition embed error: ' . $e->getMessage());
+            Log::error('FaceRecognition embed error: '.$e->getMessage());
+
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
@@ -58,7 +68,8 @@ class FaceRecognitionService {
      * Solusi: gunakan cURL multipart manual yang benar-benar mengirim
      * file + form field secara bersamaan.
      */
-    public function verify(UploadedFile $file, array $storedEmbedding): array {
+    public function verify(UploadedFile $file, array $storedEmbedding): array
+    {
         try {
             $filePath = $file->getRealPath();
             $embeddingJson = json_encode($storedEmbedding);
@@ -81,23 +92,27 @@ class FaceRecognitionService {
 
             if ($error) {
                 Log::error("FaceRecognition verify cURL error: {$error}");
-                return ['match' => false, 'similarity' => 0, 'message' => "cURL error: {$error}"];
+
+                return ['service_available' => false, 'match' => false, 'similarity' => 0, 'message' => 'Layanan verifikasi wajah tidak dapat dihubungi.'];
             }
 
             $data = json_decode($response, true);
-            if (!$data) {
-                Log::error("FaceRecognition verify: response bukan JSON valid. HTTP={$httpCode} body=" . substr($response, 0, 200));
-                return ['match' => false, 'similarity' => 0, 'message' => 'Response server tidak valid'];
+            if (! $data) {
+                Log::error("FaceRecognition verify: response bukan JSON valid. HTTP={$httpCode} body=".substr($response, 0, 200));
+
+                return ['service_available' => false, 'match' => false, 'similarity' => 0, 'message' => 'Respons layanan verifikasi wajah tidak valid.'];
             }
 
-            return $data;
+            return ['service_available' => $httpCode >= 200 && $httpCode < 300] + $data;
         } catch (\Exception $e) {
-            Log::error('FaceRecognition verify error: ' . $e->getMessage());
-            return ['match' => false, 'similarity' => 0, 'message' => $e->getMessage()];
+            Log::error('FaceRecognition verify error: '.$e->getMessage());
+
+            return ['service_available' => false, 'match' => false, 'similarity' => 0, 'message' => 'Layanan verifikasi wajah tidak tersedia.'];
         }
     }
 
-    public function enrollFromFrames(array $files): array {
+    public function enrollFromFrames(array $files): array
+    {
         $embeddings = [];
 
         foreach ($files as $file) {
@@ -107,7 +122,7 @@ class FaceRecognitionService {
             }
         }
 
-        if (!empty($embeddings)) {
+        if (! empty($embeddings)) {
             $count = count($embeddings);
             $dim = count($embeddings[0]);
             $mean = array_fill(0, $dim, 0.0);
@@ -125,33 +140,45 @@ class FaceRecognitionService {
         }
 
         Log::warning('FaceRecognition: wajah tidak terdeteksi di semua frame enrollment.');
+
         return [
             'success' => false,
             'message' => 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas, pencahayaan cukup, dan posisi berada di dalam bingkai.',
         ];
     }
 
-    public static function cosineSimilarity(array $a, array $b): float {
-        if (count($a) === 0 || count($a) !== count($b)) return 0.0;
+    public static function cosineSimilarity(array $a, array $b): float
+    {
+        if (count($a) === 0 || count($a) !== count($b)) {
+            return 0.0;
+        }
 
-        $dot = 0.0; $normA = 0.0; $normB = 0.0;
+        $dot = 0.0;
+        $normA = 0.0;
+        $normB = 0.0;
         $n = count($a);
         for ($i = 0; $i < $n; $i++) {
             $dot += $a[$i] * $b[$i];
             $normA += $a[$i] * $a[$i];
             $normB += $b[$i] * $b[$i];
         }
-        if ($normA == 0.0 || $normB == 0.0) return 0.0;
+        if ($normA == 0.0 || $normB == 0.0) {
+            return 0.0;
+        }
+
         return $dot / (sqrt($normA) * sqrt($normB));
     }
 
-    public function findDuplicateFace(array $newEmbedding, $existingEmbeddings, float $threshold = self::DUPLICATE_THRESHOLD): array {
+    public function findDuplicateFace(array $newEmbedding, $existingEmbeddings, float $threshold = self::DUPLICATE_THRESHOLD): array
+    {
         $highestSimilarity = 0.0;
         $matchedKaryawan = null;
 
         foreach ($existingEmbeddings as $embedding) {
             $stored = $embedding->embedding_vector;
-            if (!is_array($stored) || count($stored) !== count($newEmbedding)) continue;
+            if (! is_array($stored) || count($stored) !== count($newEmbedding)) {
+                continue;
+            }
 
             $similarity = self::cosineSimilarity($newEmbedding, $stored);
             if ($similarity > $highestSimilarity) {

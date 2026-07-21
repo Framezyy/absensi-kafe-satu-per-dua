@@ -12,9 +12,10 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/utils/location_helper.dart';
 import '../../auth/presentation/auth_controller.dart';
-import '../data/api_attendance_repository.dart';
+import '../data/attendance_providers.dart';
 import '../data/api_location_repository.dart';
 import '../domain/attendance_record.dart';
+import '../domain/attendance_session.dart';
 import '../domain/lokasi_kerja.dart';
 
 /// Layar Absensi — peta lokasi karyawan + geofence + tombol absen.
@@ -34,11 +35,10 @@ class AttendancePage extends ConsumerStatefulWidget {
 
 class _AttendancePageState extends ConsumerState<AttendancePage> {
   final _locationRepo = ApiLocationRepository();
-  final _attendanceRepo = ApiAttendanceRepository();
   final _mapController = MapController();
 
   LokasiKerja? _lokasi;
-  AttendanceRecord? _today;
+  AttendanceSession? _session;
   Position? _currentPos;
   LocationStatus _locStatus = LocationStatus.ok;
   StreamSubscription<Position>? _posSub;
@@ -66,7 +66,17 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
     });
 
     // 1. Ambil lokasi kerja aktif.
-    final lokasi = await _locationRepo.getActiveLocation();
+    LokasiKerja? lokasi;
+    try {
+      lokasi = await _locationRepo.getActiveLocation();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'Gagal memuat lokasi kerja: $error';
+      });
+      return;
+    }
     if (!mounted) return;
     if (lokasi == null) {
       setState(() {
@@ -77,11 +87,16 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
     }
 
     // 2. Ambil status absensi hari ini.
-    AttendanceRecord? today;
+    AttendanceSession session;
     try {
-      today = await _attendanceRepo.getToday();
-    } catch (_) {
-      today = null;
+      session = await ref.read(attendanceRepositoryProvider).getToday();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = 'Gagal memuat status absensi: $error';
+      });
+      return;
     }
     if (!mounted) return;
 
@@ -91,7 +106,7 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
 
     setState(() {
       _lokasi = lokasi;
-      _today = today;
+      _session = session;
       _locStatus = status;
       _loading = false;
     });
@@ -108,7 +123,10 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
       setState(() => _currentPos = pos);
       // Auto-center ke posisi karyawan saat pertama kali dapat fix.
       if (_mapReady) {
-        _mapController.move(LatLng(pos.latitude, pos.longitude), _mapController.camera.zoom);
+        _mapController.move(
+          LatLng(pos.latitude, pos.longitude),
+          _mapController.camera.zoom,
+        );
       }
     });
   }
@@ -117,8 +135,10 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
   double? get _distance {
     if (_currentPos == null || _lokasi == null) return null;
     return LocationHelper.haversineMeters(
-      _currentPos!.latitude, _currentPos!.longitude,
-      _lokasi!.latitude, _lokasi!.longitude,
+      _currentPos!.latitude,
+      _currentPos!.longitude,
+      _lokasi!.latitude,
+      _lokasi!.longitude,
     );
   }
 
@@ -128,7 +148,9 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
     return d <= _lokasi!.radiusMeter;
   }
 
-  bool get _hasEnrolled => ref.read(currentUserProvider)?.hasFaceEnrolled ?? false;
+  bool get _hasEnrolled =>
+      ref.read(currentUserProvider)?.hasFaceEnrolled ?? false;
+  AttendanceRecord? get _today => _session?.record;
   bool get _hasMasuk => _today?.hasMasuk ?? false;
   bool get _hasPulang => _today?.hasPulang ?? false;
   bool get _gpsAccurate => (_currentPos?.accuracy ?? 999) <= 50;
@@ -146,7 +168,11 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
       showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
-          icon: const Icon(Icons.gpp_bad_rounded, color: AppColors.error, size: 48),
+          icon: const Icon(
+            Icons.gpp_bad_rounded,
+            color: AppColors.error,
+            size: 48,
+          ),
           title: const Text('Lokasi Palsu Terdeteksi'),
           content: const Text(
             'Aplikasi mendeteksi Anda menggunakan Fake GPS / Mock Location. '
@@ -171,7 +197,11 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
       return;
     }
     // Kirim action + koordinat + flag mock ke halaman verifikasi wajah.
-    context.push('${AppRoutes.verify}?action=$action&lat=${pos?.latitude ?? 0}&lng=${pos?.longitude ?? 0}&mocked=${pos?.isMocked ?? false}');
+    await context.push(
+      '${AppRoutes.verify}?action=$action&lat=${pos?.latitude ?? 0}&lng=${pos?.longitude ?? 0}&mocked=${pos?.isMocked ?? false}',
+    );
+    if (!mounted) return;
+    await _init();
   }
 
   @override
@@ -195,14 +225,21 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
 
   Widget _header(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        MediaQuery.paddingOf(context).top + 16,
+        20,
+        20,
+      ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [Color(0xFF3D2314), Color(0xFF6F4E37)],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
         ),
       ),
       child: Row(
@@ -210,13 +247,28 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
             child: Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.arrow_back_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
           const Spacer(),
-          const Text('Absensi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+          const Text(
+            'Absensi',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
           const Spacer(),
           const SizedBox(width: 40),
         ],
@@ -237,7 +289,9 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
         Icons.gps_off_rounded,
         'GPS tidak aktif. Aktifkan lokasi di pengaturan HP.',
         actionLabel: 'Buka Pengaturan',
-        onAction: () async { await LocationHelper.openLocationSettings(); },
+        onAction: () async {
+          await LocationHelper.openLocationSettings();
+        },
       );
     }
     if (_locStatus == LocationStatus.permissionDenied) {
@@ -253,7 +307,9 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
         Icons.location_disabled_rounded,
         'Izin lokasi diblokir permanen. Aktifkan manual di pengaturan aplikasi.',
         actionLabel: 'Buka Pengaturan',
-        onAction: () async { await LocationHelper.openAppSettings(); },
+        onAction: () async {
+          await LocationHelper.openAppSettings();
+        },
       );
     }
 
@@ -265,20 +321,37 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
         _statusChip(),
         const SizedBox(height: 16),
         _todayCard(),
+        if (_session?.schedule != null) ...[
+          const SizedBox(height: 12),
+          _scheduleCard(_session!.schedule!),
+        ],
+        if (_session?.blockedReason != null) ...[
+          const SizedBox(height: 12),
+          _banner(_session!.blockedReason!, color: AppColors.warning),
+        ],
         const SizedBox(height: 16),
         if (!_hasEnrolled)
-          _banner('Anda harus registrasi wajah terlebih dahulu', onTap: () => context.push(AppRoutes.enroll)),
+          _banner(
+            'Anda harus registrasi wajah terlebih dahulu',
+            onTap: () => context.push(AppRoutes.enroll),
+          ),
         if (_hasEnrolled && _currentPos != null && !_insideRadius)
           _banner('Anda di luar radius lokasi kerja', color: AppColors.error),
-        if (_hasEnrolled && _currentPos != null && _insideRadius && !_gpsAccurate)
-          _banner('Akurasi GPS rendah (${_currentPos!.accuracy.toStringAsFixed(0)}m). Coba di area terbuka.', color: AppColors.warning),
+        if (_hasEnrolled &&
+            _currentPos != null &&
+            _insideRadius &&
+            !_gpsAccurate)
+          _banner(
+            'Akurasi GPS rendah (${_currentPos!.accuracy.toStringAsFixed(0)}m). Coba di area terbuka.',
+            color: AppColors.warning,
+          ),
         if (_hasEnrolled) ...[
           const SizedBox(height: 8),
           _clockButton(
             label: _hasMasuk ? 'Sudah Absen Masuk' : 'Absen Masuk',
             icon: Icons.login_rounded,
             color: AppColors.success,
-            enabled: !_hasMasuk && _insideRadius,
+            enabled: _session?.canClockIn == true && _insideRadius,
             onTap: () => _goVerify('in'),
           ),
           const SizedBox(height: 12),
@@ -287,7 +360,7 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
             icon: Icons.logout_rounded,
             color: AppColors.primary,
             outlined: true,
-            enabled: _hasMasuk && !_hasPulang && _insideRadius,
+            enabled: _session?.canClockOut == true && _insideRadius,
             onTap: () => _goVerify('out'),
           ),
         ],
@@ -347,20 +420,31 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
                     // Marker kafe (lokasi kerja).
                     Marker(
                       point: cafe,
-                      width: 44, height: 44,
-                      child: const Icon(Icons.storefront_rounded, color: AppColors.primary, size: 40),
+                      width: 44,
+                      height: 44,
+                      child: const Icon(
+                        Icons.storefront_rounded,
+                        color: AppColors.primary,
+                        size: 40,
+                      ),
                     ),
                     // Marker karyawan (live).
                     if (me != null)
                       Marker(
                         point: me,
-                        width: 30, height: 30,
+                        width: 30,
+                        height: 30,
                         child: Container(
                           decoration: BoxDecoration(
                             color: Colors.blue,
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 3),
-                            boxShadow: [BoxShadow(color: Colors.blue.withValues(alpha: 0.4), blurRadius: 8)],
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withValues(alpha: 0.4),
+                                blurRadius: 8,
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -370,33 +454,55 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
             ),
             // Tombol re-center ke posisi karyawan.
             Positioned(
-              bottom: 12, right: 12,
+              bottom: 12,
+              right: 12,
               child: GestureDetector(
                 onTap: () {
                   if (me != null) _mapController.move(me, 17);
                 },
                 child: Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 6)],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.my_location_rounded, color: Colors.blue, size: 22),
+                  child: const Icon(
+                    Icons.my_location_rounded,
+                    color: Colors.blue,
+                    size: 22,
+                  ),
                 ),
               ),
             ),
             // Loading GPS pertama.
             if (me == null)
               Positioned(
-                top: 12, left: 12,
+                top: 12,
+                left: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                      SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
                       SizedBox(width: 8),
                       Text('Mencari lokasi...', style: TextStyle(fontSize: 12)),
                     ],
@@ -419,8 +525,8 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
     final text = _currentPos == null
         ? 'Menunggu lokasi GPS...'
         : (inside
-            ? 'Dalam radius (${d!.toStringAsFixed(0)} m dari kafe)'
-            : 'Luar radius (${d!.toStringAsFixed(0)} m dari kafe)');
+              ? 'Dalam radius (${d!.toStringAsFixed(0)} m dari kafe)'
+              : 'Luar radius (${d!.toStringAsFixed(0)} m dari kafe)');
     final icon = _currentPos == null
         ? Icons.gps_not_fixed_rounded
         : (inside ? Icons.check_circle_rounded : Icons.location_off_rounded);
@@ -436,7 +542,16 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
         children: [
           Icon(icon, color: color, size: 20),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color))),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -450,18 +565,33 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 48, height: 48,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              gradient: noRecord ? null : const LinearGradient(colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)]),
+              gradient: noRecord
+                  ? null
+                  : const LinearGradient(
+                      colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                    ),
               color: noRecord ? AppColors.surfaceVariant : null,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(noRecord ? Icons.schedule_rounded : Icons.check_circle_rounded, color: noRecord ? AppColors.textSecondary : Colors.white, size: 26),
+            child: Icon(
+              noRecord ? Icons.schedule_rounded : Icons.check_circle_rounded,
+              color: noRecord ? AppColors.textSecondary : Colors.white,
+              size: 26,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -469,12 +599,50 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  noRecord ? 'Belum Absen' : (_hasPulang ? 'Sudah Absen Pulang' : 'Sudah Absen Masuk'),
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: noRecord ? AppColors.textSecondary : const Color(0xFF2E7D32)),
+                  noRecord
+                      ? 'Belum Absen'
+                      : (_hasPulang
+                            ? 'Sudah Absen Pulang'
+                            : 'Sudah Absen Masuk'),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: noRecord
+                        ? AppColors.textSecondary
+                        : const Color(0xFF2E7D32),
+                  ),
                 ),
                 if (_today != null && _hasMasuk)
-                  Text('Masuk ${_today!.jamMasukStr}  •  Pulang ${_today!.jamPulangStr}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text(
+                    'Masuk ${_today!.jamMasukStr}  •  Pulang ${_today!.jamPulangStr}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _scheduleCard(AttendanceSchedule schedule) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.schedule_rounded, color: AppColors.info),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              '${schedule.name ?? 'Jadwal kerja'} • ${schedule.timeRange}${schedule.locationName == null ? '' : ' • ${schedule.locationName}'}',
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -498,24 +666,44 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: color,
                 side: BorderSide(color: color.withValues(alpha: 0.4)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               icon: Icon(icon),
-              label: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              label: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             )
           : FilledButton.icon(
               onPressed: enabled ? onTap : null,
               style: FilledButton.styleFrom(
                 backgroundColor: color,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               icon: Icon(icon),
-              label: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              label: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
     );
   }
 
-  Widget _banner(String msg, {Color color = AppColors.error, VoidCallback? onTap}) {
+  Widget _banner(
+    String msg, {
+    Color color = AppColors.error,
+    VoidCallback? onTap,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -528,28 +716,59 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
         children: [
           Icon(Icons.warning_amber_rounded, color: color, size: 20),
           const SizedBox(width: 10),
-          Expanded(child: Text(msg, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: color))),
-          if (onTap != null) TextButton(onPressed: onTap, child: const Text('Daftar')),
+          Expanded(
+            child: Text(
+              msg,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ),
+          if (onTap != null)
+            TextButton(onPressed: onTap, child: const Text('Daftar')),
         ],
       ),
     );
   }
 
-  Widget _infoState(IconData icon, String msg, {String? actionLabel, VoidCallback? onAction, bool showRetry = false}) {
+  Widget _infoState(
+    IconData icon,
+    String msg, {
+    String? actionLabel,
+    VoidCallback? onAction,
+    bool showRetry = false,
+  }) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: AppColors.textSecondary.withValues(alpha: 0.5)),
+            Icon(
+              icon,
+              size: 64,
+              color: AppColors.textSecondary.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
-            Text(msg, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+            Text(
+              msg,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
             const SizedBox(height: 20),
             if (actionLabel != null)
               FilledButton(onPressed: onAction, child: Text(actionLabel))
             else if (showRetry)
-              FilledButton.icon(onPressed: _init, icon: const Icon(Icons.refresh), label: const Text('Coba Lagi')),
+              FilledButton.icon(
+                onPressed: _init,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Coba Lagi'),
+              ),
           ],
         ),
       ),

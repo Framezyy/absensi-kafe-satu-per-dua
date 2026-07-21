@@ -100,7 +100,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       // Shell dengan bottom navigation (4 tab).
       StatefulShellRoute.indexedStack(
-        builder: (_, _, navigationShell) => MainShell(navigationShell: navigationShell),
+        builder: (_, _, navigationShell) =>
+            MainShell(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(
             navigatorKey: _homeTabKey,

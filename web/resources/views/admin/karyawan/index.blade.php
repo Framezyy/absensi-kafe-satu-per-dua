@@ -86,7 +86,6 @@
                     <th class="px-6 py-4">Karyawan</th>
                     <th class="px-6 py-4">Username</th>
                     <th class="px-6 py-4">Jabatan</th>
-                    <th class="px-6 py-4">Tarif/Hari</th>
                     <th class="px-6 py-4">Wajah</th>
                     <th class="px-6 py-4">Status</th>
                     <th class="px-6 py-4 text-right">Aksi</th>
@@ -106,7 +105,6 @@
                         </td>
                         <td class="px-6 py-4"><span class="rounded-lg bg-stone-100 px-2.5 py-1 font-mono text-xs text-stone-600">{{ $k->user->username ?? "-" }}</span></td>
                         <td class="px-6 py-4 text-stone-600">{{ $k->jabatan }}</td>
-                        <td class="px-6 py-4 font-semibold text-stone-700">Rp {{ number_format($k->tarif_gaji_harian, 0, ",", ".") }}</td>
                         <td class="px-6 py-4">
                             @if($k->faceEmbedding && $k->faceEmbedding->is_aktif)
                                 <span class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-700"><span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>Terdaftar</span>
@@ -136,7 +134,7 @@
                     </tr>
                 @endforeach
                 @if($karyawan->isEmpty())
-                    <tr><td colspan="7" class="px-6 py-16 text-center text-sm text-stone-400">Belum ada karyawan terdaftar.</td></tr>
+                    <tr><td colspan="6" class="px-6 py-16 text-center text-sm text-stone-400">Belum ada karyawan terdaftar.</td></tr>
                 @endif
             </tbody>
         </table>
@@ -152,7 +150,7 @@
                 </div>
                 <div class="flex-1">
                     <h3 class="text-base font-extrabold text-stone-800">Hapus karyawan?</h3>
-                    <p class="mt-1 text-sm text-stone-500">Akun <span class="font-semibold text-stone-700" x-text="delNama"></span> beserta seluruh data absensi, wajah, izin, bonus, dan penggajiannya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</p>
+                    <p class="mt-1 text-sm text-stone-500">Akun <span class="font-semibold text-stone-700" x-text="delNama"></span> beserta seluruh data absensi, wajah, izin, dan penggajiannya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.</p>
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-3">

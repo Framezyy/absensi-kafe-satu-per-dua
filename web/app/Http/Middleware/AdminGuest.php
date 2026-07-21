@@ -9,9 +9,10 @@ class AdminGuest
 {
     public function handle(Request $request, Closure $next)
     {
-        if (session("admin_logged_in")) {
-            return redirect()->route("admin.dashboard");
+        if (session('admin_logged_in')) {
+            return redirect()->route('admin.dashboard');
         }
+
         return $next($request);
     }
 }

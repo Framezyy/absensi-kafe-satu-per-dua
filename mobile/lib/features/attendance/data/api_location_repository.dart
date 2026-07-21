@@ -16,8 +16,9 @@ class ApiLocationRepository {
       final data = response.data['data'];
       if (data == null) return null;
       return LokasiKerja.fromJson(data as Map<String, dynamic>);
-    } on DioException {
-      return null;
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 404) return null;
+      rethrow;
     }
   }
 }

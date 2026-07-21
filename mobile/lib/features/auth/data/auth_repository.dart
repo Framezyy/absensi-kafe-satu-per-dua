@@ -12,10 +12,7 @@ abstract class AuthRepository {
   /// alur conditional di router (akun baru → /enroll, akun lama → /home).
   ///
   /// Throw [InvalidCredentialsException] jika kredensial tidak cocok.
-  Future<AppUser> login({
-    required String username,
-    required String password,
-  });
+  Future<AppUser> login({required String username, required String password});
 
   /// Logout dan bersihkan token (Phase 4: hapus secure storage).
   Future<void> logout();

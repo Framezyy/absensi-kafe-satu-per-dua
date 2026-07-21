@@ -28,19 +28,18 @@
                 </select>
             </div>
             <div>
-                <label class="mb-1.5 block text-sm font-semibold text-stone-700">Lokasi Kerja</label>
+                <label class="mb-1.5 block text-sm font-semibold text-stone-700">Lokasi Default</label>
                 <select name="lokasi_kerja_id" class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15">
                     <option value="">-- Pilih Lokasi --</option>
                     @foreach($lokasi as $l)<option value="{{ $l->id }}">{{ $l->nama_lokasi }}</option>@endforeach
                 </select>
+                <p class="mt-1 text-xs text-stone-400">Lokasi aktual absensi tetap mengikuti Jadwal Kerja.</p>
             </div>
             <div class="grid gap-5 sm:grid-cols-2">
-                <div>
-                    <label class="mb-1.5 block text-sm font-semibold text-stone-700">Tarif per Hari</label>
-                    <div class="relative">
-                        <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-stone-400">Rp</span>
-                        <input type="number" name="tarif_harian" value="{{ old("tarif_harian", 80000) }}" min="0" class="w-full rounded-2xl border border-stone-200 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15">
-                    </div>
+                <div class="rounded-2xl border border-amber-100 bg-amber-50/60 px-4 py-3">
+                    <div class="text-xs font-bold uppercase tracking-wide text-amber-700">Tarif Sistem</div>
+                    <div class="mt-1 text-lg font-extrabold text-stone-800">Rp {{ number_format(config('payroll.hourly_rate'), 0, ',', '.') }} <span class="text-xs font-medium text-stone-400">/ jam</span></div>
+                    <p class="text-[11px] text-stone-500">Berlaku sama untuk seluruh karyawan.</p>
                 </div>
                 <div>
                     <label class="mb-1.5 block text-sm font-semibold text-stone-700">Tanggal Bergabung</label>

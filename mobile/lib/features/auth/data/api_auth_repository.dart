@@ -20,10 +20,10 @@ class ApiAuthRepository implements AuthRepository {
     required String password,
   }) async {
     try {
-      final response = await _dio.post('/auth/login', data: {
-        'username': username,
-        'password': password,
-      });
+      final response = await _dio.post(
+        '/auth/login',
+        data: {'username': username, 'password': password},
+      );
 
       final data = response.data;
       await DioClient.instance.saveToken(data['token']);

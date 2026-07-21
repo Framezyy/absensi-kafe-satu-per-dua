@@ -42,7 +42,8 @@ class LeaveRequest {
       id: json['id'] as int,
       tanggalMulai: DateTime.parse(json['tanggal_mulai'] as String),
       tanggalSelesai: DateTime.parse(
-          (json['tanggal_selesai'] ?? json['tanggal_mulai']) as String),
+        (json['tanggal_selesai'] ?? json['tanggal_mulai']) as String,
+      ),
       alasan: json['alasan'] as String,
       status: status,
       diajukanPada: DateTime.parse(json['created_at'] as String),

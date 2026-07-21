@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Jobs;
 
 use App\Models\FaceEmbedding;
@@ -6,6 +7,7 @@ use App\Services\FaceRecognitionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +18,7 @@ class GenerateFaceEmbedding implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 120;
 
     public function __construct(private int $faceEmbeddingId) {}
@@ -23,24 +26,27 @@ class GenerateFaceEmbedding implements ShouldQueue
     public function handle(FaceRecognitionService $faceService): void
     {
         $record = FaceEmbedding::find($this->faceEmbeddingId);
-        if (!$record || !$record->foto_referensi_path) {
+        if (! $record || ! $record->foto_referensi_path) {
             Log::warning("GenerateFaceEmbedding: record {$this->faceEmbeddingId} tidak ditemukan.");
+
             return;
         }
 
         $fullPath = Storage::disk('public')->path($record->foto_referensi_path);
-        if (!file_exists($fullPath)) {
+        if (! file_exists($fullPath)) {
             Log::error("GenerateFaceEmbedding: file tidak ada: {$fullPath}");
+
             return;
         }
 
         // Generate embedding via FastAPI.
-        $tmpFile = new \Illuminate\Http\UploadedFile($fullPath, basename($fullPath), null, null, true);
+        $tmpFile = new UploadedFile($fullPath, basename($fullPath), null, null, true);
         $result = $faceService->embed($tmpFile);
 
-        if (!isset($result['success']) || !$result['success'] || !isset($result['embedding'])) {
-            Log::warning("GenerateFaceEmbedding: FastAPI gagal: " . ($result['message'] ?? 'unknown'));
+        if (! isset($result['success']) || ! $result['success'] || ! isset($result['embedding'])) {
+            Log::warning('GenerateFaceEmbedding: FastAPI gagal: '.($result['message'] ?? 'unknown'));
             $this->release(30);
+
             return;
         }
 

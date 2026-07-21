@@ -43,8 +43,9 @@
 | 8 | TC-25 | Monitor absensi real-time | Buka halaman Monitor | Tampil daftar karyawan + status hadir/belum | Data real dari DB, status terkini | ✅ Berhasil |
 | 9 | TC-26 | Approve izin karyawan | Klik "Setujui" pada izin pending | Status izin berubah jadi "Disetujui" | Status update ke "approved" di DB | ✅ Berhasil |
 | 10 | TC-27 | Reject izin karyawan | Klik "Tolak" pada izin pending | Status izin berubah jadi "Ditolak" | Status update ke "rejected" di DB | ✅ Berhasil |
-| 11 | TC-28 | Tambah bonus karyawan | Karyawan: Andi, Jumlah: 100000, Keterangan: Rajin | Bonus berhasil ditambahkan | Data bonus tersimpan di DB | ✅ Berhasil |
-| 12 | TC-29 | Rekap payroll otomatis | Buka halaman Payroll | Tampil total gaji = (Hadir x Tarif) + Bonus | Kalkulasi otomatis sesuai formula | ✅ Berhasil |
+| 11 | TC-28 | Buat jadwal shift | Pilih karyawan, shift, lokasi, dan tanggal | Jadwal berhasil ditambahkan | Satu jadwal tersimpan untuk tanggal operasional | ✅ Berhasil |
+| 12 | TC-29 | Rekap payroll otomatis | Buka halaman Payroll dan generate periode | Gaji dihitung dari menit dibayar x Rp10.000/60 | Maksimal 480 menit atau Rp80.000 per shift | ✅ Berhasil |
+| 13 | TC-30 | Koreksi lupa absen pulang | Karyawan mengajukan waktu pulang dan alasan | Pengajuan berstatus pending | Gaji baru dihitung setelah admin menyetujui | ✅ Berhasil |
 | 13 | TC-30 | Lihat audit log verifikasi wajah | Buka halaman Audit Log | Tampil riwayat verifikasi: waktu, similarity, status | Data dari tabel absensi ditampilkan | ✅ Berhasil |
 | 14 | TC-31 | Logout admin | Klik avatar > Keluar | Session dihapus, kembali ke Login | Redirect ke halaman login admin | ✅ Berhasil |
 
@@ -75,7 +76,8 @@
 1. **Seluruh fitur fungsional (31 skenario)** telah diuji dan berfungsi sesuai kebutuhan yang ditetapkan.
 2. **Akurasi face recognition** mencapai rata-rata 87% yang cukup untuk operasional kafe (single-tenant, 32 karyawan).
 3. **Validasi geofence** berfungsi dengan baik menggunakan formula Haversine dengan radius 50m.
-4. **Rekapitulasi payroll** menghitung otomatis sesuai formula: Total Gaji = (Total Hadir × Tarif Harian) + Total Bonus.
+4. **Rekapitulasi payroll** menghitung otomatis sesuai formula: Total Gaji = jumlah pembulatan (menit dibayar × Rp10.000 / 60), dengan batas 480 menit per shift.
+5. **Bonus dan lembur tidak digunakan** dalam ruang lingkup sistem. Absensi tidak lengkap tidak masuk payroll sebelum koreksi disetujui admin.
 5. **Liveness detection** berhasil mencegah penggunaan foto statis untuk spoofing absensi.
 
 ---

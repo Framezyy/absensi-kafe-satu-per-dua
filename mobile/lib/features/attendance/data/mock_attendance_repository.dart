@@ -1,4 +1,7 @@
 import '../domain/attendance_record.dart';
+import '../domain/attendance_session.dart';
+import '../domain/attendance_correction.dart';
+import '../domain/clock_result.dart';
 import 'attendance_repository.dart';
 
 /// Mock data absensi untuk Phase 1.
@@ -15,23 +18,29 @@ class MockAttendanceRepository implements AttendanceRepository {
   static final _lokasi = 'Kafe Satu Per Dua Kopitiam';
 
   @override
-  Future<AttendanceRecord?> getToday() async {
+  Future<AttendanceSession> getToday() async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     switch (todayStatus) {
       case TodayStatus.none:
-        return null;
+        return const AttendanceSession(canClockIn: true, canClockOut: false);
       case TodayStatus.clockedIn:
-        return AttendanceRecord(
+        final record = AttendanceRecord(
           tanggal: today,
           jamMasuk: today.add(const Duration(hours: 8, minutes: 3)),
           terlambat: true, // jam_masuk_standar 08:00 + toleransi 15 menit
           lokasiNama: _lokasi,
           faceSimilarity: 0.87,
         );
+        return AttendanceSession(
+          record: record,
+          serverTime: now,
+          canClockIn: false,
+          canClockOut: true,
+        );
       case TodayStatus.clockedOut:
-        return AttendanceRecord(
+        final record = AttendanceRecord(
           tanggal: today,
           jamMasuk: today.add(const Duration(hours: 7, minutes: 52)),
           jamPulang: today.add(const Duration(hours: 17, minutes: 2)),
@@ -39,8 +48,53 @@ class MockAttendanceRepository implements AttendanceRepository {
           lokasiNama: _lokasi,
           faceSimilarity: 0.91,
         );
+        return AttendanceSession(
+          record: record,
+          serverTime: now,
+          canClockIn: false,
+          canClockOut: false,
+        );
     }
   }
+
+  @override
+  Future<ClockResult> clockIn({
+    required double latitude,
+    required double longitude,
+    required String faceVerificationToken,
+    bool isMocked = false,
+  }) async => ClockResult(
+    status: ClockStatus.success,
+    action: ClockAction.clockIn,
+    serverTime: DateTime.now(),
+  );
+
+  @override
+  Future<ClockResult> clockOut({
+    required double latitude,
+    required double longitude,
+    required String faceVerificationToken,
+    bool isMocked = false,
+  }) async => ClockResult(
+    status: ClockStatus.success,
+    action: ClockAction.clockOut,
+    serverTime: DateTime.now(),
+  );
+
+  @override
+  Future<List<AttendanceCorrection>> getCorrections() async => const [];
+
+  @override
+  Future<AttendanceCorrection> submitCorrection({
+    required int attendanceId,
+    required DateTime clockOutAt,
+    required String reason,
+  }) async => AttendanceCorrection(
+    attendanceId: attendanceId,
+    requestedClockOutAt: clockOutAt,
+    reason: reason,
+    status: 'pending',
+  );
 
   @override
   Future<List<AttendanceRecord>> getHistory({
@@ -72,14 +126,16 @@ class MockAttendanceRepository implements AttendanceRepository {
       final pulangH = 17;
       final pulangM = d % 15;
 
-      records.add(AttendanceRecord(
-        tanggal: date,
-        jamMasuk: date.add(Duration(hours: masukH, minutes: masukM)),
-        jamPulang: date.add(Duration(hours: pulangH, minutes: pulangM)),
-        terlambat: isLate,
-        lokasiNama: _lokasi,
-        faceSimilarity: 0.75 + ((d % 20) * 0.01),
-      ));
+      records.add(
+        AttendanceRecord(
+          tanggal: date,
+          jamMasuk: date.add(Duration(hours: masukH, minutes: masukM)),
+          jamPulang: date.add(Duration(hours: pulangH, minutes: pulangM)),
+          terlambat: isLate,
+          lokasiNama: _lokasi,
+          faceSimilarity: 0.75 + ((d % 20) * 0.01),
+        ),
+      );
     }
     return records;
   }

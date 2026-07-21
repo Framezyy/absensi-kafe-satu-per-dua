@@ -35,11 +35,14 @@ class _LoginPageState extends ConsumerState<LoginPage>
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut),
-    );
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
+    _fadeAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
     _animCtrl.forward();
   }
 
@@ -56,10 +59,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
     if (!_formKey.currentState!.validate()) return;
     setState(() => _errorMessage = null);
 
-    await ref.read(authControllerProvider.notifier).login(
-          username: _usernameCtrl.text,
-          password: _passwordCtrl.text,
-        );
+    await ref
+        .read(authControllerProvider.notifier)
+        .login(username: _usernameCtrl.text, password: _passwordCtrl.text);
 
     if (!mounted) return;
     final state = ref.read(authControllerProvider);
@@ -120,11 +122,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF3D2314),
-                Color(0xFF6F4E37),
-                Color(0xFF8B6B4F),
-              ],
+              colors: [Color(0xFF3D2314), Color(0xFF6F4E37), Color(0xFF8B6B4F)],
             ),
           ),
           child: SafeArea(
@@ -157,7 +155,11 @@ class _LoginPageState extends ConsumerState<LoginPage>
                               ),
                             ],
                           ),
-                          child: const Icon(Icons.coffee_rounded, size: 48, color: Colors.white),
+                          child: const Icon(
+                            Icons.coffee_rounded,
+                            size: 48,
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         Text(
@@ -168,13 +170,19 @@ class _LoginPageState extends ConsumerState<LoginPage>
                             color: Colors.white,
                             letterSpacing: -0.5,
                             shadows: [
-                              Shadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8),
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                              ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(20),
@@ -230,7 +238,9 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: AppColors.textSecondary.withValues(alpha: 0.8),
+                                  color: AppColors.textSecondary.withValues(
+                                    alpha: 0.8,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 24),
@@ -247,15 +257,26 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                   labelText: 'Username',
                                   hintText: 'Masukkan username',
                                   prefixIcon: Container(
-                                    margin: const EdgeInsets.only(left: 12, right: 8),
-                                    child: const Icon(Icons.person_outline_rounded, size: 22),
+                                    margin: const EdgeInsets.only(
+                                      left: 12,
+                                      right: 8,
+                                    ),
+                                    child: const Icon(
+                                      Icons.person_outline_rounded,
+                                      size: 22,
+                                    ),
                                   ),
-                                  prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                                  prefixIconConstraints: const BoxConstraints(
+                                    minWidth: 0,
+                                    minHeight: 0,
+                                  ),
                                 ),
-                                validator: (v) => (v == null || v.trim().isEmpty)
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
                                     ? 'Username wajib diisi'
                                     : null,
-                                onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
+                                onFieldSubmitted: (_) =>
+                                    _passwordFocus.requestFocus(),
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
@@ -268,16 +289,28 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                   labelText: 'Password',
                                   hintText: 'Masukkan password',
                                   prefixIcon: Container(
-                                    margin: const EdgeInsets.only(left: 12, right: 8),
-                                    child: const Icon(Icons.lock_outline_rounded, size: 22),
+                                    margin: const EdgeInsets.only(
+                                      left: 12,
+                                      right: 8,
+                                    ),
+                                    child: const Icon(
+                                      Icons.lock_outline_rounded,
+                                      size: 22,
+                                    ),
                                   ),
-                                  prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                                  prefixIconConstraints: const BoxConstraints(
+                                    minWidth: 0,
+                                    minHeight: 0,
+                                  ),
                                   suffixIcon: IconButton(
                                     icon: Icon(
-                                      _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                                      _obscure
+                                          ? Icons.visibility_off_rounded
+                                          : Icons.visibility_rounded,
                                       size: 20,
                                     ),
-                                    onPressed: () => setState(() => _obscure = !_obscure),
+                                    onPressed: () =>
+                                        setState(() => _obscure = !_obscure),
                                   ),
                                 ),
                                 validator: (v) => (v == null || v.isEmpty)
@@ -298,15 +331,26 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                   ),
                                   child: isLoading
                                       ? const SizedBox(
-                                          height: 22, width: 22,
-                                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                                          height: 22,
+                                          width: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: Colors.white,
+                                          ),
                                         )
                                       : const Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Icon(Icons.login_rounded, size: 20),
                                             SizedBox(width: 8),
-                                            Text('Masuk', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                            Text(
+                                              'Masuk',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                 ),
@@ -349,13 +393,21 @@ class _ErrorBanner extends StatelessWidget {
               color: AppColors.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.close_rounded, color: AppColors.error, size: 16),
+            child: const Icon(
+              Icons.close_rounded,
+              color: AppColors.error,
+              size: 16,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(color: AppColors.error, fontSize: 13, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: AppColors.error,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

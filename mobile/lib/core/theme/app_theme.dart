@@ -42,10 +42,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -85,9 +82,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: EdgeInsets.zero,
       ),
       dividerTheme: const DividerThemeData(
@@ -99,26 +94,56 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.primaryDark,
         contentTextStyle: const TextStyle(color: Colors.white),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
 
   static TextTheme _buildTextTheme(Color color) {
     return TextTheme(
-      displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.w700, color: color),
-      displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: color),
-      headlineLarge: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: color),
-      headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: color),
-      headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: color),
-      titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color),
-      titleMedium: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: color),
+      displayLarge: TextStyle(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        color: color,
+      ),
+      displayMedium: TextStyle(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: color,
+      ),
+      headlineLarge: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: color,
+      ),
+      headlineMedium: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: color,
+      ),
+      headlineSmall: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: color,
+      ),
+      titleLarge: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: color,
+      ),
+      titleMedium: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+        color: color,
+      ),
       bodyLarge: TextStyle(fontSize: 15, color: color),
       bodyMedium: TextStyle(fontSize: 14, color: color),
       bodySmall: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-      labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color),
+      labelLarge: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: color,
+      ),
     );
   }
 }
