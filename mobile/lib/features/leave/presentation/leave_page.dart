@@ -58,10 +58,11 @@ class _LeavePageState extends ConsumerState<LeavePage> {
     final initial = isMulai
         ? (_tanggalMulai ?? now)
         : (_tanggalSelesai ?? _tanggalMulai ?? now);
+    final firstDate = isMulai ? now : (_tanggalMulai ?? now);
     final date = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: now,
+      firstDate: firstDate,
       lastDate: now.add(const Duration(days: 365)),
     );
     if (date == null) return;
@@ -395,6 +396,17 @@ class _LeaveTile extends StatelessWidget {
                     color: AppColors.textSecondary,
                   ),
                 ),
+                if (leave.status == LeaveStatus.rejected &&
+                    leave.alasanPenolakan != null) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    'Alasan ditolak: ${leave.alasanPenolakan}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.error,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

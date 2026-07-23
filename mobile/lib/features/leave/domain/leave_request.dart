@@ -1,3 +1,5 @@
+import '../../../shared/utils/attendance_time.dart';
+
 /// Status pengajuan izin.
 enum LeaveStatus { pending, approved, rejected }
 
@@ -33,20 +35,43 @@ class LeaveRequest {
   }
 
   factory LeaveRequest.fromJson(Map<String, dynamic> json) {
-    final statusStr = json['status'] as String? ?? 'pending';
+    int integer(dynamic value) => value is num
+        ? value.toInt()
+        : int.tryParse(value?.toString() ?? '') ?? 0;
+    String string(dynamic value, [String fallback = '']) {
+      final text = value?.toString().trim() ?? '';
+      return text.isEmpty ? fallback : text;
+    }
+
+    DateTime date(dynamic value, [DateTime? fallback]) =>
+        parseAttendanceTime(value) ?? fallback ?? DateTime(1970);
+
+    final statusStr = string(
+      json['status'] ?? json['leave_status'],
+      'pending',
+    ).toLowerCase();
     final status = LeaveStatus.values.firstWhere(
       (e) => e.name == statusStr,
       orElse: () => LeaveStatus.pending,
     );
+    final start = date(json['tanggal_mulai'] ?? json['start_date']);
     return LeaveRequest(
-      id: json['id'] as int,
-      tanggalMulai: DateTime.parse(json['tanggal_mulai'] as String),
-      tanggalSelesai: DateTime.parse(
-        (json['tanggal_selesai'] ?? json['tanggal_mulai']) as String,
-      ),
-      alasan: json['alasan'] as String,
+      id: integer(json['id']),
+      tanggalMulai: start,
+      tanggalSelesai: date(json['tanggal_selesai'] ?? json['end_date'], start),
+      alasan: string(json['alasan'] ?? json['reason']),
       status: status,
-      diajukanPada: DateTime.parse(json['created_at'] as String),
+      alasanPenolakan: switch (string(
+        json['alasan_penolakan'] ??
+            json['rejection_reason'] ??
+            json['catatan_penolakan'],
+      )) {
+        '' => null,
+        final value => value,
+      },
+      diajukanPada: date(
+        json['created_at'] ?? json['diajukan_pada'] ?? json['submitted_at'],
+      ),
     );
   }
 }

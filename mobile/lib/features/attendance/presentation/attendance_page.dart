@@ -159,12 +159,20 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
     // Refresh posisi terbaru sebelum verifikasi.
     final pos = await LocationHelper.getCurrentPosition();
     if (!mounted) return;
-    if (pos != null) setState(() => _currentPos = pos);
+    if (pos == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Posisi GPS terbaru tidak tersedia. Coba lagi.'),
+        ),
+      );
+      return;
+    }
+    setState(() => _currentPos = pos);
 
     // ── Deteksi Fake GPS ──
     // Android menandai lokasi dari aplikasi mock/fake GPS dengan isMocked=true.
     // Absensi ditolak supaya karyawan tidak bisa memalsukan lokasi.
-    if (pos != null && pos.isMocked) {
+    if (pos.isMocked) {
       showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -198,7 +206,7 @@ class _AttendancePageState extends ConsumerState<AttendancePage> {
     }
     // Kirim action + koordinat + flag mock ke halaman verifikasi wajah.
     await context.push(
-      '${AppRoutes.verify}?action=$action&lat=${pos?.latitude ?? 0}&lng=${pos?.longitude ?? 0}&mocked=${pos?.isMocked ?? false}',
+      '${AppRoutes.verify}?action=$action&lat=${pos.latitude}&lng=${pos.longitude}&mocked=${pos.isMocked}',
     );
     if (!mounted) return;
     await _init();

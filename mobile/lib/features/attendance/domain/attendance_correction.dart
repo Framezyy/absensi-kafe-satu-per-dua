@@ -1,3 +1,5 @@
+import '../../../shared/utils/attendance_time.dart';
+
 class AttendanceCorrection {
   const AttendanceCorrection({
     this.id,
@@ -22,13 +24,14 @@ class AttendanceCorrection {
 
     return AttendanceCorrection(
       id: integer(json['id']),
-      attendanceId: integer(json['attendance_id']),
-      requestedClockOutAt: DateTime.tryParse(
-        (json['requested_clock_out_at'] ?? json['clock_out_at'] ?? '')
-            .toString(),
+      attendanceId: integer(json['attendance_id'] ?? json['absensi_id']),
+      requestedClockOutAt: parseAttendanceTime(
+        json['requested_clock_out_at'] ??
+            json['clock_out_at'] ??
+            json['jam_pulang_diminta'],
       ),
       reason: (json['reason'] ?? json['alasan'])?.toString(),
-      status: json['status']?.toString(),
+      status: (json['status'] ?? json['request_status'])?.toString(),
     );
   }
 }

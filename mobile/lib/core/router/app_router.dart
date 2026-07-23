@@ -16,6 +16,19 @@ import '../../features/profile/presentation/profile_page.dart';
 import '../../shared/widgets/main_shell.dart';
 import 'app_routes.dart';
 
+String? authRedirect({
+  required bool isLoggedIn,
+  required bool hasFaceEnrolled,
+  required String location,
+}) {
+  final goingToLogin = location == AppRoutes.login;
+  final goingToEnroll = location == AppRoutes.enroll;
+  if (!isLoggedIn) return goingToLogin ? null : AppRoutes.login;
+  if (!hasFaceEnrolled) return goingToEnroll ? null : AppRoutes.enroll;
+  if (goingToLogin || goingToEnroll) return AppRoutes.home;
+  return null;
+}
+
 /// Listenable yang mendengarkan perubahan state auth + enrollment di
 /// Riverpod, lalu memberi tahu GoRouter untuk re-evaluasi redirect.
 class AppRouterNotifier extends ChangeNotifier {
@@ -34,19 +47,11 @@ class AppRouterNotifier extends ChangeNotifier {
     final loc = state.matchedLocation;
 
     final isLoggedIn = user != null;
-    final goingToLogin = loc == AppRoutes.login;
-    final goingToEnroll = loc == AppRoutes.enroll;
-
-    if (!isLoggedIn) {
-      return goingToLogin ? null : AppRoutes.login;
-    }
-    if (!hasFaceEnrolled) {
-      return goingToEnroll ? null : AppRoutes.enroll;
-    }
-    if (goingToLogin || goingToEnroll) {
-      return AppRoutes.home;
-    }
-    return null;
+    return authRedirect(
+      isLoggedIn: isLoggedIn,
+      hasFaceEnrolled: hasFaceEnrolled,
+      location: loc,
+    );
   }
 }
 

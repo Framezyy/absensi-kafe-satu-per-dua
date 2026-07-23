@@ -8,7 +8,7 @@ class Karyawan extends Model
 {
     protected $table = 'karyawan';
 
-    protected $fillable = ['user_id', 'nama_lengkap', 'jabatan', 'lokasi_kerja_id', 'tarif_per_jam', 'tgl_bergabung', 'status'];
+    protected $fillable = ['user_id', 'nama_lengkap', 'jabatan', 'lokasi_kerja_id', 'default_shift_id', 'tarif_per_jam', 'tgl_bergabung', 'status'];
 
     // / ID Karyawan format KRY-001 (dari primary key, bukan data pribadi).
     public function getKodeKaryawanAttribute(): string
@@ -29,6 +29,11 @@ class Karyawan extends Model
     public function lokasiKerja()
     {
         return $this->belongsTo(LokasiKerja::class, 'lokasi_kerja_id');
+    }
+
+    public function defaultShift()
+    {
+        return $this->belongsTo(Shift::class, 'default_shift_id');
     }
 
     public function absensi()

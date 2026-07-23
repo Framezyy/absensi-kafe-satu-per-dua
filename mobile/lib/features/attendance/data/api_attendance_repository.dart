@@ -77,6 +77,15 @@ class ApiAttendanceRepository implements AttendanceRepository {
           statusCode: error.response!.statusCode,
         );
       }
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout) {
+        return ClockResult.error(
+          const {'code': 'timeout', 'message': 'Koneksi ke server timeout.'},
+          action: action,
+          statusCode: 408,
+        );
+      }
       rethrow;
     }
   }

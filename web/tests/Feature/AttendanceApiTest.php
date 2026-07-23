@@ -39,7 +39,9 @@ class AttendanceApiTest extends TestCase
         $clockInToken = $this->proof($user, $employee, 'clock_in', scheduleId: $schedule->id, similarity: 0.91);
         $this->postJson('/api/attendance/clock-in', ['latitude' => -6.2, 'longitude' => 106.8, 'face_verification_token' => $clockInToken])->assertCreated()
             ->assertJsonPath('data.session_status', 'sedang_bekerja')
-            ->assertJsonPath('data.schedule.shift.nama', 'Malam');
+            ->assertJsonPath('data.schedule.shift.nama', 'Malam')
+            ->assertJsonPath('server_time', '2026-07-20T20:00:00+07:00')
+            ->assertJsonPath('data.clock_in_at', '2026-07-20T20:00:00+07:00');
 
         $this->travelTo('2026-07-21 04:00:00');
         $attendance = Absensi::where('jadwal_kerja_id', $schedule->id)->firstOrFail();
@@ -47,7 +49,9 @@ class AttendanceApiTest extends TestCase
         $this->postJson('/api/attendance/clock-out', ['latitude' => -6.2, 'longitude' => 106.8, 'face_verification_token' => $clockOutToken])->assertOk()
             ->assertJsonPath('data.session_status', 'selesai')
             ->assertJsonPath('data.paid_minutes', 480)
-            ->assertJsonPath('data.estimated_salary', 80000);
+            ->assertJsonPath('data.estimated_salary', 80000)
+            ->assertJsonPath('server_time', '2026-07-21T04:00:00+07:00')
+            ->assertJsonPath('data.clock_out_at', '2026-07-21T04:00:00+07:00');
 
         $this->assertTrue(Absensi::where('jadwal_kerja_id', $schedule->id)->whereDate('tanggal', '2026-07-20')->where('paid_minutes', 480)->exists());
     }

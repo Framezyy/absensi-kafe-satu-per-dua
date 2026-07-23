@@ -20,12 +20,11 @@ class AuthController extends Controller
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages(['username' => ['Username atau password salah.']]);
         }
-        // Karyawan nonaktif tidak boleh login.
-        if ($user->status !== 'aktif') {
-            throw ValidationException::withMessages(['username' => ['Akun Anda tidak aktif. Hubungi admin.']]);
+        $karyawan = $user->karyawan;
+        if ($user->role !== 'karyawan' || $user->status !== 'aktif' || ! $karyawan || $karyawan->status !== 'aktif') {
+            throw ValidationException::withMessages(['username' => ['Akun karyawan tidak aktif atau tidak valid.']]);
         }
         $token = $user->createToken('mobile')->plainTextToken;
-        $karyawan = $user->karyawan;
         $hasFaceEnrolled = $karyawan && $karyawan->faceEmbedding && $karyawan->faceEmbedding->is_aktif;
 
         return response()->json([

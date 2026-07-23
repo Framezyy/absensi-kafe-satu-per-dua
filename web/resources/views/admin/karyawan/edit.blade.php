@@ -60,6 +60,7 @@
                     <p class="mt-1 text-xs text-stone-400">Lokasi aktual absensi mengikuti Jadwal Kerja.</p>
                 </div>
             </div>
+            <div><label class="mb-2 block text-sm font-semibold text-stone-700">Shift Kerja Tetap</label><div class="grid gap-3 sm:grid-cols-2">@foreach($shifts as $shift)<label class="cursor-pointer rounded-2xl border border-stone-200 bg-white p-4 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50"><input type="radio" name="default_shift_id" value="{{ $shift->id }}" class="sr-only" {{ old('default_shift_id',$k->default_shift_id)==$shift->id?'checked':'' }} required><div class="font-bold text-stone-800">Shift {{ $shift->nama }}</div><div class="font-mono text-sm text-stone-500">{{ substr($shift->jam_mulai,0,5) }}–{{ substr($shift->jam_selesai,0,5) }}</div></label>@endforeach</div>@error('default_shift_id')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror</div>
             <div class="grid gap-5 sm:grid-cols-2">
                 <div class="rounded-2xl border border-amber-100 bg-amber-50/60 px-4 py-3">
                     <div class="text-xs font-bold uppercase tracking-wide text-amber-700">Tarif Sistem</div>

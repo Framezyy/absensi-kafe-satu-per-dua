@@ -88,4 +88,36 @@ void main() {
     expect(mocked.status, ClockStatus.mockedLocation);
     expect(session.status, ClockStatus.noOpenSession);
   });
+
+  test('clock success keeps Asia Jakarta time for offset and UTC inputs', () {
+    final offsetResult = ClockResult.fromJson({
+      'server_time': '2026-07-21T17:24:00+07:00',
+    }, action: ClockAction.clockIn);
+    final utcResult = ClockResult.fromJson({
+      'server_time': '2026-07-21T10:24:00Z',
+    }, action: ClockAction.clockOut);
+
+    expect(offsetResult.serverTime?.hour, 17);
+    expect(offsetResult.serverTime?.minute, 24);
+    expect(utcResult.serverTime?.hour, 17);
+    expect(utcResult.serverTime?.minute, 24);
+  });
+
+  test('attendance record displays equivalent timestamps as 17:24 WIB', () {
+    final offsetRecord = AttendanceRecord.fromJson({
+      'tanggal_shift': '2026-07-21',
+      'clock_in_at': '2026-07-21T17:24:00+07:00',
+      'clock_out_at': '2026-07-21T17:24:00+07:00',
+    });
+    final utcRecord = AttendanceRecord.fromJson({
+      'tanggal_shift': '2026-07-21',
+      'clock_in_at': '2026-07-21T10:24:00Z',
+      'clock_out_at': '2026-07-21T10:24:00Z',
+    });
+
+    expect(offsetRecord.jamMasukStr, '17:24');
+    expect(offsetRecord.jamPulangStr, '17:24');
+    expect(utcRecord.jamMasukStr, '17:24');
+    expect(utcRecord.jamPulangStr, '17:24');
+  });
 }

@@ -32,7 +32,7 @@ class FaceController extends Controller
     {
         $request->validate([
             'frames' => 'required|array|min:1',
-            'frames.*' => 'required|file|max:5120',
+            'frames.*' => 'required|image|mimes:jpg,jpeg|max:5120',
         ]);
 
         $karyawan = $request->user()->karyawan;
@@ -142,7 +142,7 @@ class FaceController extends Controller
             return response()->json(['code' => 'FACE_SERVICE_UNAVAILABLE', 'match' => false, 'similarity' => 0, 'message' => 'Layanan verifikasi wajah tidak tersedia.'], 503);
         }
         $similarity = (float) $result['similarity'];
-        if (! $result['match']) {
+        if (! $result['match'] || $similarity < FaceRecognitionService::VERIFY_THRESHOLD) {
             return response()->json(['code' => 'FACE_MISMATCH', 'match' => false, 'similarity' => $similarity, 'threshold' => $result['threshold'] ?? FaceRecognitionService::VERIFY_THRESHOLD, 'message' => $result['message'] ?? 'Wajah tidak cocok.'], 422);
         }
 

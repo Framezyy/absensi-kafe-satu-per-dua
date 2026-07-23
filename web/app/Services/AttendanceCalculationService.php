@@ -13,6 +13,15 @@ class AttendanceCalculationService
         return (int) max(0, $scheduledStart->copy()->addMinutes($toleranceMinutes)->diffInMinutes($clockIn, false));
     }
 
+    public function earlyLeaveMinutes(?CarbonInterface $clockOut, CarbonInterface $scheduledEnd): int
+    {
+        if (! $clockOut || $clockOut->greaterThanOrEqualTo($scheduledEnd)) {
+            return 0;
+        }
+
+        return (int) $clockOut->diffInMinutes($scheduledEnd);
+    }
+
     public function shiftPeriod(string|CarbonInterface $operationalDate, string $startTime, string $endTime, ?string $timezone = null): array
     {
         $timezone ??= config('app.timezone');

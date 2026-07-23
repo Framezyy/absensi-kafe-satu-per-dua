@@ -1,3 +1,4 @@
+import '../../../shared/utils/attendance_time.dart';
 import 'attendance_record.dart';
 
 enum ClockAction { clockIn, clockOut }
@@ -80,7 +81,9 @@ class ClockResult {
     if (code.contains('mock') || code.contains('fake_location')) {
       return ClockStatus.mockedLocation;
     }
-    if (code.contains('no_schedule') || code.contains('schedule_not_found')) {
+    if (code.contains('no_schedule') ||
+        code.contains('no_active_schedule') ||
+        code.contains('schedule_not_found')) {
       return ClockStatus.noSchedule;
     }
     if (code.contains('no_open_session') || code.contains('not_clocked_in')) {
@@ -88,6 +91,12 @@ class ClockResult {
     }
     if (code.contains('already') || code.contains('completed')) {
       return ClockStatus.alreadyDone;
+    }
+    if (code.contains('timeout') ||
+        code.contains('timed_out') ||
+        statusCode == 408 ||
+        statusCode == 504) {
+      return ClockStatus.timeout;
     }
     if (code.contains('face')) return ClockStatus.faceMismatch;
     if (statusCode == 422 || code.contains('validation')) {
@@ -102,6 +111,5 @@ class ClockResult {
     return null;
   }
 
-  static DateTime? _date(dynamic value) =>
-      value is String ? DateTime.tryParse(value) : null;
+  static DateTime? _date(dynamic value) => parseAttendanceTime(value);
 }

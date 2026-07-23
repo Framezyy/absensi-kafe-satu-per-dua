@@ -17,6 +17,7 @@ Referensi:
 """
 
 import io
+import json
 import logging
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -27,7 +28,6 @@ from facenet_pytorch import MTCNN as FNMTCNN, InceptionResnetV1
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from PIL import Image
 from pydantic import BaseModel
-from scipy.spatial.distance import cosine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,6 +38,7 @@ facenet_model: Optional[InceptionResnetV1] = None
 
 # Threshold cosine similarity (Nusantoko & Prapanca, 2025).
 SIMILARITY_THRESHOLD = 0.7
+EMBEDDING_DIMENSION = 512
 
 
 @asynccontextmanager
@@ -49,22 +50,26 @@ async def lifespan(app: FastAPI):
     logger.info(f"Loading models on device: {device}")
 
     # MTCNN untuk deteksi wajah + crop.
-    mtcnn_model = FNMTCNN(
-        image_size=160,
-        margin=0,
-        min_face_size=20,
-        thresholds=[0.6, 0.7, 0.7],
-        factor=0.709,
-        post_process=True,
-        device=device,
-    )
+    try:
+        mtcnn_model = FNMTCNN(
+            image_size=160,
+            margin=0,
+            min_face_size=20,
+            thresholds=[0.6, 0.7, 0.7],
+            factor=0.709,
+            post_process=True,
+            device=device,
+        )
 
-    # FaceNet (InceptionResnetV1 pretrained pada VGGFace2) untuk embedding.
-    facenet_model = InceptionResnetV1(pretrained="vggface2").eval().to(device)
+        # FaceNet (InceptionResnetV1 pretrained pada VGGFace2) untuk embedding.
+        facenet_model = InceptionResnetV1(pretrained="vggface2").eval().to(device)
 
-    logger.info("Models loaded successfully.")
-    yield
-    logger.info("Shutting down.")
+        logger.info("Models loaded successfully.")
+        yield
+    finally:
+        mtcnn_model = None
+        facenet_model = None
+        logger.info("Shutting down.")
 
 
 app = FastAPI(
@@ -108,6 +113,7 @@ class HealthResponse(BaseModel):
 def load_image(file_bytes: bytes) -> Image.Image:
     """Load image dari bytes, konversi ke RGB, resize ke maks 320px."""
     img = Image.open(io.BytesIO(file_bytes))
+    img.load()
     if img.mode != "RGB":
         img = img.convert("RGB")
     # Resize ke maks 320px supaya MTCNN + FaceNet lebih cepat.
@@ -120,10 +126,55 @@ def load_image(file_bytes: bytes) -> Image.Image:
     return img
 
 
+def models_ready() -> bool:
+    """Return whether both models needed by the embedding pipeline are loaded."""
+    return mtcnn_model is not None and facenet_model is not None
+
+
+def validate_stored_embedding(
+    value: object,
+    expected_dimension: int = EMBEDDING_DIMENSION,
+) -> np.ndarray:
+    """Validate and return one finite, non-zero numeric embedding vector."""
+    try:
+        embedding = np.asarray(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("stored_embedding harus berupa array numerik.") from exc
+
+    if embedding.ndim != 1 or embedding.shape[0] != expected_dimension:
+        raise ValueError(
+            f"stored_embedding harus berupa array {expected_dimension} dimensi."
+        )
+    if embedding.dtype.kind not in "iuf":
+        raise ValueError("stored_embedding harus berupa array numerik.")
+
+    embedding = embedding.astype(np.float32, copy=False)
+    if not np.isfinite(embedding).all():
+        raise ValueError("stored_embedding harus berisi nilai finite.")
+    if np.linalg.norm(embedding) == 0:
+        raise ValueError("stored_embedding tidak boleh berupa vektor nol.")
+    return embedding
+
+
+def cosine_similarity(reference: np.ndarray, candidate: np.ndarray) -> float:
+    """Calculate cosine similarity for finite, same-shaped, non-zero vectors."""
+    reference = np.asarray(reference, dtype=np.float64)
+    candidate = np.asarray(candidate, dtype=np.float64)
+    if reference.ndim != 1 or candidate.ndim != 1 or reference.shape != candidate.shape:
+        raise ValueError("Embedding harus berupa vektor dengan dimensi yang sama.")
+    if not np.isfinite(reference).all() or not np.isfinite(candidate).all():
+        raise ValueError("Embedding harus berisi nilai finite.")
+
+    denominator = np.linalg.norm(reference) * np.linalg.norm(candidate)
+    if denominator == 0:
+        raise ValueError("Embedding tidak boleh berupa vektor nol.")
+    return float(np.dot(reference, candidate) / denominator)
+
+
 def get_embedding(face_img: Image.Image) -> Optional[np.ndarray]:
     """Generate 512-dimensi embedding dari gambar wajah yang sudah di-crop."""
     global mtcnn_model, facenet_model
-    if mtcnn_model is None or facenet_model is None:
+    if not models_ready():
         return None
 
     device = next(facenet_model.parameters()).device
@@ -152,7 +203,7 @@ async def health():
     return HealthResponse(
         status="ok",
         device=device,
-        models_loaded=mtcnn_model is not None and facenet_model is not None,
+        models_loaded=models_ready(),
     )
 
 
@@ -178,9 +229,9 @@ async def detect(file: UploadFile = File(...)):
             num_faces=len(boxes),
             boxes=boxes.tolist(),
         )
-    except Exception as e:
-        logger.error(f"Detect error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("Detect error")
+        raise HTTPException(status_code=500, detail="Gagal memproses deteksi wajah.")
 
 
 @app.post("/embed", response_model=EmbedResponse)
@@ -191,7 +242,7 @@ async def embed(file: UploadFile = File(...)):
     Gambar harus berisi 1 wajah yang jelas. Mengembalikan vektor
     512-dimensi yang bisa disimpan di database untuk verifikasi nanti.
     """
-    if facenet_model is None:
+    if not models_ready():
         raise HTTPException(status_code=503, detail="Model belum dimuat.")
 
     try:
@@ -208,9 +259,9 @@ async def embed(file: UploadFile = File(...)):
             success=True,
             embedding=embedding.tolist(),
         )
-    except Exception as e:
-        logger.error(f"Embed error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("Embed error")
+        raise HTTPException(status_code=500, detail="Gagal membuat embedding wajah.")
 
 
 @app.post("/verify", response_model=VerifyResponse)
@@ -226,14 +277,17 @@ async def verify(
 
     Mengembalikan `match=true` jika cosine similarity ≥ 0.7.
     """
-    if facenet_model is None:
+    if not models_ready():
         raise HTTPException(status_code=503, detail="Model belum dimuat.")
 
     try:
-        # Parse stored embedding.
-        import json
-        stored = np.array(json.loads(stored_embedding), dtype=np.float32)
+        stored = validate_stored_embedding(json.loads(stored_embedding))
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="stored_embedding bukan JSON valid.")
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
 
+    try:
         # Generate embedding dari gambar baru.
         img = load_image(await file.read())
         new_embedding = get_embedding(img)
@@ -247,7 +301,7 @@ async def verify(
             )
 
         # Hitung cosine similarity.
-        similarity = 1 - cosine(stored, new_embedding)
+        similarity = cosine_similarity(stored, new_embedding)
         match = similarity >= SIMILARITY_THRESHOLD
 
         return VerifyResponse(
@@ -256,11 +310,9 @@ async def verify(
             threshold=SIMILARITY_THRESHOLD,
             message="Wajah cocok." if match else "Wajah tidak cocok.",
         )
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="stored_embedding bukan JSON valid.")
-    except Exception as e:
-        logger.error(f"Verify error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception:
+        logger.exception("Verify error")
+        raise HTTPException(status_code=500, detail="Gagal memverifikasi wajah.")
 
 
 if __name__ == "__main__":

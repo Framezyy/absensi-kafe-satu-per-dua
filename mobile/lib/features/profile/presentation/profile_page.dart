@@ -28,6 +28,8 @@ class ProfilePage extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
     final isLoggingOut = authState.isLoading;
     final df = DateFormat('d MMMM yyyy', 'id_ID');
+    final displayName = user?.nama.trim() ?? '';
+    final safeName = displayName.isEmpty ? '-' : displayName;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
@@ -84,7 +86,9 @@ class ProfilePage extends ConsumerWidget {
                     ),
                     child: Center(
                       child: Text(
-                        (user?.nama ?? '?')[0].toUpperCase(),
+                        displayName.isEmpty
+                            ? '?'
+                            : displayName[0].toUpperCase(),
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
@@ -95,7 +99,7 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    user?.nama ?? '-',
+                    safeName,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,

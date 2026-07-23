@@ -9,7 +9,14 @@ class LokasiKerjaSeeder extends Seeder
 {
     public function run(): void
     {
-        LokasiKerja::updateOrCreate(['nama_lokasi' => 'Kafe Satu Per Dua Kopitiam'], [
+        $lokasi = LokasiKerja::query()->orderBy('id')->first();
+        if ($lokasi) {
+            $lokasi->update(['is_aktif' => true]);
+
+            return;
+        }
+
+        LokasiKerja::create([
             'nama_lokasi' => 'Kafe Satu Per Dua Kopitiam',
             'latitude' => -0.02630000,
             'longitude' => 109.34250000,

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AttendanceCorrectionController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FaceAnalysisController;
 use App\Http\Controllers\Admin\IzinController;
 use App\Http\Controllers\Admin\JadwalKerjaController;
 use App\Http\Controllers\Admin\KaryawanController;
@@ -33,18 +34,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('lokasi/{id}', [LokasiController::class, 'update'])->name('lokasi.update');
 
         Route::get('monitor', [MonitorController::class, 'index'])->name('monitor.index');
+        Route::get('face-analysis', [FaceAnalysisController::class, 'index'])->name('face-analysis.index');
 
         Route::get('izin', [IzinController::class, 'index'])->name('izin.index');
         Route::post('izin/{id}/approve', [IzinController::class, 'approve'])->name('izin.approve');
         Route::post('izin/{id}/reject', [IzinController::class, 'reject'])->name('izin.reject');
 
         Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
-        Route::get('shifts/create', [ShiftController::class, 'create'])->name('shifts.create');
-        Route::post('shifts', [ShiftController::class, 'store'])->name('shifts.store');
         Route::get('jadwal', [JadwalKerjaController::class, 'index'])->name('jadwal.index');
-        Route::get('jadwal/create', [JadwalKerjaController::class, 'create'])->name('jadwal.create');
-        Route::post('jadwal', [JadwalKerjaController::class, 'store'])->name('jadwal.store');
-        Route::delete('jadwal/{jadwal}', [JadwalKerjaController::class, 'destroy'])->name('jadwal.destroy');
+        Route::get('jadwal/{karyawan}/edit', [JadwalKerjaController::class, 'edit'])->whereNumber('karyawan')->name('jadwal.edit');
+        Route::put('jadwal/{karyawan}', [JadwalKerjaController::class, 'update'])->whereNumber('karyawan')->name('jadwal.update');
         Route::get('attendance-corrections', [AttendanceCorrectionController::class, 'index'])->name('corrections.index');
         Route::post('attendance-corrections/{correction}/approve', [AttendanceCorrectionController::class, 'approve'])->name('corrections.approve');
         Route::post('attendance-corrections/{correction}/reject', [AttendanceCorrectionController::class, 'reject'])->name('corrections.reject');

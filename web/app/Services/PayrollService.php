@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Absensi;
 use App\Models\Karyawan;
 use App\Models\Penggajian;
+use DomainException;
 
 class PayrollService
 {
@@ -12,8 +13,12 @@ class PayrollService
 
     public function generate(int $bulan, int $tahun): void
     {
+        if (Penggajian::where('periode_bulan', $bulan)->where('periode_tahun', $tahun)->where('status_bayar', 'sudah_dibayar')->exists()) {
+            throw new DomainException('Payroll yang sudah dibayar tidak dapat dibuat ulang.');
+        }
+
         $karyawan = Karyawan::whereHas('absensi', fn ($query) => $query->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun))->get();
-        Penggajian::where('periode_bulan', $bulan)->where('periode_tahun', $tahun)->whereNotIn('karyawan_id', $karyawan->pluck('id'))->delete();
+        Penggajian::where('periode_bulan', $bulan)->where('periode_tahun', $tahun)->where('status_bayar', '!=', 'sudah_dibayar')->whereNotIn('karyawan_id', $karyawan->pluck('id'))->delete();
         foreach ($karyawan as $k) {
             $attendance = Absensi::where('karyawan_id', $k->id)->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun);
             $completed = (clone $attendance)->where('status_kehadiran', 'selesai')->get(['paid_minutes']);

@@ -137,6 +137,8 @@ class AttendanceController extends Controller
         $record->loadMissing('jadwalKerja.shift', 'jadwalKerja.lokasiKerja');
         $data = $record->toArray();
         $data['tanggal_shift'] = $record->tanggal?->format('Y-m-d');
+        $data['clock_in_at'] = $record->clock_in_at?->setTimezone(config('app.timezone'))->toIso8601String();
+        $data['clock_out_at'] = $record->clock_out_at?->setTimezone(config('app.timezone'))->toIso8601String();
         $data['attendance_status'] = $record->late_minutes > 0 ? 'terlambat' : 'tepat_waktu';
         $data['session_status'] = match ($record->status_kehadiran) {
             'berjalan' => 'sedang_bekerja',

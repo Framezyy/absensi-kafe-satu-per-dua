@@ -31,7 +31,9 @@ web/.php-cs-fixer.cache
 
 # Python
 ai-service/__pycache__/
+ai-service/**/__pycache__/
 ai-service/*.pyc
+ai-service/**/*.pyc
 ai-service/.venv/
 ai-service/venv/
 ai-service/models/

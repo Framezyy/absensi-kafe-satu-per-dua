@@ -2,12 +2,18 @@
 
 use App\Models\Absensi;
 use App\Services\AttendanceCalculationService;
+use App\Services\DailyScheduleMaterializer;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
+
+Artisan::command('schedule:materialize', function (DailyScheduleMaterializer $materializer) {
+    $materializer->materializeWindow(today());
+    $this->info('Jadwal kemarin, hari ini, dan besok tersedia untuk karyawan aktif.');
+})->purpose('Materialize daily schedules from employee default shifts')->everyFifteenMinutes()->withoutOverlapping();
 
 Artisan::command('attendance:mark-incomplete', function (AttendanceCalculationService $calculation) {
     $count = 0;

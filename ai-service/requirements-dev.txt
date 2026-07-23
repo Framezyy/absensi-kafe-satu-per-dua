@@ -1,0 +1,3 @@
+-r requirements.txt
+
+# Tests use the Python standard library (unittest) and need no extra packages.

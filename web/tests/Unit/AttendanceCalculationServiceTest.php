@@ -29,4 +29,15 @@ class AttendanceCalculationServiceTest extends TestCase
         $this->assertSame(450, $metrics['paid_minutes']);
         $this->assertSame(75000, $service->salary(450, 10000));
     }
+
+    public function test_early_leave_minutes_compare_clock_out_with_shift_end(): void
+    {
+        $service = new AttendanceCalculationService;
+        [, $end] = $service->shiftPeriod('2026-07-20', '08:00', '16:00', 'Asia/Jakarta');
+
+        $this->assertSame(90, $service->earlyLeaveMinutes(CarbonImmutable::parse('2026-07-20 14:30', 'Asia/Jakarta'), $end));
+        $this->assertSame(0, $service->earlyLeaveMinutes(CarbonImmutable::parse('2026-07-20 16:00', 'Asia/Jakarta'), $end));
+        $this->assertSame(0, $service->earlyLeaveMinutes(CarbonImmutable::parse('2026-07-20 17:00', 'Asia/Jakarta'), $end));
+        $this->assertSame(0, $service->earlyLeaveMinutes(null, $end));
+    }
 }

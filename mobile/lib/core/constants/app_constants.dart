@@ -47,7 +47,7 @@ class AppConstants {
   static const Duration captureCooldown = Duration(milliseconds: 900);
 
   /// Jumlah frame frontal yang di-capture saat enrollment.
-  static const int enrollFrameCount = 1;
+  static const int enrollFrameCount = 3;
 
   /// Timeout per aksi liveness (per step di enrollment, atau 1 aksi di absensi).
   static const Duration livenessTimeout = Duration(seconds: 30);

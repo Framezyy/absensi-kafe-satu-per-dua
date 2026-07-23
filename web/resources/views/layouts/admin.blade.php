@@ -58,6 +58,9 @@
                 <div class="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-widest text-stone-500">Keuangan</div>
                 <x-nav-link route="admin.payroll.index" :active="request()->routeIs('admin.payroll.*')" label="Rekap Payroll" icon="wallet" />
 
+                <div class="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-widest text-stone-500">Analisis</div>
+                <x-nav-link route="admin.face-analysis.index" :active="request()->routeIs('admin.face-analysis.*')" label="Analisis Wajah" icon="face-scan" />
+
             </nav>
 
             {{-- Mini profile --}}

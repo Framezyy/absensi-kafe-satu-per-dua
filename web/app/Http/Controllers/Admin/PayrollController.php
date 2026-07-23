@@ -7,6 +7,7 @@ use App\Models\Absensi;
 use App\Models\Penggajian;
 use App\Services\AttendanceCalculationService;
 use App\Services\PayrollService;
+use DomainException;
 use Illuminate\Http\Request;
 
 class PayrollController extends Controller
@@ -25,7 +26,11 @@ class PayrollController extends Controller
     {
         $period = $request->validate(['period' => 'required|date_format:Y-m'])['period'];
         [$tahun, $bulan] = explode('-', $period);
-        $service->generate((int) $bulan, (int) $tahun);
+        try {
+            $service->generate((int) $bulan, (int) $tahun);
+        } catch (DomainException $exception) {
+            return back()->withInput()->with('error', $exception->getMessage());
+        }
 
         return redirect()->route('admin.payroll.index', ['period' => $period])->with('success', 'Snapshot payroll berhasil dibuat.');
     }

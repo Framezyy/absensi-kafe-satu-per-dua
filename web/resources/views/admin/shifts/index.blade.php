@@ -7,9 +7,9 @@
     $lintasHari = $shifts->filter(fn($shift) => $shift->jam_selesai <= $shift->jam_mulai)->count();
 @endphp
 
-<div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+<div class="mb-5">
     <div>
-        <p class="text-sm text-stone-500">Atur jam operasional dan toleransi keterlambatan setiap shift karyawan.</p>
+        <p class="text-sm text-stone-500">Jam operasional kafe menggunakan dua shift tetap: Pagi dan Malam.</p>
         <div class="mt-3 flex flex-wrap items-center gap-3">
             <div class="rounded-2xl border border-white/70 bg-white/80 px-4 py-2.5 shadow-sm backdrop-blur">
                 <span class="text-lg font-extrabold text-stone-800">{{ $shifts->count() }}</span>
@@ -25,10 +25,6 @@
             </div>
         </div>
     </div>
-    <a href="{{ route('admin.shifts.create') }}" class="flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-amber-500/25 transition hover:shadow-amber-500/40" style="background: linear-gradient(135deg, #d97706, #b45309);">
-        <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-        Tambah Shift
-    </a>
 </div>
 
 @if($shifts->isNotEmpty())
@@ -97,9 +93,8 @@
 @else
 <div class="flex flex-col items-center justify-center rounded-3xl border border-dashed border-stone-200 bg-white/50 py-16 text-center">
     <svg class="h-14 w-14 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    <p class="mt-3 text-sm font-semibold text-stone-500">Belum ada shift kerja</p>
-    <p class="mt-1 text-xs text-stone-400">Tambahkan shift sebelum menyusun jadwal karyawan.</p>
-    <a href="{{ route('admin.shifts.create') }}" class="mt-4 rounded-2xl bg-amber-700 px-4 py-2.5 text-sm font-bold text-white">Tambah Shift</a>
+    <p class="mt-3 text-sm font-semibold text-stone-500">Master shift belum tersedia</p>
+    <p class="mt-1 text-xs text-stone-400">Jalankan seeder untuk memulihkan Shift Pagi dan Malam.</p>
 </div>
 @endif
 @endsection

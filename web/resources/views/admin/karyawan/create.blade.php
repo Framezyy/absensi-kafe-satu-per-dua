@@ -46,6 +46,7 @@
                     <input type="date" name="tanggal_bergabung" value="{{ old("tanggal_bergabung", date("Y-m-d")) }}" class="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15">
                 </div>
             </div>
+            <div><label class="mb-2 block text-sm font-semibold text-stone-700">Shift Kerja Tetap</label><div class="grid gap-3 sm:grid-cols-2">@foreach($shifts as $shift)<label class="cursor-pointer rounded-2xl border border-stone-200 bg-white p-4 transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50"><input type="radio" name="default_shift_id" value="{{ $shift->id }}" class="sr-only" {{ old('default_shift_id')==$shift->id?'checked':'' }} required><div class="font-bold text-stone-800">Shift {{ $shift->nama }}</div><div class="font-mono text-sm text-stone-500">{{ substr($shift->jam_mulai,0,5) }}–{{ substr($shift->jam_selesai,0,5) }}</div></label>@endforeach</div>@error('default_shift_id')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror<p class="mt-1 text-xs text-stone-400">Jadwal harian akan dibuat otomatis berdasarkan shift ini.</p></div>
         </div>
 
         {{-- Section: Akun Login --}}

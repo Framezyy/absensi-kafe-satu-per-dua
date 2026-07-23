@@ -9,10 +9,11 @@ use Carbon\CarbonInterface;
 
 class ScheduleResolver
 {
-    public function __construct(private AttendanceCalculationService $calculation) {}
+    public function __construct(private AttendanceCalculationService $calculation, private DailyScheduleMaterializer $materializer) {}
 
     public function forClockIn(int $employeeId, CarbonInterface $now): ?JadwalKerja
     {
+        $this->materializer->materializeWindow($now, $employeeId);
         $openingMinutes = (int) config('attendance.clock_in_open_before_minutes', 120);
 
         return JadwalKerja::with('shift', 'lokasiKerja', 'absensi')

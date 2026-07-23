@@ -5,15 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
 use App\Models\LokasiKerja;
+use App\Models\Shift;
 use App\Models\User;
+use App\Services\DailyScheduleMaterializer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class KaryawanController extends Controller
 {
     public function index()
     {
-        $karyawan = Karyawan::with(['user', 'lokasiKerja', 'faceEmbedding'])->orderBy('nama_lengkap')->get();
+        $karyawan = Karyawan::with(['user', 'lokasiKerja', 'defaultShift', 'faceEmbedding'])->orderBy('nama_lengkap')->get();
 
         return view('admin.karyawan.index', compact('karyawan'));
     }
@@ -21,17 +24,19 @@ class KaryawanController extends Controller
     public function create()
     {
         $lokasi = LokasiKerja::where('is_aktif', true)->get();
+        $shifts = Shift::where('is_aktif', true)->whereIn('nama', ['Pagi', 'Malam'])->orderBy('jam_mulai')->get();
 
-        return view('admin.karyawan.create', compact('lokasi'));
+        return view('admin.karyawan.create', compact('lokasi', 'shifts'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, DailyScheduleMaterializer $materializer)
     {
         // Normalisasi username ke lowercase sebelum validasi & simpan.
         $request->merge([
             'username' => strtolower(trim($request->username ?? '')),
         ]);
 
+        $allowedShiftIds = array_column(Shift::where('is_aktif', true)->whereIn('nama', ['Pagi', 'Malam'])->get(['id'])->toArray(), 'id');
         $request->validate([
             'nama' => 'required|string|max:255',
             'jabatan' => 'required|string|max:100',
@@ -39,30 +44,19 @@ class KaryawanController extends Controller
             'password' => 'required|string|size:12',
             'tanggal_bergabung' => 'required|date',
             'lokasi_kerja_id' => 'nullable|exists:lokasi_kerja,id',
+            'default_shift_id' => 'required|in:'.implode(',', $allowedShiftIds),
         ], [
             'username.regex' => 'Username hanya boleh huruf kecil, angka, titik, dan garis bawah.',
             'username.unique' => 'Username sudah dipakai karyawan lain.',
             'password.size' => 'Password harus tepat 12 karakter.',
         ]);
 
-        $user = User::create([
-            'name' => $request->nama,
-            'username' => $request->username,
-            'email' => $request->username.'@kafe12.com',
-            'password' => Hash::make($request->password),
-            'role' => 'karyawan',
-            'status' => 'aktif',
-        ]);
+        $employee = DB::transaction(function () use ($request) {
+            $user = User::create(['name' => $request->nama, 'username' => $request->username, 'email' => $request->username.'@kafe12.com', 'password' => Hash::make($request->password), 'role' => 'karyawan', 'status' => 'aktif']);
 
-        Karyawan::create([
-            'user_id' => $user->id,
-            'nama_lengkap' => $request->nama,
-            'jabatan' => $request->jabatan,
-            'lokasi_kerja_id' => $request->lokasi_kerja_id,
-            'tarif_per_jam' => config('payroll.hourly_rate', 10000),
-            'tgl_bergabung' => $request->tanggal_bergabung,
-            'status' => 'aktif',
-        ]);
+            return Karyawan::create(['user_id' => $user->id, 'nama_lengkap' => $request->nama, 'jabatan' => $request->jabatan, 'lokasi_kerja_id' => $request->lokasi_kerja_id, 'default_shift_id' => $request->default_shift_id, 'tarif_per_jam' => config('payroll.hourly_rate', 10000), 'tgl_bergabung' => $request->tanggal_bergabung, 'status' => 'aktif']);
+        });
+        $materializer->materializeWindow(today(), $employee->id);
 
         return redirect()->route('admin.karyawan.index')
             ->with('success', 'Karyawan berhasil ditambahkan.')
@@ -77,11 +71,12 @@ class KaryawanController extends Controller
     {
         $k = Karyawan::with('user')->findOrFail($id);
         $lokasi = LokasiKerja::where('is_aktif', true)->get();
+        $shifts = Shift::where('is_aktif', true)->whereIn('nama', ['Pagi', 'Malam'])->orderBy('jam_mulai')->get();
 
-        return view('admin.karyawan.edit', compact('k', 'lokasi'));
+        return view('admin.karyawan.edit', compact('k', 'lokasi', 'shifts'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id, DailyScheduleMaterializer $materializer)
     {
         $k = Karyawan::with('user')->findOrFail($id);
 
@@ -90,6 +85,7 @@ class KaryawanController extends Controller
             'username' => strtolower(trim($request->username ?? '')),
         ]);
 
+        $allowedShiftIds = array_column(Shift::where('is_aktif', true)->whereIn('nama', ['Pagi', 'Malam'])->get(['id'])->toArray(), 'id');
         $request->validate([
             'nama' => 'required|string|max:255',
             'jabatan' => 'required|string|max:100',
@@ -97,6 +93,7 @@ class KaryawanController extends Controller
             'lokasi_kerja_id' => 'nullable|exists:lokasi_kerja,id',
             'username' => 'required|string|min:4|max:50|regex:/^[a-z0-9._]+$/|unique:users,username,'.$k->user_id,
             'password' => 'nullable|string|size:12',
+            'default_shift_id' => 'required|in:'.implode(',', $allowedShiftIds),
         ], [
             'username.regex' => 'Username hanya boleh huruf kecil, angka, titik, dan garis bawah.',
             'username.unique' => 'Username sudah dipakai karyawan lain.',
@@ -109,6 +106,7 @@ class KaryawanController extends Controller
             'tarif_per_jam' => config('payroll.hourly_rate', 10000),
             'status' => $request->status,
             'lokasi_kerja_id' => $request->lokasi_kerja_id,
+            'default_shift_id' => $request->default_shift_id,
         ]);
 
         // Update akun login (nama, username, status). Password hanya jika diisi.
@@ -121,6 +119,9 @@ class KaryawanController extends Controller
             $userData['password'] = Hash::make($request->password);
         }
         $k->user->update($userData);
+        if ($k->status === 'aktif') {
+            $materializer->applyDefaultShift($k->fresh(), today());
+        }
 
         return redirect()->route('admin.karyawan.index')->with('success', 'Karyawan berhasil diperbarui.');
     }
@@ -135,6 +136,7 @@ class KaryawanController extends Controller
         $k->faceEmbedding()->delete();
         $k->izin()->delete();
         $k->penggajian()->delete();
+        $k->jadwalKerja()->delete();
 
         // Simpan referensi user untuk dihapus setelah karyawan.
         $user = $k->user;

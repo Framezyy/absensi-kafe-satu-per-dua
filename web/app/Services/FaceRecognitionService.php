@@ -117,7 +117,7 @@ class FaceRecognitionService
 
         foreach ($files as $file) {
             $result = $this->embed($file);
-            if (isset($result['success']) && $result['success'] && isset($result['embedding'])) {
+            if (isset($result['success']) && $result['success'] && isset($result['embedding']) && $this->validEmbedding($result['embedding'])) {
                 $embeddings[] = $result['embedding'];
             }
         }
@@ -125,6 +125,9 @@ class FaceRecognitionService
         if (! empty($embeddings)) {
             $count = count($embeddings);
             $dim = count($embeddings[0]);
+            if (collect($embeddings)->contains(fn (array $embedding) => count($embedding) !== $dim)) {
+                return ['success' => false, 'message' => 'Data embedding wajah tidak konsisten.'];
+            }
             $mean = array_fill(0, $dim, 0.0);
 
             foreach ($embeddings as $emb) {
@@ -145,6 +148,21 @@ class FaceRecognitionService
             'success' => false,
             'message' => 'Wajah tidak terdeteksi. Pastikan wajah terlihat jelas, pencahayaan cukup, dan posisi berada di dalam bingkai.',
         ];
+    }
+
+    private function validEmbedding(mixed $embedding): bool
+    {
+        if (! is_array($embedding) || count($embedding) < 100) {
+            return false;
+        }
+
+        foreach ($embedding as $value) {
+            if (! is_numeric($value) || ! is_finite((float) $value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static function cosineSimilarity(array $a, array $b): float

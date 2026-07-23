@@ -1,3 +1,5 @@
+import '../../../shared/utils/attendance_time.dart';
+
 class AttendanceSchedule {
   const AttendanceSchedule({
     this.id,
@@ -122,12 +124,23 @@ class AttendanceRecord {
   bool get hasMasuk => jamMasuk != null;
   bool get hasPulang => jamPulang != null;
   bool get hadir => hasMasuk;
-  bool get isIncomplete =>
-      sessionStatus == 'incomplete' ||
-      sessionStatus == 'tidak_lengkap' ||
-      attendanceStatus == 'tidak_lengkap';
-  bool get isCorrected =>
-      sessionStatus == 'corrected' || attendanceStatus == 'corrected';
+  bool get isIncomplete {
+    final session = sessionStatus?.toLowerCase();
+    final attendance = attendanceStatus?.toLowerCase();
+    return session == 'incomplete' ||
+        session == 'tidak_lengkap' ||
+        attendance == 'incomplete' ||
+        attendance == 'tidak_lengkap';
+  }
+
+  bool get isCorrected {
+    final session = sessionStatus?.toLowerCase();
+    final attendance = attendanceStatus?.toLowerCase();
+    return session == 'corrected' ||
+        session == 'dikoreksi' ||
+        attendance == 'corrected' ||
+        attendance == 'dikoreksi';
+  }
 
   String get jamMasukStr => _formatTime(jamMasuk);
   String get jamPulangStr => _formatTime(jamPulang);
@@ -219,23 +232,7 @@ double? _parseDouble(dynamic value) {
 }
 
 DateTime? _parseDateTime(dynamic value) {
-  if (value is DateTime) return value;
-  if (value is! String || value.trim().isEmpty) return null;
-  final text = value.trim();
-  final offsetTimestamp = RegExp(
-    r'^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?[+-]\d{2}:\d{2}$',
-  ).firstMatch(text);
-  if (offsetTimestamp != null) {
-    return DateTime(
-      int.parse(offsetTimestamp.group(1)!),
-      int.parse(offsetTimestamp.group(2)!),
-      int.parse(offsetTimestamp.group(3)!),
-      int.parse(offsetTimestamp.group(4)!),
-      int.parse(offsetTimestamp.group(5)!),
-      int.parse(offsetTimestamp.group(6)!),
-    );
-  }
-  return DateTime.tryParse(text);
+  return parseAttendanceTime(value);
 }
 
 DateTime? _parseDateOrTime(
@@ -256,6 +253,14 @@ DateTime? _parseDateOrTime(
   final minute = int.tryParse(parts[1]);
   final second = parts.length > 2 ? int.tryParse(parts[2].split('.').first) : 0;
   if (hour == null || minute == null || second == null) return null;
+  if (hour < 0 ||
+      hour > 23 ||
+      minute < 0 ||
+      minute > 59 ||
+      second < 0 ||
+      second > 59) {
+    return null;
+  }
   var result = DateTime(date.year, date.month, date.day, hour, minute, second);
   if (overnightFrom != null && result.isBefore(overnightFrom)) {
     result = result.add(const Duration(days: 1));
@@ -263,6 +268,4 @@ DateTime? _parseDateOrTime(
   return result;
 }
 
-String _formatTime(DateTime? value) => value == null
-    ? '-'
-    : '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+String _formatTime(DateTime? value) => formatAttendanceTime(value);

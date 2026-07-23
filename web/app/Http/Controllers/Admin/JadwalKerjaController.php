@@ -3,48 +3,38 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\JadwalKerja;
 use App\Models\Karyawan;
-use App\Models\LokasiKerja;
 use App\Models\Shift;
-use App\Services\ScheduleResolver;
-use Carbon\Carbon;
+use App\Services\DailyScheduleMaterializer;
 use Illuminate\Http\Request;
 
 class JadwalKerjaController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $period = $request->validate(['month' => 'nullable|date_format:Y-m'])['month'] ?? now()->format('Y-m');
-        [$year, $month] = explode('-', $period);
-        $schedules = JadwalKerja::with('karyawan', 'shift', 'lokasiKerja')->whereYear('tanggal_operasional', $year)->whereMonth('tanggal_operasional', $month)->orderBy('tanggal_operasional')->get();
+        $karyawan = Karyawan::with('defaultShift', 'lokasiKerja')->orderBy('nama_lengkap')->get();
+        $shifts = Shift::where('is_aktif', true)->whereIn('nama', ['Pagi', 'Malam'])->orderBy('jam_mulai')->get();
 
-        return view('admin.jadwal.index', compact('schedules', 'period'));
+        return view('admin.jadwal.index', compact('karyawan', 'shifts'));
     }
 
-    public function create()
+    public function edit(Karyawan $karyawan)
     {
-        return view('admin.jadwal.create', ['karyawan' => Karyawan::where('status', 'aktif')->orderBy('nama_lengkap')->get(), 'shifts' => Shift::where('is_aktif', true)->get(), 'locations' => LokasiKerja::where('is_aktif', true)->get()]);
+        $karyawan->load('defaultShift', 'lokasiKerja');
+        $shifts = Shift::where('is_aktif', true)->whereIn('nama', ['Pagi', 'Malam'])->orderBy('jam_mulai')->get();
+
+        return view('admin.jadwal.edit', compact('karyawan', 'shifts'));
     }
 
-    public function store(Request $request, ScheduleResolver $schedules)
+    public function update(Request $request, Karyawan $karyawan, DailyScheduleMaterializer $materializer)
     {
-        $validated = $request->validate(['karyawan_id' => 'required|exists:karyawan,id', 'shift_id' => 'required|exists:shifts,id', 'lokasi_kerja_id' => 'required|exists:lokasi_kerja,id', 'tanggal_operasional' => 'required|date']);
-        if ($schedules->overlapsExisting((int) $validated['karyawan_id'], Carbon::parse($validated['tanggal_operasional']), (int) $validated['shift_id'])) {
-            return back()->withInput()->with('error', 'Jadwal bertabrakan dengan shift karyawan yang sudah ada.');
+        $allowedShiftIds = array_column(Shift::where('is_aktif', true)->whereIn('nama', ['Pagi', 'Malam'])->get(['id'])->toArray(), 'id');
+        $validated = $request->validate(['default_shift_id' => 'required|in:'.implode(',', $allowedShiftIds)]);
+        $karyawan->update(['default_shift_id' => $validated['default_shift_id']]);
+        if ($karyawan->status === 'aktif') {
+            $materializer->applyDefaultShift($karyawan->fresh(), today());
         }
-        JadwalKerja::create($validated);
 
-        return redirect()->route('admin.jadwal.index')->with('success', 'Jadwal berhasil ditambahkan.');
-    }
-
-    public function destroy(JadwalKerja $jadwal)
-    {
-        if ($jadwal->absensi()->exists()) {
-            return back()->with('error', 'Jadwal yang sudah memiliki absensi tidak dapat dihapus.');
-        }
-        $jadwal->delete();
-
-        return back()->with('success', 'Jadwal berhasil dihapus.');
+        return redirect()->route('admin.jadwal.index')->with('success', 'Shift kerja karyawan berhasil diperbarui.');
     }
 }

@@ -1,3 +1,4 @@
+import '../../../shared/utils/attendance_time.dart';
 import 'attendance_record.dart';
 
 class AttendanceSession {
@@ -52,15 +53,19 @@ class AttendanceSession {
     return null;
   }
 
-  static DateTime? _date(dynamic value) =>
-      value is String ? DateTime.tryParse(value) : null;
+  static DateTime? _date(dynamic value) => parseAttendanceTime(value);
 
   static bool? _bool(dynamic value) {
     if (value is bool) return value;
     if (value is num) return value != 0;
     if (value is String) {
-      if (value == '1' || value.toLowerCase() == 'true') return true;
-      if (value == '0' || value.toLowerCase() == 'false') return false;
+      final normalized = value.trim().toLowerCase();
+      if (normalized == '1' || normalized == 'true' || normalized == 'yes') {
+        return true;
+      }
+      if (normalized == '0' || normalized == 'false' || normalized == 'no') {
+        return false;
+      }
     }
     return null;
   }
